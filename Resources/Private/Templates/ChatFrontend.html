@@ -12,11 +12,11 @@
 <deep-chat
 	id="chat-element"
 	connect='{
-    "url": "",
+    "url": "<f:format.raw>{url}</f:format.raw>",
     "method": "POST",
     "headers": {
 			"accept": "application/json",
-			"x-api-key": ""
+			"x-api-key": "<f:format.raw>{apiKey}</f:format.raw>"
     },
     "additionalBodyProps": {"customBodyField": "customBodyValue"}
   }'

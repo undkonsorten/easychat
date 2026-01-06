@@ -1,0 +1,34 @@
+<T3DataStructure>
+    <meta>
+        <langChildren>0</langChildren>
+        <langDisable>1</langDisable>
+    </meta>
+    <sheets>
+        <sDEF>
+            <ROOT>
+                <TCEforms>
+                    <sheetTitle>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.caption</sheetTitle>
+                </TCEforms>
+                <type>array</type>
+                <el>
+                    <settings.url>
+                        <TCEforms>
+                            <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.url</label>
+                            <config>
+                                <type>input</type>
+                            </config>
+                        </TCEforms>
+                    </settings.url>
+                    <settings.apiKey>
+                        <TCEforms>
+                            <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.apiKey</label>
+                            <config>
+                                <type>input</type>
+                            </config>
+                        </TCEforms>
+                    </settings.apiKey>
+                </el>
+            </ROOT>
+        </sDEF>
+    </sheets>
+</T3DataStructure>

@@ -26,7 +26,6 @@ use TYPO3\CMS\Reactions\Model\ReactionInstruction;
 use TYPO3\CMS\Reactions\Reaction\ReactionInterface;
 use Undkonsorten\Easychat\Domain\Model\Gen\ChatCompletionRequestUserMessage;
 use Undkonsorten\Easychat\Services\DatabaseMessageStore;
-use Symfony\AI\Chat\Bridge\Cache\MessageStore as CacheStore;
 
 class ChatReaction implements ReactionInterface
 {
@@ -92,7 +91,6 @@ class ChatReaction implements ReactionInterface
 
         /* @todo needs implementation   */
         $store = new DatabaseMessageStore();
-        $store = new CacheStore(new ArrayAdapter(), 'chat');
         $store->setup();
 
         $agent = new Agent($platform, 'gpt-oss-120b');

@@ -1,0 +1,44 @@
+{
+	"name": "undkonsorten/easychat",
+	"description": "AI powered chat or search engine for TYPO3",
+	"keywords": ["typo3", "ai", "chat"],
+	"type": "typo3-cms-extension",
+	"license": "GPL-3.0-or-later",
+	"authors": [
+		{
+			"name": "Eike Starkmann",
+			"email": "es@undkonsorten.com"
+		}
+	],
+	"require": {
+		"php": "^8.2",
+		"typo3/cms-core": "^12.4",
+		"typo3/cms-extbase": "^12.4",
+		"typo3/cms-reactions": "^12.4",
+		"symfony/ai-chat": "^0.1",
+		"symfony/ai-store": "^0.1",
+		"symfony/ai-generic-platform": "^0.1"
+
+	},
+	"replace": {
+		"easychat": "self.version"
+	},
+	"config": {
+		"sort-packages": true
+	},
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "easychat"
+		}
+	},
+	"autoload": {
+		"psr-4": {
+			"Undkonsorten\\Easychat\\": "Classes/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Undkonsorten\\Easychat\\Tests\\": "Tests/"
+		}
+	}
+}

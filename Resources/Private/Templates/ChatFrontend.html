@@ -1,0 +1,41 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/ViewHelpers"
+			data-namespace-typo3-fluid="true"
+			lang="en">
+<f:flashMessages />
+<f:asset.script type="module" priority="true" identifier="deepChat.bundle" src="https://unpkg.com/deep-chat@2.4.0/dist/deepChat.bundle.js" />
+<h1>Deep Chat</h1>
+<!-- Attributes can be set as strings either directly on the element (demo/textInput) or via a `setAttribute` method on its reference (introMessage).
+	When passing JSON objects make sure that they are first correctly stringified (use the following tool https://jsonlint.com/), functions assigned
+	to properties must not have external references and all regex values are properly escaped.
+	You can also pass values into the component via properties by using the element reference (history).
+	-->
+<deep-chat
+	id="chat-element"
+	connect='{
+    "url": "",
+    "method": "POST",
+    "headers": {
+			"accept": "application/json",
+			"x-api-key": ""
+    },
+    "additionalBodyProps": {"customBodyField": "customBodyValue"}
+  }'
+	style="border-radius: 8px"
+></deep-chat>
+</body>
+<!-- !!Either set the script as "module" or place your code in a timeout in order to wait for the component to load -->
+<f:asset.script identifier="deepChat.bundle2">
+	const elementRef = document.getElementById("chat-element");
+	// Setting value via a property (easiest way)
+	elementRef.history = [
+		{ role: "user", text: "Hey, how are you today?" },
+		{ role: "ai", text: "I am doing very well!" },
+	];
+	elementRef.setAttribute(
+		"introMessage",
+		JSON.stringify({
+			text: "JavaScript demo for the Deep Chat componentxxxx.",
+		})
+	);
+</f:asset.script>
+</html>

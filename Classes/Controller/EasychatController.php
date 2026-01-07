@@ -2,15 +2,14 @@
 
 namespace Undkonsorten\Easychat\Controller;
 
+use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use Undkonsorten\Easychat\Domain\Model\Gen\ChatCompletionRequestUserMessage;
 
 class EasychatController extends ActionController
 {
-    public function chatFrontendAction()
+    public function chatFrontendAction(): ResponseInterface
     {
-        $this->view->assign('apiKey', $this->settings['apiKey']??'');
-        $this->view->assign('url', $this->settings['url']??'');
         return $this->htmlResponse();
     }
 

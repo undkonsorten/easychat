@@ -12,11 +12,11 @@
 <deep-chat
 	id="chat-element"
 	connect='{
-    "url": "<f:format.raw>{url}</f:format.raw>",
+    "url": "<f:format.raw>{settings.url}</f:format.raw>",
     "method": "POST",
     "headers": {
 			"accept": "application/json",
-			"x-api-key": "<f:format.raw>{apiKey}</f:format.raw>"
+			"x-api-key": "<f:format.raw>{settings.apiKey}</f:format.raw>"
     },
     "additionalBodyProps": {"customBodyField": "customBodyValue"}
   }'
@@ -27,14 +27,14 @@
 <f:asset.script identifier="deepChat.bundle2">
 	const elementRef = document.getElementById("chat-element");
 	// Setting value via a property (easiest way)
-	elementRef.history = [
-		{ role: "user", text: "Hey, how are you today?" },
-		{ role: "ai", text: "I am doing very well!" },
-	];
+	// elementRef.history = [
+	//	{ role: "user", text: "Hey, how are you today?" },
+	//	{ role: "ai", text: "I am doing very well!" },
+	//];
 	elementRef.setAttribute(
 		"introMessage",
 		JSON.stringify({
-			text: "JavaScript demo for the Deep Chat componentxxxx.",
+			text: "<f:format.raw>{settings.introMessage}</f:format.raw>",
 		})
 	);
 </f:asset.script>

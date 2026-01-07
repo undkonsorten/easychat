@@ -27,6 +27,14 @@
                             </config>
                         </TCEforms>
                     </settings.apiKey>
+                    <settings.introMessage>
+                        <TCEforms>
+                            <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.introMessage</label>
+                            <config>
+                                <type>text</type>
+                            </config>
+                        </TCEforms>
+                    </settings.introMessage>
                 </el>
             </ROOT>
         </sDEF>

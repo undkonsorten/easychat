@@ -20,23 +20,27 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\PropagateResponseException;
 use TYPO3\CMS\Core\Registry;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Reactions\Model\ReactionInstruction;
 use TYPO3\CMS\Reactions\Reaction\ReactionInterface;
 use Undkonsorten\Easychat\Domain\Model\Gen\ChatCompletionRequestUserMessage;
 use Undkonsorten\Easychat\Services\DatabaseMessageStore;
+use Undkonsorten\Easychat\Services\DoctrineDbalMessageStore;
 
 class ChatReaction implements ReactionInterface
 {
-    private const REGISTRY_KEY = 'changed_ids';
     public function __construct(
-        private readonly Registry $registry,
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly StreamFactoryInterface $streamFactory,
+        private readonly ConnectionPool $connectionPool,
     ) {}
 
 
+    const TABLE_NAME = 'easychat_messages';
     /**
      * @inheritDoc
      */
@@ -90,12 +94,16 @@ class ChatReaction implements ReactionInterface
 
 
         /* @todo needs implementation   */
-        $store = new DatabaseMessageStore();
-        $store->setup();
+
+        $store = new DoctrineDbalMessageStore(
+            self::TABLE_NAME,
+            $this->connectionPool
+                ->getConnectionForTable(self::TABLE_NAME),
+        );
 
         $agent = new Agent($platform, 'gpt-oss-120b');
         /* @todo use DatabaseMessageStore */
-        $chat = new Chat($agent, new InMemoryStore());
+        $chat = new Chat($agent, $store);
 
         $systemMessages = new MessageBag(
             Message::forSystem('You are very depressive.'),

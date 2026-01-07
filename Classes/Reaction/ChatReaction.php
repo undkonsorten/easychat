@@ -40,7 +40,9 @@ class ChatReaction implements ReactionInterface
     ) {}
 
 
-    const TABLE_NAME = 'easychat_messages';
+    const TABLE_NAME = 'tx_easychat_messages';
+    const CONFIGURATION_TABLE_NAME = 'tx_easychat_configuration';
+
     /**
      * @inheritDoc
      */
@@ -70,8 +72,28 @@ class ChatReaction implements ReactionInterface
      */
     public function react(ServerRequestInterface $request, array $payload, ReactionInstruction $reaction): ResponseInterface
     {
+        if(!$payload['messages'] && !$payload['messages'][0]['text']) {
+            $result = $this->jsonResponse(['error' => "No messages given."], 400);
+            throw new PropagateResponseException($result);
+        }
+
+        if(!$reaction->toArray()['easychat_configuration'] && $reaction->toArray()['easychat_configuration'] <= 0)
+        {
+            $result = $this->jsonResponse(['error' => "No configuration given."], 400);
+            throw new PropagateResponseException($result);
+        }
+        $configuration = $this->connectionPool
+            ->getConnectionForTable(self::CONFIGURATION_TABLE_NAME)
+            ->select(
+                ['*'],
+                self::CONFIGURATION_TABLE_NAME,
+                ['uid' => (int)$reaction->toArray()['easychat_configuration']],
+            )
+            ->fetchAssociative();
+
+
         $modelCatalog = new ModelCatalog([
-            'gpt-oss-120b' => [
+            $configuration['model'] => [
                 'class' => CompletionsModel::class,
                 'capabilities' => [
                     Capability::INPUT_MESSAGES,
@@ -84,13 +106,8 @@ class ChatReaction implements ReactionInterface
             ],
         ]);
 
-        if(!$payload['messages'] && !$payload['messages'][0]['text']) {
-            $result = $this->jsonResponse(['error' => "No messages given."], 400);
-            throw new PropagateResponseException($result);
-        }
-
         //@todo this needs to be configured which PlatformFactory should be used
-        $platform = PlatformFactory::create('https://llm.aihosting.mittwald.de', 'sk-ZM4KOn0XVNjrGKdFeS3JYg', HttpClient::create(), $modelCatalog);
+        $platform = PlatformFactory::create($configuration['url'], $configuration['api_key'], HttpClient::create(), $modelCatalog);
 
 
         /* @todo needs implementation   */
@@ -101,12 +118,12 @@ class ChatReaction implements ReactionInterface
                 ->getConnectionForTable(self::TABLE_NAME),
         );
 
-        $agent = new Agent($platform, 'gpt-oss-120b');
+        $agent = new Agent($platform, $configuration['model']);
         /* @todo use DatabaseMessageStore */
         $chat = new Chat($agent, $store);
 
         $systemMessages = new MessageBag(
-            Message::forSystem('You are very depressive.'),
+            Message::forSystem($configuration['system_message']),
         );
         $chat->initiate($systemMessages);
         try{

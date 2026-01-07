@@ -5,10 +5,34 @@ CREATE TABLE sys_reaction (
 	easychat_configuration int(11) unsigned DEFAULT '0' NOT NULL,
 );
 
-create table easychat_messages
+create table tx_easychat_messages
 (
 	id bigint NOT NULL auto_increment,
 	messages text NOT NULL,
 	PRIMARY KEY (id)
+);
+
+CREATE TABLE tx_easychat_configuration (
+		uid int(11) NOT NULL auto_increment,
+		pid int(11) DEFAULT '0' NOT NULL,
+
+		name varchar(255) DEFAULT '' NOT NULL,
+		model varchar(255) DEFAULT '' NOT NULL,
+		system_message longtext NOT NULL,
+		url varchar(255) DEFAULT '' NOT NULL,
+		api_key varchar(255) DEFAULT '' NOT NULL,
+
+
+		tstamp int(11) unsigned DEFAULT '0' NOT NULL,
+		crdate int(11) unsigned DEFAULT '0' NOT NULL,
+		cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
+		deleted tinyint(4) unsigned DEFAULT '0' NOT NULL,
+		hidden tinyint(4) unsigned DEFAULT '0' NOT NULL,
+		starttime int(11) unsigned DEFAULT '0' NOT NULL,
+		endtime int(11) unsigned DEFAULT '0' NOT NULL,
+
+		PRIMARY KEY (uid),
+		KEY parent (pid),
+
 );
 

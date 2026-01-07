@@ -19,7 +19,7 @@ defined('TYPO3') or die();
             'description' => 'Choose a chat configuration',
             'config' => [
                 'type' => 'group',
-                'allowed' => 'pages',
+                'allowed' => 'tx_easychat_configuration',
                 'size' => 1,
                 'maxitems' => 1,
             ],

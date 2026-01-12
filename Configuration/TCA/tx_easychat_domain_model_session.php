@@ -7,7 +7,7 @@ if (!defined('TYPO3')) {
 return [
     'ctrl' => [
         'title'	=> 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration',
-        'label' => 'name',
+        'label' => 'session_id',
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
         'versioningWS' => false,
@@ -20,11 +20,11 @@ return [
         'security' => [
             'ignorePageTypeRestriction' => true,
         ],
-        'searchFields' => 'name,model,url,',
+        'searchFields' => 'session_id',
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg'
     ],
     'types' => [
-        '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,name,model,url,api_key,system_message,retries,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
+        '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,session_id,messages,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
     ],
     'palettes' => [
         '1' => ['showitem' => ''],
@@ -67,9 +67,9 @@ return [
                 ],
             ],
         ],
-        'name' => [
+        'session_id' => [
             'exclude' => 1,
-            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.name',
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.session_id',
             'config' => [
                 'type' => 'input',
                 'size' => 30,
@@ -77,44 +77,13 @@ return [
                 'required' => true
             ],
         ],
-        'model' => [
+        'messages' => [
             'exclude' => 1,
-            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.model',
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.messages',
             'config' => [
-                'type' => 'input',
-                'size' => 30,
-                'eval' => 'trim',
+                'type' => 'json',
                 'required' => true
             ],
-        ],
-        'system_message' => [
-            'exclude' => 1,
-            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.system_message',
-            'config' => [
-                'type' => 'text',
-                'cols' => 40,
-                'rows' => 6
-            ],
-        ],
-        'url' => [
-            'exclude' => 1,
-            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.url',
-            'config' => [
-                'type' => 'input',
-                'size' => 30,
-                'eval' => 'trim',
-                'required' => true
-            ],
-        ],
-        'api_key' => [
-            'exclude' => 1,
-            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.api_key',
-            'config' => [
-                'type' => 'input',
-                'size' => 30,
-                'eval' => 'trim',
-                'required' => true
-            ]
         ]
     ],
 ];

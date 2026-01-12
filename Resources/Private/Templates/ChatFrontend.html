@@ -18,7 +18,10 @@
 			"accept": "application/json",
 			"x-api-key": "<f:format.raw>{settings.apiKey}</f:format.raw>"
     },
-    "additionalBodyProps": {"customBodyField": "customBodyValue"}
+    "additionalBodyProps": {"sessionId": "someUniquId"}
+  }'
+	requestBodyLimits='{
+    "maxMessages": -1
   }'
 	style="border-radius: 8px"
 ></deep-chat>

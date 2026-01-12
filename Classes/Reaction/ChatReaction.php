@@ -140,7 +140,7 @@ class ChatReaction implements ReactionInterface
                 $messageHistory->add(Message::ofUser($message['text']));
             }
         }
-
+        $chat->initiate($messageHistory);
         try{
             $answer = $chat->submit(Message::ofUser(end($payload['messages'])['text']));
         }catch (\Throwable $exception){

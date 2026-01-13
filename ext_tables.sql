@@ -20,7 +20,6 @@ create table tx_easychat_domain_model_session
 	hidden tinyint(4) unsigned DEFAULT '0' NOT NULL,
 	starttime int(11) unsigned DEFAULT '0' NOT NULL,
 	endtime int(11) unsigned DEFAULT '0' NOT NULL,
-	UNIQUE KEY session_id (session_id),
 	PRIMARY KEY (uid),
 	KEY parent (pid),
 );

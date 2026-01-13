@@ -42,7 +42,11 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
 
     public function drop(): void
     {
-        // TODO: Implement drop() method.
+        $session = $this->findBy(['session_id' => $this->sessionId])->getFirst();
+        if(!is_null($session)){
+            $this->remove($session);
+            $this->persistenceManager->persistAll();
+        }
     }
 
     public function save(MessageBag $messages): void

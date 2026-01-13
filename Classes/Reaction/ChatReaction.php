@@ -129,18 +129,13 @@ class ChatReaction implements ReactionInterface
         $this->sessionRepository->setup($payload);
         $chat = new Chat($agent, $this->sessionRepository);
 
-        $messageHistory = new MessageBag(Message::forSystem($configuration['system_message']));
+        $session = $this->sessionRepository->findBy(['session_id' => $payload['sessionId']])->getFirst();
 
-        // We add all messages except the last one
-        foreach (array_slice($payload['messages'], 0, count($payload['messages']) -1) as $message) {
-            if($message['role'] === 'assistant'){
-                $messageHistory->add(Message::ofAssistant($message['text']));
-            }
-            if($message['role'] === 'user'){
-                $messageHistory->add(Message::ofUser($message['text']));
-            }
+        if(is_null($session)){
+            $messageHistory = new MessageBag(Message::forSystem($configuration['system_message']));
+            $chat->initiate($messageHistory);
         }
-        $chat->initiate($messageHistory);
+
         try{
             $answer = $chat->submit(Message::ofUser(end($payload['messages'])['text']));
         }catch (\Throwable $exception){

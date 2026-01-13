@@ -1,0 +1,33 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+			xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+			xmlns:be="http://typo3.org/ns/Undkonsorten/Easychat/ViewHelpers"
+      data-namespace-typo3-fluid="true" lang="en">
+
+<f:for each="{messages}" as="message">
+	<tr>
+		<td>
+			<f:if condition="{message.type} == 'Symfony\AI\Platform\Message\SystemMessage'">
+				System:
+			</f:if>
+			<f:if condition="{message.type} == 'Symfony\AI\Platform\Message\AssistantMessage'">
+				Assistant:
+			</f:if>
+			<f:if condition="{message.type} == 'Symfony\AI\Platform\Message\UserMessage'">
+				User:
+			</f:if>
+		</td>
+		<td>
+			<f:if condition="{message.content}">
+				<f:then>
+					{message.content}
+				</f:then>
+				<f:else>
+					<f:for each="{message.contentAsBase64}" as="content">
+							{content.content}
+					</f:for>
+				</f:else>
+			</f:if>
+		</td>
+	</tr>
+</f:for>
+</html>

@@ -1,0 +1,36 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+			xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+			data-namespace-typo3-fluid="true">
+<f:layout name="Default"/>
+<f:section name="content">
+	<h1><f:translate key="headline" /></h1>
+	<f:flashMessages/>
+	<f:if condition="{sessions}">
+		<div class="recordlist mb-5 mt-4 border">
+			<div class="recordlist-heading row m-0 p-2 g-0 gap-1 align-items-center ">
+				<f:translate key="tableHeader" />
+			</div>
+			<div id="session-list">
+				<f:render partial="SimplePagination" arguments="{paginator:paginator,pagination:pagination,action:'list',demand:demand}" />
+				<table data-table="tx_easychat" class="table table-striped table-hover m-0">
+					<tr>
+						<th>
+							<f:translate key="tx_easychat_domain_model_session.sessionId"/>
+						</th>
+						<th colspan="2"><f:translate key="tx_easychat_domain_model_session.actions" /></th>
+						<th align="left">
+							<f:translate key="tx_easychat_domain_model_session.created_at"/>
+						</th>
+					</tr>
+					<f:for each="{sessions}" as="session">
+						<f:render partial="List/Item" arguments="{session:session}" />
+					</f:for>
+				</table>
+				<f:render partial="SimplePagination" arguments="{paginator:paginator,pagination:pagination,action:'list',demand:demand}" />
+			</div>
+		</div>
+		</div>
+	</f:if>
+
+</f:section>
+</html>

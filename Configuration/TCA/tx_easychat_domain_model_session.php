@@ -24,7 +24,7 @@ return [
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg'
     ],
     'types' => [
-        '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,session_id,messages,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
+        '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,session_id,messages,crdate,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
     ],
     'palettes' => [
         '1' => ['showitem' => ''],
@@ -84,6 +84,15 @@ return [
                 'type' => 'json',
                 'required' => true
             ],
-        ]
+        ],
+        'crdate' => [
+            'exclude' => 1,
+            'label' => 'LLL:EXT:taskqueue/Resources/Private/Language/locallang_db.xlf:tx_taskqueue_domain_model_task.created_at',
+            'config' => [
+                'type' => 'datetime',
+                'format' => 'datetime',
+                'readOnly' => 1
+            ],
+        ],
     ],
 ];

@@ -6,9 +6,14 @@ use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
 class Session extends AbstractEntity
 {
-    protected string $sessionId;
+    protected string|null $sessionId = null;
 
     protected string|null $messages = null;
+
+    /**
+     * @var int
+     */
+    protected $crdate;
 
     public function getSessionId(): string
     {
@@ -30,4 +35,10 @@ class Session extends AbstractEntity
         $this->messages = $messages;
     }
 
+    public function getCreatedAt(): \DateTime
+    {
+        $createdAt = new \DateTime('now');
+        $createdAt->setTimestamp($this->crdate);
+        return $createdAt;
+    }
 }

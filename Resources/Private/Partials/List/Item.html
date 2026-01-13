@@ -1,0 +1,20 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+			xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+			data-namespace-typo3-fluid="true">
+<tr>
+	<td>
+		<f:link.action action="show" title="[{session.uid}] {session.sessionId}" arguments="{session : session}">
+			{session.sessionId}
+		</f:link.action>
+	</td>
+	<td>
+		<f:link.action class="btn btn-default" action="delete" arguments="{session:session}" title="{f:translate(key:'actions.deletesession')}">
+			<core:icon identifier="actions-edit-delete"/>
+		</f:link.action>
+	</td>
+	<td>
+		<f:if condition="{session.createdAt}">
+			<f:format.date format="d.m.Y - H:i:s">{session.createdAt}</f:format.date>
+		</f:if>
+	</td>
+</tr>

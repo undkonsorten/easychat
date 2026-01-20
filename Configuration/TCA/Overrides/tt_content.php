@@ -23,7 +23,17 @@ call_user_func(static function () {
 
     ExtensionManagementUtility::addToAllTCAtypes(
         'tt_content',
-        'colPos',
+        '--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.plugin, pi_flexform',
         $pluginSignature,
+        'after:palette:headers'
+    );
+
+    \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
+        'IndexedSearch',
+        'Pi3',
+        'LLL:EXT:indexed_search/Resources/Private/Language/locallang_db.xlf:plugin_title',
+        'mimetypes-x-content-form-search',
+        'forms',
+        'LLL:EXT:indexed_search/Resources/Private/Language/locallang_db.xlf:plugin_description',
     );
 });

@@ -2,8 +2,7 @@
 
 namespace Undkonsorten\Easychat\Domain\Repository;
 
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
+use Undkonsorten\Easychat\Domain\Model\Session;
 use Symfony\AI\Chat\ManagedStoreInterface;
 use Symfony\AI\Chat\MessageNormalizer;
 use Symfony\AI\Chat\MessageStoreInterface;
@@ -13,10 +12,7 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Utility\ClassNamingUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\CMS\Extbase\Persistence\Repository;
 
 class SessionRepository extends Repository implements ManagedStoreInterface, MessageStoreInterface
@@ -53,7 +49,7 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
     {
         $session = $this->findBy(['session_id' => $this->sessionId])->getFirst();
         if(is_null($session)){
-            $session = GeneralUtility::makeInstance(\Undkonsorten\Easychat\Domain\Model\Session::class);
+            $session = GeneralUtility::makeInstance(Session::class);
             $session->setSessionId($this->sessionId);
             $session->setMessages($this->serializer->serialize($messages->getMessages(), 'json'));
             $this->add($session);

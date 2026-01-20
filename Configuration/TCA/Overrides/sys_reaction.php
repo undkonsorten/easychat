@@ -1,17 +1,20 @@
 <?php
 
-defined('TYPO3') or die();
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use Undkonsorten\Easychat\Reaction\ChatReaction;
 
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTcaSelectItem(
+defined('TYPO3') || die();
+
+ExtensionManagementUtility::addTcaSelectItem(
     'sys_reaction',
     'reaction_type',
     [
-        'label' => \Undkonsorten\Easychat\Reaction\ChatReaction::getDescription(),
-        'value' => \Undkonsorten\Easychat\Reaction\ChatReaction::getType(),
-        'icon' => \Undkonsorten\Easychat\Reaction\ChatReaction::getIconIdentifier(),
+        'label' => ChatReaction::getDescription(),
+        'value' => ChatReaction::getType(),
+        'icon' => ChatReaction::getIconIdentifier(),
     ]
 );
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns(
+ExtensionManagementUtility::addTCAcolumns(
     'sys_reaction',
     [
         'easychat_configuration' => [
@@ -28,14 +31,14 @@ defined('TYPO3') or die();
 );
 
 
-$GLOBALS['TCA']['sys_reaction']['ctrl']['typeicon_classes'][\Undkonsorten\Easychat\Reaction\ChatReaction::getType()] = \Undkonsorten\Easychat\Reaction\ChatReaction::getIconIdentifier();
+$GLOBALS['TCA']['sys_reaction']['ctrl']['typeicon_classes'][ChatReaction::getType()] = ChatReaction::getIconIdentifier();
 
 $GLOBALS['TCA']['sys_reaction']['palettes']['easychatConfiguration'] = [
     'label' => 'LLL:EXT:reactions/Resources/Private/Language/locallang_db.xlf:palette.additional',
     'showitem' => 'easychat_configuration',
 ];
 
-$GLOBALS['TCA']['sys_reaction']['types'][\Undkonsorten\Easychat\Reaction\ChatReaction::getType()] = [
+$GLOBALS['TCA']['sys_reaction']['types'][ChatReaction::getType()] = [
     'showitem' => '
         --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
         --palette--;;config,

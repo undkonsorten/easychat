@@ -5,7 +5,6 @@ declare(strict_types=1);
 
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
 use TYPO3\CMS\Extbase\Utility\ExtensionUtility as ExtbaseExtensionUtility;
 
 (function (): void {
@@ -24,7 +23,8 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility as ExtbaseExtensionUtility;
     $GLOBALS['TCA']['tt_content']['types']['list']['subtypes_addlist'][$lowerCasedExtensionName.'_' . $lowerCasedPluginName] = 'pi_flexform';
     $GLOBALS['TCA']['tt_content']['types']['list']['subtypes_excludelist'][$lowerCasedExtensionName.'_' . $lowerCasedPluginName] = 'recursive,select_key,pages';
     ExtensionManagementUtility::addPiFlexFormValue(
-        $lowerCasedExtensionName.'_' . $lowerCasedPluginName,
-        'FILE:EXT:'.$extensionKey.'/Configuration/FlexForms/Easychat.xml'
+        '*',
+        'FILE:EXT:'.$extensionKey.'/Configuration/FlexForms/Easychat.xml',
+        $lowerCasedExtensionName.'_' . $lowerCasedPluginName
     );
 })();

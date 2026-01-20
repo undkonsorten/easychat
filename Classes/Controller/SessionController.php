@@ -2,11 +2,11 @@
 
 namespace Undkonsorten\Easychat\Controller;
 
+use TYPO3\CMS\Core\Imaging\IconSize;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
-use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
@@ -24,9 +24,9 @@ class SessionController extends ActionController
     private ModuleTemplate $moduleTemplate;
 
     public function __construct(
-        private SessionRepository $sessionRepository,
-        private ModuleTemplateFactory $moduleTemplateFactory,
-        private IconFactory $iconFactory,
+        private readonly SessionRepository $sessionRepository,
+        private readonly ModuleTemplateFactory $moduleTemplateFactory,
+        private readonly IconFactory $iconFactory,
     ){}
 
     public function initializeAction(): void
@@ -74,7 +74,7 @@ class SessionController extends ActionController
     {
         $this->moduleTemplate->assignMultiple([
             'session' => $session,
-            'messages' => json_decode($session->getMessages(), true)
+            'messages' => json_decode((string) $session->getMessages(), true)
         ]);
         return $this->moduleTemplate->renderResponse('Session/Show');
     }
@@ -133,7 +133,7 @@ class SessionController extends ActionController
                     'placement' => 'bottom',
                     'title' => $title])
                 ->setTitle($title)
-                ->setIcon($this->iconFactory->getIcon($tableConfiguration['icon'], Icon::SIZE_SMALL));
+                ->setIcon($this->iconFactory->getIcon($tableConfiguration['icon'], IconSize::SMALL));
             $buttonBar->addButton($viewButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
         }
 
@@ -141,7 +141,7 @@ class SessionController extends ActionController
         $refreshButton = $buttonBar->makeLinkButton()
             ->setHref(GeneralUtility::getIndpEnv('REQUEST_URI'))
             ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload'))
-            ->setIcon($this->iconFactory->getIcon('actions-refresh', Icon::SIZE_SMALL));
+            ->setIcon($this->iconFactory->getIcon('actions-refresh', IconSize::SMALL));
         $buttonBar->addButton($refreshButton, ButtonBar::BUTTON_POSITION_RIGHT);
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+use Undkonsorten\Easychat\Controller\SessionController;
+
 return [
     'easychat' => [
         'parent' => 'web',
@@ -11,7 +13,7 @@ return [
         'labels' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_easychat.xlf',
         'extensionName' => 'Easychat',
         'controllerActions' => [
-            \Undkonsorten\Easychat\Controller\SessionController::class => [
+            SessionController::class => [
                 'list', 'show', 'delete',
             ],
         ],

@@ -41,10 +41,8 @@ return [
             'exclude' => 1,
             'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.starttime',
             'config' => [
-                'type' => 'input',
-                'renderType' => 'inputDateTime',
+                'type' => 'datetime',
                 'size' => 13,
-                'eval' => 'datetime',
                 'checkbox' => 0,
                 'default' => 0,
                 'range' => [
@@ -56,10 +54,8 @@ return [
             'exclude' => 1,
             'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.endtime',
             'config' => [
-                'type' => 'input',
-                'renderType' => 'inputDateTime',
+                'type' => 'datetime',
                 'size' => 13,
-                'eval' => 'datetime',
                 'checkbox' => 0,
                 'default' => 0,
                 'range' => [

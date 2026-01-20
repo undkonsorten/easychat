@@ -35,7 +35,7 @@ final class UndkonsortenEasychatCTypeMigration extends AbstractListTypeToCTypeUp
     protected function getListTypeToCTypeMapping(): array
     {
         return [
-            // TODO: Add this mapping yourself!
+            'easychat_easychatfrontend' => 'easychat_easychatfrontend'
         ];
     }
 }

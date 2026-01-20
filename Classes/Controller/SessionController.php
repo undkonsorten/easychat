@@ -59,7 +59,7 @@ class SessionController extends ActionController
         $sessions = $this->sessionRepository->findAll();
 
         $currentPage = $this->request->hasArgument('currentPage') ? $this->request->getArgument('currentPage') : $currentPage;
-        $paginator = new QueryResultPaginator($sessions, (integer)$currentPage, (integer)$this->settings['pagination']['itemsPerPage']);
+        $paginator = new QueryResultPaginator($sessions, (integer)$currentPage, (integer)$this->settings['pagination']['itemsPerPage'] ?? 50);
         $simplePagination = new SimplePagination($paginator);
         $pagination = $this->buildSimplePagination($simplePagination, $paginator);
 

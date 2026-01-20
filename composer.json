@@ -12,9 +12,10 @@
 	],
 	"require": {
 		"php": "^8.2",
-		"typo3/cms-core": "^12.4",
-		"typo3/cms-extbase": "^12.4",
-		"typo3/cms-reactions": "^12.4",
+		"typo3/cms-core": "^12.4 | ^13.4",
+		"typo3/cms-extbase": "^12.4 | ^13.4",
+		"typo3/cms-reactions": "^12.4 | ^13.4",
+		"typo3/cms-backend": "^12.4 | ^13.4",
 		"symfony/ai-chat": "^0.1",
 		"symfony/ai-store": "^0.1",
 		"symfony/ai-generic-platform": "^0.1"

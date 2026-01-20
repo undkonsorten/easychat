@@ -56,11 +56,8 @@
 			<trans-unit id="module.filter.label">
 				<source>Choose a status</source>
 			</trans-unit>
-			<trans-unit id="button.deleteFailed">
-				<source>Delete failed</source>
-			</trans-unit>
-			<trans-unit id="button.deleteFinished">
-				<source>Delete finished</source>
+			<trans-unit id="easychat_frontend_plugin_title">
+				<source>Easychat Frontend</source>
 			</trans-unit>
 </body>
 	</file>

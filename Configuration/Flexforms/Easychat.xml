@@ -23,6 +23,12 @@
                             <type>text</type>
                         </config>
                     </settings.introMessage>
+                    <settings.placeholder>
+                        <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.placeholder</label>
+                        <config>
+                            <type>input</type>
+                        </config>
+                    </settings.placeholder>
                 </el>
             </ROOT>
         </sDEF>

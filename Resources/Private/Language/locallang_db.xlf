@@ -16,6 +16,9 @@
 			<trans-unit id="flexform.tab.general.introMessage">
 				<source>Introduction message</source>
 			</trans-unit>
+			<trans-unit id="flexform.tab.general.placeholder">
+				<source>Placeholder</source>
+			</trans-unit>
 			<trans-unit id="tx_easychat_configuration">
 				<source>Configuration</source>
 			</trans-unit>
@@ -37,6 +40,7 @@
 			<trans-unit id="tx_easychat_configuration.api_key">
 				<source>Api key</source>
 			</trans-unit>
+
 		</body>
 	</file>
 </xliff>

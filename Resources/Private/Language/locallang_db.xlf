@@ -16,6 +16,27 @@
 			<trans-unit id="flexform.tab.general.introMessage">
 				<source>Introduction message</source>
 			</trans-unit>
+			<trans-unit id="tx_easychat_configuration">
+				<source>Configuration</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_session">
+				<source>Configuration</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.name">
+				<source>Name</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.model">
+				<source>Model</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.system_message">
+				<source>System prompt</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.url">
+				<source>Url</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.api_key">
+				<source>Api key</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

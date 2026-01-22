@@ -29,6 +29,34 @@
                             <type>input</type>
                         </config>
                     </settings.placeholder>
+                    <settings.enableDataProtectionConsent>
+                        <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.enableDataProtectionConsent</label>
+                        <config>
+                            <type>check</type>
+                        </config>
+                    </settings.enableDataProtectionConsent>
+                    <settings.dataProtectionConsentText>
+                        <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.dataProtectionConsentText</label>
+                        <config>
+                            <type>text</type>
+                            <enableRichtext>true</enableRichtext>
+                        </config>
+                        <displayCond>FIELD:settings.enableDataProtectionConsent:=:1</displayCond>
+                    </settings.dataProtectionConsentText>
+                    <settings.dataProtectionConsentButtonYes>
+                        <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.dataProtectionConsentButtonYes</label>
+                        <config>
+                            <type>input</type>
+                        </config>
+                        <displayCond>FIELD:settings.enableDataProtectionConsent:=:1</displayCond>
+                    </settings.dataProtectionConsentButtonYes>
+                    <settings.dataProtectionConsentButtonNo>
+                        <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.dataProtectionConsentButtonNo</label>
+                        <config>
+                            <type>input</type>
+                        </config>
+                        <displayCond>FIELD:settings.enableDataProtectionConsent:=:1</displayCond>
+                    </settings.dataProtectionConsentButtonNo>
                 </el>
             </ROOT>
         </sDEF>

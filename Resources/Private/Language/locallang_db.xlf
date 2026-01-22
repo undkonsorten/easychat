@@ -19,6 +19,18 @@
 			<trans-unit id="flexform.tab.general.placeholder">
 				<source>Placeholder</source>
 			</trans-unit>
+			<trans-unit id="flexform.tab.general.enableDataProtectionConsent">
+				<source>Enable data protection consent</source>
+			</trans-unit>
+			<trans-unit id="flexform.tab.general.dataProtectionConsentText">
+				<source>Text</source>
+			</trans-unit>
+			<trans-unit id="flexform.tab.general.dataProtectionConsentButtonYes">
+				<source>Yes</source>
+			</trans-unit>
+			<trans-unit id="flexform.tab.general.dataProtectionConsentButtonNo">
+				<source>No</source>
+			</trans-unit>
 			<trans-unit id="tx_easychat_configuration">
 				<source>Configuration</source>
 			</trans-unit>

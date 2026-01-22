@@ -2,11 +2,13 @@
 
 namespace Undkonsorten\Easychat\Controller;
 
-use TYPO3\CMS\Core\Imaging\IconSize;
+
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
@@ -27,6 +29,7 @@ class SessionController extends ActionController
         private readonly SessionRepository $sessionRepository,
         private readonly ModuleTemplateFactory $moduleTemplateFactory,
         private readonly IconFactory $iconFactory,
+        private readonly ExtensionConfiguration $extensionConfiguration,
     ){}
 
     public function initializeAction(): void
@@ -59,7 +62,8 @@ class SessionController extends ActionController
         $sessions = $this->sessionRepository->findAll();
 
         $currentPage = $this->request->hasArgument('currentPage') ? $this->request->getArgument('currentPage') : $currentPage;
-        $paginator = new QueryResultPaginator($sessions, (integer)$currentPage, (integer)$this->settings['pagination']['itemsPerPage'] ?? 50);
+        $paginator = new QueryResultPaginator($sessions, (integer)$currentPage, (integer)$this->extensionConfiguration
+            ->get('easychat')['itemsPerPage'] ?? 50);
         $simplePagination = new SimplePagination($paginator);
         $pagination = $this->buildSimplePagination($simplePagination, $paginator);
 
@@ -133,7 +137,7 @@ class SessionController extends ActionController
                     'placement' => 'bottom',
                     'title' => $title])
                 ->setTitle($title)
-                ->setIcon($this->iconFactory->getIcon($tableConfiguration['icon'], IconSize::SMALL));
+                ->setIcon($this->iconFactory->getIcon($tableConfiguration['icon'], Icon::SIZE_SMALL));
             $buttonBar->addButton($viewButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
         }
 
@@ -141,7 +145,7 @@ class SessionController extends ActionController
         $refreshButton = $buttonBar->makeLinkButton()
             ->setHref(GeneralUtility::getIndpEnv('REQUEST_URI'))
             ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload'))
-            ->setIcon($this->iconFactory->getIcon('actions-refresh', IconSize::SMALL));
+            ->setIcon($this->iconFactory->getIcon('actions-refresh', Icon::SIZE_SMALL));
         $buttonBar->addButton($refreshButton, ButtonBar::BUTTON_POSITION_RIGHT);
     }
 

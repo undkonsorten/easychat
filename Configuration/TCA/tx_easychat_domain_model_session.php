@@ -6,7 +6,7 @@ if (!defined('TYPO3')) {
 
 return [
     'ctrl' => [
-        'title'	=> 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration',
+        'title'	=> 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_session',
         'label' => 'session_id',
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
@@ -21,6 +21,7 @@ return [
             'ignorePageTypeRestriction' => true,
         ],
         'searchFields' => 'session_id',
+        'hideTable' => true,
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg'
     ],
     'types' => [

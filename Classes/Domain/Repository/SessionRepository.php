@@ -2,6 +2,7 @@
 
 namespace Undkonsorten\Easychat\Domain\Repository;
 
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use Undkonsorten\Easychat\Domain\Model\Session;
 use Symfony\AI\Chat\ManagedStoreInterface;
 use Symfony\AI\Chat\MessageNormalizer;
@@ -19,13 +20,25 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
 {
     protected string $sessionId;
 
+    protected int $pid = 1;
+
     public function __construct(
+        private readonly ExtensionConfiguration $extensionConfiguration,
         private readonly SerializerInterface      $serializer = new Serializer([
             new ArrayDenormalizer(),
             new MessageNormalizer(),
         ], [new JsonEncoder()]),
     ) {
+        $this->pid = $this->extensionConfiguration
+            ->get('easychat')['storagePid'] ?? 1;
         parent::__construct();
+    }
+
+    public function initializeObject(): void
+    {
+        $querySettings = $this->createQuery()->getQuerySettings();
+        $querySettings->setStoragePageIds([$this->pid]);
+        $this->setDefaultQuerySettings($querySettings);
     }
 
     public function setup(array $options = []): void
@@ -34,6 +47,9 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
             throw new \InvalidArgumentException('sessionId is null',1768240551);
         }
         $this->sessionId = $options['sessionId'];
+        #@todo do we want this?
+        #$this->sessionId = $options['pid'] ?? $this->extensionConfiguration
+        #    ->get('storagePid') ?? 1;
     }
 
     public function drop(): void

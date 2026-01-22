@@ -1,6 +1,0 @@
-module.tx_easychat {
-	persistence {
-		# cat=module.tx_easychat//a; type=string; label=Default storage PID
-		storagePid = 1
-	}
-}

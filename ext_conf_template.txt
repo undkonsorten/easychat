@@ -1,0 +1,4 @@
+# cat=module.tx_easychat//a; type=integer; label=Default storage PID
+storagePid = 1
+# cat=module.tx_easychat//b; type=inmteger; label=Default items per page
+itemsPerPage = 50

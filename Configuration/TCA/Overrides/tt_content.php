@@ -12,7 +12,7 @@ call_user_func(static function () {
         $pluginName,
         $pluginTitle,
         '',
-        'easychat'
+        'Easychat'
     );
 
     ExtensionManagementUtility::addPiFlexFormValue(

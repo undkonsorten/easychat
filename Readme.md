@@ -6,23 +6,26 @@
 EasyChat is focused on privacy and data protection, since all chat conversions are only stored in your TYPO3 database.
 
 
-## Features
+## Key Features
 
 
-* Chatbot frontend - based on the open source chat framework [Deep Chat](https://deepchat.dev) (Supports: Vanilla JS, Vue, React, Angular etc.)
-* Endpoints for self hosted open source LLM's (gpt‑oss, ) and the standard LLMs (ChatGPT, Cloude Opus, Mistral etc.)
-* Chat memory for the LLM (chatbot does not forget old questions)
-* Chat history/log for each user session is saved in TYPO3 (with an own backend module)
-* User data privacy consent before the chat starts Chat/Logging (optional)
+* **Chatbot frontend** - based on the open source chat framework [Deep Chat](https://deepchat.dev) (Supports: Vanilla JS, Vue, React, Angular etc.)
+* **Endpoints** for
+  * self hosted open source LLM's (gpt‑oss, ) and
+  * standard LLMs (ChatGPT, Cloude Opus, Mistral etc.)
+  * Chat memory (Chatbot can remember old questions)
+* **Data protection**:
+  * Chat session **data is saved only within TYPO3**
+  * Optional data **privacy consent** before the chat starts
+  * Automated **cleaning of user data** (scheduler task)
 * Connector to a vector database as a knowledge base for the chatbot
-
 
 
 ## Setup
 
-### Install the Extension
+### Install the TYPO3 Extension
 
-Install the EasyChat chatbot TYPO3 Extension via Composer:
+Install the *TYPO3 ChatBot Extension "EasyChat"* via [composer](https://getcomposer.org/doc/):
 
 ```console
 composer require undkonsorten/easychat
@@ -30,7 +33,7 @@ composer require undkonsorten/easychat
 
 After installation a database compare is necessary to create new tables.
 
-### Setup the LLM Provider
+### Setup the LLM provider
 
 Now you need to connect TYPO3 to your LLM's provider via API. Create a new record "LLM Provider" in TYPO3.
 
@@ -72,7 +75,41 @@ OpenAi (ChatGpt) and Antrophic (Claude) offen only payed plans.
 
 There are also webhosting providers in Germany with AI API endpoints. We are testing [mittwald](https://www.mittwald.de/mstudio/ai-hosting) at the moment (Jan 2026).
 
-Usually
+## Backend module for chat session logs
+
+With the **EasyChat backend module** you can watch, review and delete single chat session.
+
+![Screenshot: EasyChat backend Module](Documentation/Assets/Backend-Module.png)
+_Screenshot: Backend Module with Session overview_
+
+## Automated cleaner task for deleting old chat session
+
+For data protection we recommend to setup the *cleaner task* in order to delete old chat sessions.
+
+![Screenshot: EasyChat backend Module](Documentation/Assets/Scheduler-Task.png)
+_Screenshot: Scheduler Module - Sessions cleaner task_
+
+Steps:
+* Choose the task `Execute console commands (scheduler)`
+* Schedulable Commend: `easychat:delete-sessions: Deletes sessions older than given date interval.`
+* Save !
+* Then define the `keepDateInterval` in the [ISO 8601 durations format](https://en.wikipedia.org/wiki/ISO_8601#Durations).
+
+```
++------------------------+----------------------+-------------------------------------+
+|     Duration Type      |   ISO 8601 Format    |            Description             |
++------------------------+----------------------+-------------------------------------+
+| 1 Day                  | P1D                  | Represents 1 day.                  |
+| 2 Weeks                | P2W                  | Represents 2 weeks (14 days).      |
+| 3 Months               | P3M                  | Represents 3 months.               |
+| 1 Year                 | P1Y                  | Represents 1 year.                 |
+| 1 Year and 2 Months    | P1Y2M                | Represents 1 year and 2 months.    |
++------------------------+----------------------+-------------------------------------+
+```
+* Set the scheduler interval
+
+
+---
 
 ## Known Problems
 

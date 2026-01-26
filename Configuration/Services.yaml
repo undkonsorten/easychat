@@ -7,3 +7,9 @@ services:
   Undkonsorten\Easychat\:
     resource: '../Classes/*'
 
+
+  Undkonsorten\Easychat\Command\DeleteSessionsCommand:
+    tags:
+      - name: 'console.command'
+        command: 'easychat:delete-sessions'
+        description: 'Deletes sessions older than given date interval.'

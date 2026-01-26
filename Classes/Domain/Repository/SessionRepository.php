@@ -3,6 +3,8 @@
 namespace Undkonsorten\Easychat\Domain\Repository;
 
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use Undkonsorten\Easychat\Domain\Model\Session;
 use Symfony\AI\Chat\ManagedStoreInterface;
 use Symfony\AI\Chat\MessageNormalizer;
@@ -84,6 +86,22 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
         }
         $messages = $this->serializer->deserialize($session->getMessages(), MessageInterface::class.'[]', 'json');
         return new MessageBag(...$messages);
+    }
+
+    /**
+     * @param \DateInterval $dateInterval
+     * @return array|QueryResultInterface
+     * @throws InvalidQueryException
+     */
+    public function findOutOfInterval(\DateInterval $dateInterval)
+    {
+        $now = new \DateTime('now');
+        $now->sub($dateInterval);
+        $query = $this->createQuery();
+        $query->matching(
+            $query->lessThan('tstamp', $now->getTimestamp())
+        );
+        return $query->execute();
     }
 
 }

@@ -52,6 +52,24 @@
 			<trans-unit id="tx_easychat_configuration.api_key">
 				<source>Api key</source>
 			</trans-unit>
+            <trans-unit id="tx_easychat_configuration.vector_db">
+                <source>Vector db</source>
+            </trans-unit>
+             <trans-unit id="tx_easychat_configuration.vector_db_host">
+                <source>Host</source>
+            </trans-unit>
+            <trans-unit id="tx_easychat_configuration.vector_db_port">
+                <source>Port</source>
+            </trans-unit>
+            <trans-unit id="tx_easychat_configuration.vector_db_name">
+                <source>Name</source>
+            </trans-unit>
+            <trans-unit id="tx_easychat_configuration.vector_db.none">
+                <source>None</source>
+            </trans-unit>
+            <trans-unit id="tx_easychat_configuration.vector_db.redis">
+                <source>Redis</source>
+            </trans-unit>
 
 		</body>
 	</file>

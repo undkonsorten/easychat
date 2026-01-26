@@ -24,7 +24,7 @@ return [
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg'
     ],
     'types' => [
-        '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,name,model,url,api_key,system_message,retries,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
+        '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,name,model,url,api_key,system_message,vector_db,vector_db_host,vector_db_port,vector_db_name,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
     ],
     'palettes' => [
         '1' => ['showitem' => ''],
@@ -111,6 +111,69 @@ return [
                 'eval' => 'trim',
                 'required' => true
             ]
-        ]
+        ],
+        'vector_db' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db',
+            'onChange' => 'reload',
+            'config' => [
+                'type' => 'select',
+                'renderType' => 'selectSingle',
+                'items' => [
+                    [
+                        'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db.none',
+                        'value' => 'none',
+                    ],
+                    [
+                        'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db.redis',
+                        'value' => 'redis',
+                    ],
+                ],
+            ],
+        ],
+        'vector_db_host' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_host',
+            'displayCond' => [
+                'AND' => [
+                    'FIELD:vector_db:!=:none',
+                    'REC:NEW:false',
+                ]
+            ],
+            'config' => [
+                'type' => 'input',
+                'size' => 30,
+                'eval' => 'trim',
+                'required' => true
+            ],
+        ],
+        'vector_db_port' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_port',
+            'displayCond' => [
+                'AND' => [
+                    'FIELD:vector_db:!=:none',
+                    'REC:NEW:false',
+                ]
+            ],
+            'config' => [
+                'type' => 'input',
+                'size' => 30,
+                'eval' => 'trim',
+                'required' => true
+            ],
+        ],
+        'vector_db_name' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_name',
+            'displayCond' => [
+                'AND' => [
+                    'FIELD:vector_db:!=:none',
+                    'REC:NEW:false',
+                ]
+            ],
+            'config' => [
+                'type' => 'input',
+                'size' => 30,
+                'eval' => 'trim',
+                'required' => true
+            ],
+        ],
     ],
 ];

@@ -1,7 +1,7 @@
 # TYPO3 Chatbot: EasyChat
 
 
-<span style="float:left;margin-right: 1em">![EasyChat Logo (Icon)](Documentation/Assets/EasyChat-Icon.svg)</span>
+<span style="float:left;margin-right: 1em">![EasyChat Logo (Icon)](Documentation/Assets/EasyChat-Icon.png)</span>
 **EasyChat** is a lightweight open source chatbot für TYPO3 websites without third party chat tools.
 
 EasyChat is focused on privacy and data protection, since all chat conversions are only stored in your TYPO3 database.
@@ -97,14 +97,14 @@ Fill the fields.
 With the **EasyChat backend module** you can watch, review and delete single chat session.
 
 ![Screenshot: EasyChat backend Module](Documentation/Assets/Backend-Module.png)
-_Screenshot: Backend Module with Session overview_
+
 
 ## Automated cleaner task for deleting old chat session
 
 For data protection we recommend to setup the *cleaner task* in order to delete old chat sessions.
 
 ![Screenshot: EasyChat backend Module](Documentation/Assets/Scheduler-Task.png)
-_Screenshot: Scheduler Module - Sessions cleaner task_
+
 
 Steps:
 * Choose the task `Execute console commands (scheduler)`

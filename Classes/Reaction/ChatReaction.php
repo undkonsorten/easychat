@@ -47,6 +47,8 @@ class ChatReaction implements ReactionInterface
 
     const CONFIGURATION_TABLE_NAME = 'tx_easychat_configuration';
 
+    const COOKIE_NAME = 'easychat_session_id';
+
     /**
      * @inheritDoc
      */
@@ -80,8 +82,8 @@ class ChatReaction implements ReactionInterface
             $result = $this->jsonResponse(['error' => "No messages given."], 400);
             throw new PropagateResponseException($result, 1072213738);
         }
-        if(!$payload['sessionId']) {
-            $result = $this->jsonResponse(['error' => "No session id given."], 400);
+        if(!$request->getCookieParams()[self::COOKIE_NAME]) {
+            $result = $this->jsonResponse(['error' => "No session id given. Make sure there is a cookie named ".self::COOKIE_NAME], 400);
             throw new PropagateResponseException($result, 4131317075);
         }
 
@@ -116,10 +118,10 @@ class ChatReaction implements ReactionInterface
 
         $platform = PlatformFactory::create($configuration['url'], $configuration['api_key'], HttpClient::create(), $modelCatalog);
         $agent = new Agent($platform, $configuration['model']);
-        $this->sessionRepository->setup($payload);
+        $this->sessionRepository->setup(['sessionId' => $request->getCookieParams()[self::COOKIE_NAME]]);
         $chat = new Chat($agent, $this->sessionRepository);
 
-        $session = $this->sessionRepository->findBy(['session_id' => $payload['sessionId']])->getFirst();
+        $session = $this->sessionRepository->findBy(['session_id' => $request->getCookieParams()[self::COOKIE_NAME]])->getFirst();
 
         if(is_null($session)){
             $messageHistory = new MessageBag(Message::forSystem($configuration['system_message']));

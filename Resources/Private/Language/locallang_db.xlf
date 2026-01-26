@@ -8,10 +8,10 @@
 				<source>Easychat</source>
 			</trans-unit>
 			<trans-unit id="flexform.tab.general.url">
-				<source>Url</source>
+				<source>Reaction url</source>
 			</trans-unit>
 			<trans-unit id="flexform.tab.general.apiKey">
-				<source>Api key</source>
+				<source>Reaction secret</source>
 			</trans-unit>
 			<trans-unit id="flexform.tab.general.introMessage">
 				<source>Introduction message</source>

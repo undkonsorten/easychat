@@ -36,6 +36,8 @@ CREATE TABLE tx_easychat_configuration (
 		vector_db_host varchar(255) DEFAULT '' NOT NULL,
 		vector_db_port varchar(255) DEFAULT '' NOT NULL,
 		vector_db_name varchar(255) DEFAULT '' NOT NULL,
+		vector_db_api_key varchar(255) DEFAULT '' NOT NULL,
+		vector_db_embeddings_model varchar(255) DEFAULT '' NOT NULL,
 
 
 		tstamp int(11) unsigned DEFAULT '0' NOT NULL,

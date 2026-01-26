@@ -70,7 +70,15 @@
             <trans-unit id="tx_easychat_configuration.vector_db.redis">
                 <source>Redis</source>
             </trans-unit>
-
+			<trans-unit id="tx_easychat_configuration.vector_db.qdrant">
+				<source>Qdrant</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_api_key">
+				<source>Qdrant</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_embeddings_model">
+				<source>Emeddings model</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

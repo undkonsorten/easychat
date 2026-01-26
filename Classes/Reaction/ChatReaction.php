@@ -7,19 +7,31 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\AI\Agent\Agent;
+use Symfony\AI\Agent\Bridge\SimilaritySearch\SimilaritySearch;
+use Symfony\AI\Agent\Toolbox\AgentProcessor;
+use Symfony\AI\Agent\Toolbox\Toolbox;
 use Symfony\AI\Chat\Chat;
+use Symfony\AI\Chat\InMemory\Store;
 use Symfony\AI\Chat\MessageNormalizer;
 use Symfony\AI\Platform\Bridge\Generic\CompletionsModel;
+use Symfony\AI\Platform\Bridge\Generic\EmbeddingsModel;
 use Symfony\AI\Platform\Bridge\Generic\ModelCatalog;
 use Symfony\AI\Platform\Bridge\Generic\PlatformFactory;
 use Symfony\AI\Platform\Capability;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
+use Symfony\AI\Store\Bridge\MariaDb\MysqliStore;
+use Symfony\AI\Store\Document\Loader\InMemoryLoader;
+use Symfony\AI\Store\Document\Metadata;
+use Symfony\AI\Store\Document\TextDocument;
+use Symfony\AI\Store\Document\Vectorizer;
+use Symfony\AI\Store\Indexer;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Uid\Uuid;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\PropagateResponseException;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
@@ -27,6 +39,7 @@ use TYPO3\CMS\Reactions\Model\ReactionInstruction;
 use TYPO3\CMS\Reactions\Reaction\ReactionInterface;
 
 use Undkonsorten\Easychat\Domain\Repository\SessionRepository;
+use Undkonsorten\Easychat\Factories\StoreFactory;
 
 class ChatReaction implements ReactionInterface
 {
@@ -35,7 +48,7 @@ class ChatReaction implements ReactionInterface
         private readonly StreamFactoryInterface   $streamFactory,
         private readonly ConnectionPool           $connectionPool,
         private readonly SessionRepository        $sessionRepository,
-        private readonly PersistenceManager                $persistenceManager,
+        private readonly PersistenceManager       $persistenceManager,
         private readonly SerializerInterface      $serializer = new Serializer([
             new ArrayDenormalizer(),
             new MessageNormalizer(),
@@ -75,6 +88,7 @@ class ChatReaction implements ReactionInterface
 
     /**
      * @inheritDoc
+     * @throws \Exception
      */
     public function react(ServerRequestInterface $request, array $payload, ReactionInstruction $reaction): ResponseInterface
     {
@@ -92,7 +106,6 @@ class ChatReaction implements ReactionInterface
             $result = $this->jsonResponse(['error' => "No configuration given."], 400);
             throw new PropagateResponseException($result, 4236347612);
         }
-
         $configuration = $this->connectionPool
             ->getConnectionForTable(self::CONFIGURATION_TABLE_NAME)
             ->select(
@@ -115,9 +128,44 @@ class ChatReaction implements ReactionInterface
                 ],
             ],
         ]);
-
         $platform = PlatformFactory::create($configuration['url'], $configuration['api_key'], HttpClient::create(), $modelCatalog);
-        $agent = new Agent($platform, $configuration['model']);
+
+        //**@todo this is just example code and need to be put into some indexer */
+        if($configuration['vector_db'] && $configuration['vector_db'] != 'none') {
+            $store = StoreFactory::create(
+                $configuration['vector_db'],
+                $configuration['vector_db_host'].':'.$configuration['vector_db_port'],
+                $configuration['vector_db_api_key'],
+                $configuration['vector_db_name'],
+            );
+            /*$documents = [];
+            $documents[] = new TextDocument(
+                id: Uuid::v4(),
+                content: 'Title: Herr der Ringe \PHP_EOL Director: Perter Jakson \PHP_EOL Description: Karasse Filem',
+                metadata: new Metadata(['SOmer' => 'thing']),
+            );*/
+            $store->setup();
+            $modelCatalog = new ModelCatalog([
+                $configuration['vector_db_embeddings_model'] => [
+                    'class' => EmbeddingsModel::class,
+                    'capabilities' => [Capability::INPUT_MULTIPLE],
+                ],
+            ]);
+            $embeddingPlatform = PlatformFactory::create($configuration['url'], $configuration['api_key'], HttpClient::create(),$modelCatalog);
+            $vectorizer = new Vectorizer($embeddingPlatform, $configuration['vector_db_embeddings_model']);
+            #$indexer = new Indexer(new InMemoryLoader($documents), $vectorizer, $store);
+            #$indexer->index($documents);
+
+            $similaritySearch = new SimilaritySearch($vectorizer, $store);
+            $toolbox = new Toolbox([$similaritySearch]);
+            $processor = new AgentProcessor($toolbox);
+            $agent = new Agent($platform, $configuration['model'], [$processor], [$processor]);
+        }else{
+            $agent = new Agent($platform, $configuration['model']);
+        }
+
+
+
         $this->sessionRepository->setup(['sessionId' => $request->getCookieParams()[self::COOKIE_NAME]]);
         $chat = new Chat($agent, $this->sessionRepository);
 

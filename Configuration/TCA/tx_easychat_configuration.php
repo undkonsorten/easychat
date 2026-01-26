@@ -24,7 +24,7 @@ return [
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg'
     ],
     'types' => [
-        '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,name,model,url,api_key,system_message,vector_db,vector_db_host,vector_db_port,vector_db_name,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
+        '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,name,model,url,api_key,system_message,vector_db,vector_db_host,vector_db_port,vector_db_name,vector_db_api_key,vector_db_embeddings_model,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
     ],
     'palettes' => [
         '1' => ['showitem' => ''],
@@ -127,6 +127,10 @@ return [
                         'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db.redis',
                         'value' => 'redis',
                     ],
+                    [
+                        'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db.qdrant',
+                        'value' => 'qdrant',
+                    ],
                 ],
             ],
         ],
@@ -166,6 +170,42 @@ return [
                 'AND' => [
                     'FIELD:vector_db:!=:none',
                     'REC:NEW:false',
+                ]
+            ],
+            'config' => [
+                'type' => 'input',
+                'size' => 30,
+                'eval' => 'trim',
+                'required' => true
+            ],
+        ],
+        'vector_db_api_key' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_api_key',
+            'displayCond' => [
+                'AND' => [
+                    'FIELD:vector_db:!=:none',
+                    'REC:NEW:false',
+                    'OR' => [
+                        'FIELD:vector_db:=:qdrant',
+                    ]
+                ]
+            ],
+            'config' => [
+                'type' => 'input',
+                'size' => 30,
+                'eval' => 'trim',
+                'required' => true
+            ],
+        ],
+        'vector_db_embeddings_model' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_embeddings_model',
+            'displayCond' => [
+                'AND' => [
+                    'FIELD:vector_db:!=:none',
+                    'REC:NEW:false',
+                    'OR' => [
+                        'FIELD:vector_db:=:qdrant',
+                    ]
                 ]
             ],
             'config' => [

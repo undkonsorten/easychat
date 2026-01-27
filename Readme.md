@@ -37,69 +37,83 @@ EasyChat is **focused on privacy** and data protection, since all chat conversio
 
 ---
 
-## 🛠️ Setup guide (4 Steps)
+## 🛠️ Setup guide (5 Steps)
 
-### Install the TYPO3 Extension (Step 1)
+### 1. Install the TYPO3 Extension
 
-Install the *TYPO3 ChatBot Extension "EasyChat"* via [composer](https://getcomposer.org/doc/):
+Install the **TYPO3 ChatBot Extension _EasyChat_** via [composer](https://getcomposer.org/doc/):
 
 ```console
 composer require undkonsorten/easychat
 ```
 
-After installation a **database compare** is necessary to create new tables.
+After installation a **database compare** is necessary (via [Install Tool](https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ApiOverview/Database/DatabaseUpgrade/Index.html#database-upgrade) or [TYPO3 Console](https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ApiOverview/CommandControllers/ListCommands.html#console-command-extension-setup)) to create new tables.
 
-### Configure the LLM provider (Step 2)
+### 2. Configure the LLM provider (Step 2)
 
 Now you need to connect TYPO3 to your LLM's provider via API.
 Create a new database record "Configuration" in TYPO3.
 
-![Screenshot: Add new Configuration record](Documentation/Assets/Configuration-New-Database-Record.png)
+<img src="Documentation/Assets/Configuration-New-Database-Record.png" alt="Screenshot: Add new Configuration record" style="box-shadow:0 0 4px rgba(0,0,0,.3)" />
 
-<span style="width: 30%; margin-block-start: 1em; float: right; display: block">![Screenshot: EasyChat backend Module](Documentation/Assets/LLM-Configuration.png)
-_Screenshot: Configuration of LLM an vector database connections ([enlarge image](Documentation/Assets/LLM-Configuration.png))_
-</span>
+Then fill out the fields of the *Configuration record*.
 
-Then Fill out the fields of the *Configuration record*. Here Examples for:
+![Screenshot: EasyChat backend Module](Documentation/Assets/LLM-Configuration.png)
 
-* **mittwald** LLM Hosting
+#### Sample configurations for you LLM
+
+* **Mistral** (Free plan available | [How to get an API key?](Documentation/How-to-get-API-Keys.md))
+    * Name:  `Mistral (mistral-tiny)`
+    * Model (of the LLM): `mistral-tiny`
+    * URL (of the API endpoint): `https://api.mistral.ai`
+    * API Key: `your-api-key-abc123xyz-...`
+    * System Message (Promt): `You are a support chatbot ...`
+
+
+* **OpenAI / ChatGPT** (Payed plan only | [How to get an API key?](Documentation/How-to-get-API-Keys.md))
+    * Name:  `Chatbot via OpenAI (gpt-4o-mini)`
+    * Model (of the LLM): `gpt-4o-mini`
+    * URL (of the API endpoint): `https://api.openai.com`
+    * API Key: `your-api-key-abc123xyz-...`
+    * System Message (Promt): `You are a support chatbot ...`
+
+
+* **mittwald** (Payed plan | [How to get an API key?](Documentation/How-to-get-API-Keys.md))
     * Name:  `Support Chatbot via Mittwald (gpt-oss)`
     * URL (of the API endpoint): `https://llm.aihosting.mittwald.de`
     * Model (of the LLM): `gpt-oss-120b`
     * API Key: `abc123xyz...`
-    * System Message (Promt): `You are a support chatbot for the website www.example.com. Be friendly. Answer short.`
-    * Vector database: `none` / `Redis`
-    * Host (of vector database)
-    * Port (of vector database)
-    * Name (of vector dataase)
+    * System Message (Promt): `You are a support chatbot ...`
 
+### 3. Setup the TYPO3 Reaction
 
-* **Gemini (Google) API**
-    * Name:  `Gemini Support Chatbot`
-    * URL (of the API endpoint): `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=YOUR_API_KEY"`
-    * Model (of the LLM): `gemini-1.5-flash`
-    * Api key (of your LLM provider): [generate here](https://aistudio.google.com/api-keys)
-    * System Promt: `You are a support chatbot for the website www.example.com`
+A **TYPO3 Reaction** needs to be created as an endpoint for the chatbot frontend and TYPO3.
+The reaction serves as a connector/endpoint between the chat frontend and TYPO3.
 
-Currently (Jan 2026) you can get a free plan API testing here:
-* [Mistral](https://console.mistral.ai/)
-* [Google AI Studio](https://aistudio.google.com/)
-* [HugginFace]
-* [Grog](https://console.groq.com/)
-* Cohere
+![Screenshot: Reaction for EasyChat](Documentation/Assets/Reaction.png)
 
-OpenAi (ChatGpt) and Antrophic (Claude) offen only payed plans.
+* Create a new reaction with the *Reaction Type* `Reaction for easychat`.
+* Be sure to *copy the generated secret*
+* Chose the before created *chat configuration*
 
-There are also webhosting providers in Germany with AI API endpoints. We are testing [mittwald](https://www.mittwald.de/mstudio/ai-hosting) at the moment (Jan 2026).
+After sucessfully creating the reaction you will see the following interface.
 
-### Setup the TYPO3 Reaction (Step 3)
+![Screenshot: Reaction List](Documentation/Assets/Reactions.png)
 
-A TYPO3 Reaction needs to be created as an endpoint for the chatbot frontend and TYPO3.
+Now also *copy the reaction URL* (like `https://my-domain.com/typo3/reaction/afce5efb-861e-4e0e-8a8b-d159f194670d`)
 
-### Setup the Content Element (Step 4)
+### 4. Setup the Content Element
 
-Create a new content element "Chatbot". Connect the content Element to the reaction.
-Fill the fields.
+* Last but not least you need to setup a *content element for the chatbot*.
+* Be sure to have you *Reaction URL and secret* available.
+
+* Open a TYPO3 page
+* Add/create a new content element "Chatbot".
+* Connect the content Element to the reaction.
+
+![Screenshot: Content Element EasyChat](Documentation/Assets/Content-Element.png)
+
+**YOU ARE DONE!**
 
 ----
 
@@ -134,7 +148,12 @@ Steps:
 | 1 Year and 2 Months  | P1Y2M           |
 
 
+## Theming Templates
 
+You can add your own Templates, CSS files etc via
+
+plugin.tx_easychat.view.partialRootPaths.10 = EXT:my-sitepackage/Resources/Private/_Default/Easychat/Partials/
+plugin.tx_easychat.view.templateRootPaths.10 = EXT:my-sitepackage/Resources/Private/_Default/Easychat/Templates/
 
 ---
 
@@ -145,5 +164,13 @@ Steps:
 
 ### Planned Featues
 
-* website scraping for the knowledge base
+* website scraping for the knowledge base (via vector database)
 * connector to Vector database (Chroma) as a knowledge base for the chatbot
+
+
+### How to Create an API Key
+
+## ChatGTP / OpenAI
+
+- Login to [platform.openai.com](https://platform.openai.com/settings/organization/api-keys)
+-

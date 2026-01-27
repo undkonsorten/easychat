@@ -138,13 +138,6 @@ Steps:
 
 ---
 
-## Known Problems
-
-### TYPO3 12 Compatibility
-
-If you want to install EasyChat with TYPO 12.4,
-you need to remove the package `typo3/cms-install` due to composer conflicts.
-
 ## To Do
 
 * Documentation

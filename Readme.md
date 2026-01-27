@@ -37,7 +37,7 @@ EasyChat is **focused on privacy** and data protection, since all chat conversio
 
 ---
 
-## Setup guide (4 Steps)
+## 🛠️ Setup guide (4 Steps)
 
 ### Install the TYPO3 Extension (Step 1)
 
@@ -47,18 +47,20 @@ Install the *TYPO3 ChatBot Extension "EasyChat"* via [composer](https://getcompo
 composer require undkonsorten/easychat
 ```
 
-After installation a database compare is necessary to create new tables.
+After installation a **database compare** is necessary to create new tables.
 
 ### Configure the LLM provider (Step 2)
 
-Now you need to connect TYPO3 to your LLM's provider via API. Create a new record "Configuration" in TYPO3.
+Now you need to connect TYPO3 to your LLM's provider via API.
+Create a new database record "Configuration" in TYPO3.
 
+![Screenshot: Add new Configuration record](Documentation/Assets/Configuration-New-Database-Record.png)
 
 <span style="width: 30%; margin-block-start: 1em; float: right; display: block">![Screenshot: EasyChat backend Module](Documentation/Assets/LLM-Configuration.png)
 _Screenshot: Configuration of LLM an vector database connections ([enlarge image](Documentation/Assets/LLM-Configuration.png))_
 </span>
 
-Fill out the fields of the *Configuration record*. Here Examples for:
+Then Fill out the fields of the *Configuration record*. Here Examples for:
 
 * **mittwald** LLM Hosting
     * Name:  `Support Chatbot via Mittwald (gpt-oss)`

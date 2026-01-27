@@ -122,8 +122,6 @@ class ChatReaction implements ReactionInterface
                     Capability::INPUT_MESSAGES,
                     Capability::OUTPUT_TEXT,
                     Capability::OUTPUT_STREAMING,
-                    Capability::OUTPUT_STRUCTURED,
-                    Capability::INPUT_IMAGE,
                     Capability::TOOL_CALLING,
                 ],
             ],

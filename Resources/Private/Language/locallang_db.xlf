@@ -20,7 +20,7 @@
 				<source>Placeholder</source>
 			</trans-unit>
 			<trans-unit id="flexform.tab.general.enableDataProtectionConsent">
-				<source>Enable data protection consent</source>
+				<source>Choose between different consent, or deactivate</source>
 			</trans-unit>
 			<trans-unit id="flexform.tab.general.dataProtectionConsentText">
 				<source>Text</source>
@@ -31,6 +31,16 @@
 			<trans-unit id="flexform.tab.general.dataProtectionConsentButtonNo">
 				<source>No</source>
 			</trans-unit>
+			<trans-unit id="flexform.tab.general.enableDataProtectionConsent.withConsent">
+				<source>Cookie with internal consent</source>
+			</trans-unit>
+			<trans-unit id="flexform.tab.general.enableDataProtectionConsent.withoutConsent">
+				<source>Cookie without consent</source>
+			</trans-unit>
+			<trans-unit id="flexform.tab.general.enableDataProtectionConsent.withExternalConsent">
+				<source>Cookie with external consent</source>
+			</trans-unit>
+
 			<trans-unit id="tx_easychat_configuration">
 				<source>Configuration</source>
 			</trans-unit>

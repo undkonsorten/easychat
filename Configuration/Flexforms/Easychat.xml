@@ -33,7 +33,22 @@
                         <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.enableDataProtectionConsent</label>
                         <onChange>reload</onChange>
                         <config>
-                            <type>check</type>
+                            <type>select</type>
+                            <renderType>selectSingle</renderType>
+                            <items type="array">
+                                <numIndex index="0" type="array">
+                                    <numIndex index="0">LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.enableDataProtectionConsent.withConsent</numIndex>
+                                    <numIndex index="1">consent</numIndex>
+                                </numIndex>
+                                <numIndex index="1" type="array">
+                                    <numIndex index="0">LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.enableDataProtectionConsent.withoutConsent</numIndex>
+                                    <numIndex index="1">without</numIndex>
+                                </numIndex>
+                                <numIndex index="3" type="array">
+                                    <numIndex index="0">LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.enableDataProtectionConsent.withExternalConsent</numIndex>
+                                    <numIndex index="1">external</numIndex>
+                                </numIndex>
+                            </items>
                         </config>
                     </settings.enableDataProtectionConsent>
                     <settings.dataProtectionConsentText>
@@ -42,21 +57,21 @@
                             <type>text</type>
                             <enableRichtext>true</enableRichtext>
                         </config>
-                        <displayCond>FIELD:settings.enableDataProtectionConsent:=:1</displayCond>
+                        <displayCond>FIELD:settings.enableDataProtectionConsent:=:consent</displayCond>
                     </settings.dataProtectionConsentText>
                     <settings.dataProtectionConsentButtonYes>
                         <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.dataProtectionConsentButtonYes</label>
                         <config>
                             <type>input</type>
                         </config>
-                        <displayCond>FIELD:settings.enableDataProtectionConsent:=:1</displayCond>
+                        <displayCond>FIELD:settings.enableDataProtectionConsent:=:consent</displayCond>
                     </settings.dataProtectionConsentButtonYes>
                     <settings.dataProtectionConsentButtonNo>
                         <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.dataProtectionConsentButtonNo</label>
                         <config>
                             <type>input</type>
                         </config>
-                        <displayCond>FIELD:settings.enableDataProtectionConsent:=:1</displayCond>
+                        <displayCond>FIELD:settings.enableDataProtectionConsent:=:consent</displayCond>
                     </settings.dataProtectionConsentButtonNo>
                 </el>
             </ROOT>

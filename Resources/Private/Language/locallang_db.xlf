@@ -40,7 +40,18 @@
 			<trans-unit id="flexform.tab.general.enableDataProtectionConsent.withExternalConsent">
 				<source>Cookie with external consent</source>
 			</trans-unit>
-
+			<trans-unit id="tx_easychat_configuration.palette.llm.label">
+				<source>LLM Settings</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.palette.llm.description">
+				<source>Configure your preferred llm service, model and system prompt.</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.palette.vector.label">
+				<source>Vector DB</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.palette.vector.description">
+				<source>Configure your preferred vector database.</source>
+			</trans-unit>
 			<trans-unit id="tx_easychat_configuration">
 				<source>Configuration</source>
 			</trans-unit>

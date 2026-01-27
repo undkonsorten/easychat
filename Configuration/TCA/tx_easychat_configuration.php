@@ -24,10 +24,20 @@ return [
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg'
     ],
     'types' => [
-        '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,name,model,url,api_key,system_message,vector_db,vector_db_host,vector_db_port,vector_db_name,vector_db_api_key,vector_db_embeddings_model,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
+        '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,name,-div--;palette,
+                    --palette--;;llm,-div--;palette,--palette--;;vector,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
     ],
     'palettes' => [
-        '1' => ['showitem' => ''],
+        'llm' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.llm.label',
+            'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.llm.description',
+            'showitem' => 'model,url,api_key,--linebreak--,system_message'
+        ],
+        'vector' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.label',
+            'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.description',
+            'showitem' => 'vector_db,vector_db_host,vector_db_port,vector_db_name,vector_db_api_key,vector_db_embeddings_model'
+        ],
     ],
     'columns' => [
         'hidden' => [
@@ -214,6 +224,15 @@ return [
                 'eval' => 'trim',
                 'required' => true
             ],
+        ],
+        'llm' => [
+            'label' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:palette.frames',
+            'showitem' => '
+                layout;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:layout_formlabel,
+                model;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:frame_class_formlabel,
+                url;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:space_before_class_formlabel,
+                apiKey;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:space_after_class_formlabel,
+            ',
         ],
     ],
 ];

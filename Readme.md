@@ -1,27 +1,19 @@
-# TYPO3 Chatbot: EasyChat
+# EasyChat Chatbot (TYPO3 Extension)
 
 ----
 
-![TYPO Version 12](Documentation/Badges/TYPO3-12.svg) ![TYPO Version 12](Documentation/Badges/TYPO3-13.svg)
+![TYPO Version 12](Documentation/Badges/TYPO3-12.png) ![TYPO Version 12](Documentation/Badges/TYPO3-13.png)
 
 ----
 
 <span style="float:right;margin-inline-start: 1em">![EasyChat Logo (Icon)](Documentation/Assets/EasyChat-Icon.png)</span>
-**EasyChat** is a lightweight open source chatbot für TYPO3 websites without third party chat tools.
+**EasyChat** is a lightweight open source chatbot für [TYPO3](https://typo3.org) websites without third party chat tools.
 
-EasyChat is focused on privacy and data protection, since all chat conversions are only stored in your TYPO3 database.
--icon
+All you need is TYPO3 and an LLM endpoint.
 
-## Table of Contents
-- [Features](#-features)
-- [What's New](#-whats-new)
-- [Certification](#-certification)
-- [How to Build](#-how-to-build)
-- [Documentation](#-documentation)
-- [Feedback and Contributions](#-feedback-and-contributions)
-- [License](#-license)
-- [Contacts](#%EF%B8%8F-contacts)
+EasyChat is **focused on privacy** and data protection, since all chat conversions are only stored in your TYPO3 database.
 
+----
 
 ## 🚀 Features
 
@@ -43,6 +35,7 @@ EasyChat is focused on privacy and data protection, since all chat conversions a
 
 * ⛁ **Knoledge base** connector (to vector database)
 
+---
 
 ## Setup guide (4 Steps)
 
@@ -53,7 +46,7 @@ Install the *TYPO3 ChatBot Extension "EasyChat"* via [composer](https://getcompo
 ```console
 composer require undkonsorten/easychat
 ```
-![TYPO3 Version 12](https://flat.badgen.net/#badge/TYPO3/12/orange/?icon=https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/typo3-cms-icon.svg)
+
 After installation a database compare is necessary to create new tables.
 
 ### Configure the LLM provider (Step 2)
@@ -147,7 +140,7 @@ Steps:
 
 ### TYPO3 12 Compatibility
 
-If you went to install EasyChat with TYPO 12.4,
+If you want to install EasyChat with TYPO 12.4,
 you need to remove the package `typo3/cms-install` due to composer conflicts.
 
 ## To Do

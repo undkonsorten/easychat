@@ -54,7 +54,8 @@ After installation a **database compare** is necessary (via [Install Tool](https
 Now you need to connect TYPO3 to your LLM's provider via API.
 Create a new database record "Configuration" in TYPO3.
 
-<img src="Documentation/Assets/Configuration-New-Database-Record.png" alt="Screenshot: Add new Configuration record" style="box-shadow:0 0 4px rgba(0,0,0,.3)" />
+![Screenshot: Screenshot: Add new Configuration record](Documentation/Assets/Configuration-New-Database-Record.png)
+
 
 Then fill out the fields of the *Configuration record*.
 

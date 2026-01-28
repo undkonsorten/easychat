@@ -58,8 +58,9 @@ Create a new database record "Configuration" in TYPO3.
 
 
 Then fill out the fields of the *Configuration record*.
-
-![Screenshot: EasyChat backend Module](Documentation/Assets/LLM-Configuration.png)
+<span style="float:right; margin-inline-start: 1.5rem">
+[![Screenshot: EasyChat backend Module](Documentation/Assets/Configuration_Thumb.png)](Documentation/Assets/Configuration.png)
+</span>
 
 #### Sample configurations for you LLM
 

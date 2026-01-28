@@ -114,18 +114,21 @@ Now also *copy the reaction URL* (like `https://my-domain.com/typo3/reaction/afc
 
 [![Click to enlarge: Content Element EasyChat](Documentation/Assets/Content-Element_Thumb.png)]((Documentation/Assets/Content-Element.png))
 
-**YOU ARE DONE!**
+### 👏 YOU ✨ ARE ✨ DONE!!! 👊 CONGRATULATIONS 🎉
 
 ----
 
-## Backend module for chat session logs
+
+## 📋 Backend module for chat session logs
 
 With the **EasyChat backend module** you can watch, review and delete single chat session.
 
 [![Click to enlarge: EasyChat backend Module](Documentation/Assets/Backend-Module_Thumb.png)](Documentation/Assets/Backend-Module.png)
 
+----
 
-## Automated cleaner task for deleting old chat session
+
+## 🗑️ Automated cleaner task for deleting old chat session
 
 For data protection we recommend to setup the *cleaner task* in order to delete old chat sessions.
 
@@ -148,29 +151,52 @@ Steps:
 | 1 Year and 2 Months  | P1Y2M           |
 
 
-## Theming Templates
+----
 
-You can add your own Templates, CSS files etc via
 
-plugin.tx_easychat.view.partialRootPaths.10 = EXT:my-sitepackage/Resources/Private/_Default/Easychat/Partials/
-plugin.tx_easychat.view.templateRootPaths.10 = EXT:my-sitepackage/Resources/Private/_Default/Easychat/Templates/
+## 💐Theming & Templates
+
+You can add your own templates, js and css files with the following TypoScript configuration:
+
+```typoscript
+plugin.tx_easychat.view {
+    partialRootPaths.10 = EXT:my-sitepackage/Resources/Private/_Default/Easychat/Partials/
+    templateRootPaths.10 = EXT:my-sitepackage/Resources/Private/_Default/Easychat/Templates/
+}
+```
 
 ---
 
-## To Do
+## 🙏 Credits
+
+This TYPO3 Extension was build by the Berlin based digtal agency [undkonsorten](https://undkonsorten.com).
+* Eike Starkmann (TYPO3 & Inspiration)
+* Lars Hayer (Frontend, Theming)
+* Thomas Alboth (Product Owner & Documentation)
+* Jule Nott (UI Design)
+
+---
+
+## 📧 Contact
+
+Questions? Suggestions? Support needed? Feel free to [contact us](https://undkonsorten.com/kontakt).
+
+---
+
+## ⚖️ License
+
+[GNU General Public License, version 2](http://www.gnu.org/licenses/gpl-2.0.html)
+
+---
+
+## 👩🏻‍ To Do
 
 * Documentation
   * Theming DeepChat
 
-### Planned Featues
+---
 
-* website scraping for the knowledge base (via vector database)
-* connector to Vector database (Chroma) as a knowledge base for the chatbot
+## 🚀 Planned Featues
 
-
-### How to Create an API Key
-
-## ChatGTP / OpenAI
-
-- Login to [platform.openai.com](https://platform.openai.com/settings/organization/api-keys)
--
+* Website scraping/indexing via TYPO3 for the knowledge base (via vector database)
+* Impoved connector to vector database as a knowledge base for the chatbot

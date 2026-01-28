@@ -49,7 +49,7 @@ composer require undkonsorten/easychat
 
 After installation a **database compare** is necessary (via [Install Tool](https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ApiOverview/Database/DatabaseUpgrade/Index.html#database-upgrade) or [TYPO3 Console](https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ApiOverview/CommandControllers/ListCommands.html#console-command-extension-setup)) to create new tables.
 
-### 2. Configure the LLM provider (Step 2)
+### 2. Configure the LLM provider
 
 Now you need to connect TYPO3 to your LLM's provider via API.
 Create a new database record "Configuration" in TYPO3.
@@ -88,24 +88,25 @@ Then fill out the fields of the *Configuration record*.
 
 ### 3. Setup the TYPO3 Reaction
 
-A **TYPO3 Reaction** needs to be created as an endpoint for the chatbot frontend and TYPO3.
-The reaction serves as a connector/endpoint between the chat frontend and TYPO3.
+A **TYPO3 Reaction** needs to be created.
+The reaction serves as a connector (aka endpoint) between the chat frontend and TYPO3.
 
 [![Click to enlarge: Reaction for EasyChat](Documentation/Assets/Reaction_Thumb.png)](Documentation/Assets/Reaction.png)
 
 * Create a new reaction with the *Reaction Type* `Reaction for easychat`.
-* Be sure to *copy the generated secret*
-* Chose the before created *chat configuration*
+* Be sure to *copy the generated secret* before saving
+* Chose one of the before created *EasyChat configuration record*
 
 After sucessfully creating the reaction you will see the following interface.
 
 [![Click to enlarge: Reaction List](Documentation/Assets/Reactions_Thumb.png)](Documentation/Assets/Reactions.png)
 
-Now also *copy the reaction URL* (like `https://my-domain.com/typo3/reaction/afce5efb-861e-4e0e-8a8b-d159f194670d`)
+Now also *copy the reaction URL* (like `https://my-domain.com/typo3/reaction/afce5efb-861e-4e0e-8a8b-d159f194670d`).
+You will need it in step 4.
 
 ### 4. Setup the Content Element
 
-* Last but not least you need to setup a *content element for the chatbot*.
+Last but not least you need to setup a *content element for the chatbot*.
 * Be sure to have you *Reaction URL and secret* available.
 
 * Open a TYPO3 page
@@ -114,12 +115,12 @@ Now also *copy the reaction URL* (like `https://my-domain.com/typo3/reaction/afc
 
 [![Click to enlarge: Content Element EasyChat](Documentation/Assets/Content-Element_Thumb.png)]((Documentation/Assets/Content-Element.png))
 
-### 👏 YOU ✨ ARE ✨ DONE!!! 👊 CONGRATULATIONS 🎉
+### ✨ YOU ARE DONE!!! 👊 CONGRATULATIONS 🎉
 
 ----
 
 
-## 📋 Backend module for chat session logs
+## Backend module for chat session logs
 
 With the **EasyChat backend module** you can watch, review and delete single chat session.
 
@@ -128,9 +129,9 @@ With the **EasyChat backend module** you can watch, review and delete single cha
 ----
 
 
-## 🗑️ Automated cleaner task for deleting old chat session
+## Automated cleaner task for deleting old chat session
 
-For data protection we recommend to setup the *cleaner task* in order to delete old chat sessions.
+For data protection we recommend to setup the 🗑 *cleaner task* in order to delete old chat sessions.
 
 [![Click to enlarge: EasyChat backend Module](Documentation/Assets/Scheduler-Task_Thumb.png)](Documentation/Assets/Scheduler-Task.png)
 
@@ -154,9 +155,9 @@ Steps:
 ----
 
 
-## 💐Theming & Templates
+## Theming & Templates
 
-You can add your own templates, js and css files with the following TypoScript configuration:
+You can add your own beautiful 💐 templates, js and css files with the following TypoScript configuration:
 
 ```typoscript
 plugin.tx_easychat.view {
@@ -167,36 +168,37 @@ plugin.tx_easychat.view {
 
 ---
 
-## 🙏 Credits
+## Credits
 
-This TYPO3 Extension was build by the Berlin based digtal agency [undkonsorten](https://undkonsorten.com).
+🙏 This TYPO3 Extension was build by the Berlin based digtal agency [undkonsorten](https://undkonsorten.com).
 * Eike Starkmann (TYPO3 & Inspiration)
 * Lars Hayer (Frontend, Theming)
 * Thomas Alboth (Product Owner & Documentation)
 * Jule Nott (UI Design)
+* Felix Althaus & J. (Critical Thinking)
 
 ---
 
-## 📧 Contact
+## Contact
 
-Questions? Suggestions? Support needed? Feel free to [contact us](https://undkonsorten.com/kontakt).
+Questions? Suggestions? Support needed? Feel free to 📧 [contact us](https://undkonsorten.com/kontakt).
 
 ---
 
-## ⚖️ License
+## License
 
 [GNU General Public License, version 2](http://www.gnu.org/licenses/gpl-2.0.html)
 
 ---
 
-## 👩🏻‍ To Do
+## To Do
 
 * Documentation
   * Theming DeepChat
 
 ---
 
-## 🚀 Planned Featues
+## Planned Featues
 
 * Website scraping/indexing via TYPO3 for the knowledge base (via vector database)
 * Impoved connector to vector database as a knowledge base for the chatbot

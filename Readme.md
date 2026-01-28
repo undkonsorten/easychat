@@ -171,7 +171,7 @@ plugin.tx_easychat.view {
 ## Credits
 
 🙏 This TYPO3 Extension was build by the Berlin based digtal agency [undkonsorten](https://undkonsorten.com).
-* Eike Starkmann (TYPO3 & Inspiration)
+* Eike Starkmann (Product Owner & Inspirator, TYPO3 Development)
 * Lars Hayer (Frontend, Theming)
 * Thomas Alboth (Product Owner & Documentation)
 * Jule Nott (UI Design)

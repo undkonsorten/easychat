@@ -54,13 +54,12 @@ After installation a **database compare** is necessary (via [Install Tool](https
 Now you need to connect TYPO3 to your LLM's provider via API.
 Create a new database record "Configuration" in TYPO3.
 
-![Screenshot: Screenshot: Add new Configuration record](Documentation/Assets/Configuration-New-Database-Record.png)
+![Click to enlarge: Add new Configuration record](Documentation/Assets/Configuration-New-Database-Record.png)
 
 
 Then fill out the fields of the *Configuration record*.
-<span style="float:right; margin-inline-start: 1.5rem">
-[![Screenshot: EasyChat backend Module](Documentation/Assets/Configuration_Thumb.png)](Documentation/Assets/Configuration.png)
-</span>
+
+[![Click to enlarge: EasyChat backend Module](Documentation/Assets/Configuration_Thumb.png)](Documentation/Assets/Configuration.png)
 
 #### Sample configurations for you LLM
 
@@ -92,7 +91,7 @@ Then fill out the fields of the *Configuration record*.
 A **TYPO3 Reaction** needs to be created as an endpoint for the chatbot frontend and TYPO3.
 The reaction serves as a connector/endpoint between the chat frontend and TYPO3.
 
-![Screenshot: Reaction for EasyChat](Documentation/Assets/Reaction.png)
+[![Click to enlarge: Reaction for EasyChat](Documentation/Assets/Reaction_Thumb.png)](Documentation/Assets/Reaction.png)
 
 * Create a new reaction with the *Reaction Type* `Reaction for easychat`.
 * Be sure to *copy the generated secret*
@@ -100,7 +99,7 @@ The reaction serves as a connector/endpoint between the chat frontend and TYPO3.
 
 After sucessfully creating the reaction you will see the following interface.
 
-![Screenshot: Reaction List](Documentation/Assets/Reactions.png)
+[![Click to enlarge: Reaction List](Documentation/Assets/Reactions_Thumb.png)](Documentation/Assets/Reactions.png)
 
 Now also *copy the reaction URL* (like `https://my-domain.com/typo3/reaction/afce5efb-861e-4e0e-8a8b-d159f194670d`)
 
@@ -113,7 +112,7 @@ Now also *copy the reaction URL* (like `https://my-domain.com/typo3/reaction/afc
 * Add/create a new content element "Chatbot".
 * Connect the content Element to the reaction.
 
-![Screenshot: Content Element EasyChat](Documentation/Assets/Content-Element.png)
+[![Click to enlarge: Content Element EasyChat](Documentation/Assets/Content-Element_Thumb.png)]((Documentation/Assets/Content-Element.png))
 
 **YOU ARE DONE!**
 
@@ -123,15 +122,14 @@ Now also *copy the reaction URL* (like `https://my-domain.com/typo3/reaction/afc
 
 With the **EasyChat backend module** you can watch, review and delete single chat session.
 
-![Screenshot: EasyChat backend Module](Documentation/Assets/Backend-Module.png)
+[![Click to enlarge: EasyChat backend Module](Documentation/Assets/Backend-Module_Thumb.png)](Documentation/Assets/Backend-Module.png)
 
 
 ## Automated cleaner task for deleting old chat session
 
 For data protection we recommend to setup the *cleaner task* in order to delete old chat sessions.
 
-![Screenshot: EasyChat backend Module](Documentation/Assets/Scheduler-Task.png)
-
+[![Click to enlarge: EasyChat backend Module](Documentation/Assets/Scheduler-Task_Thumb.png)](Documentation/Assets/Scheduler-Task.png)
 
 Steps:
 * Choose the task `Execute console commands (scheduler)`

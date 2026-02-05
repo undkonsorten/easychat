@@ -1,0 +1,7 @@
+plugin.tx_easychat {
+  view {
+    templateRootPaths = {$plugin.tx_easychat.view.templateRootPath}
+    partialRootPaths=  {$plugin.tx_easychat.view.partialRootPath}
+    layoutRootPaths =  {$plugin.tx_easychat.view.layoutRootPath}
+  }
+}

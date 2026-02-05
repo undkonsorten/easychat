@@ -13,7 +13,7 @@
 
 <style>
 	:root {
-		--easychat-chatbot-width: 96vw;
+		--easychat-chatbot-width: 96vw;easy
 		--easychat-chatbot-max-width: 400px;
 		--easychat-shine-degree: 120deg;
 		--easychat-shine-color: rgba(255, 255, 255, 0.2);
@@ -34,8 +34,8 @@
 				</g>
 			</svg>
 		</button>
-		<b>Azubi-bot:</b><br>
-		Hast du Fragen zu deinen Anträgen? Stelle sie hier!
+		<b>Chatbot:</b><br>
+		Ask questions here
 	</div>
 
 	<div class="chatbot" hidden id="chatbot">
@@ -63,6 +63,7 @@
 				</div>
 			</div>
 
+			<f:variable name="styles" value="{f:render(partial: 'Styles.css')}"/>
 
 			<f:variable name="connect" value="{
 				url: settings.url,
@@ -76,9 +77,11 @@
 			<f:variable name="inputPlaceholder" value="{placeholder: {text: settings.placeholder}}"/>
 
 			<deep-chat id="chat-assistant"
-								 connect="{connect->f:format.json()}"
-								 textInput="{inputPlaceholder->f:format.json()}"
-								 hidden
+					   connect="{connect->f:format.json()}"
+					   textInput="{inputPlaceholder->f:format.json()}"
+					   auxiliaryStyle="{styles}"
+					   style="border: none; width: 100%; height: 100%;"
+					   hidden
 			></deep-chat>
 
 		</div>
@@ -112,13 +115,10 @@
 		<div class="chatbot__logo"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
 			<rect width="40" height="40" rx="20" fill="white"/>
 			<rect width="40" height="40" rx="20" fill="white"/>
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M29.9973 24.5666C30.0069 23.4787 29.9877 23.0509 29.9896 22C29.9126 22.3005 29.8142 22.5908 29.6252 22.8418C29.4409 23.0866 29.2006 23.2872 28.9423 23.4516C28.1092 23.9824 27.1115 24.1722 26.1532 24.3504C24.9772 24.5687 23.7965 24.763 22.618 24.9695C21.4243 25.1786 20.2306 25.3875 19.0367 25.5961C18.5236 25.6858 18.01 25.7753 17.4967 25.8651L11 26.9989V34C11 34 25.7792 31.6247 25.7999 31.6215C26.7149 31.4744 27.6596 31.2806 28.4885 30.8495C29.0615 30.5518 29.4906 30.2812 29.7366 29.6876C30.0133 29.02 30.0018 27.9685 29.9973 27.2674C29.9911 26.3295 29.9909 25.2766 29.9973 24.5666Z" fill="#005CA9"/>
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M14.5919 15.5131C14.7956 15.4817 14.9998 15.4519 15.2039 15.4224C16.3451 15.2568 17.4859 15.0895 18.6262 14.9205C19.592 14.7774 20.5582 14.6349 21.5243 14.4924C22.5129 14.3468 23.5015 14.2014 24.4902 14.0561C25.379 13.9253 26.268 13.795 27.1568 13.6646C27.8237 13.5669 28.4904 13.4693 29.1573 13.3716C29.2117 13.3635 30 13.2667 30 13.2482L29.9959 6C29.9959 6 17.5812 8.01854 13.0522 8.78778C11.9507 9.01051 11 9.62306 11 11.9724V18C11 17.2548 11.476 16.5388 12.1139 16.1817C12.4185 16.0112 12.7976 15.9029 13.1356 15.8135C13.6286 15.6825 14.0873 15.5912 14.5919 15.5131Z" fill="#005CA9"/>
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M24.673 18.2258C22.3388 17.057 22.3352 17.0447 20.0155 15.8596C19.933 15.8174 18.7266 15.1902 18.3549 15C17.3896 15.1292 16.6983 15.2226 15.7331 15.3533C15.1434 15.4332 14.5504 15.4954 13.9648 15.5987C13.708 15.6441 13.453 15.6963 13.1998 15.7551C12.8534 15.8358 12.4873 15.9311 12.171 16.0814C11.744 16.2846 11.4221 16.6005 11.2111 16.9914C11.0073 17.3683 10.9459 17.8038 11.0495 18.2131C11.0578 18.2461 11.0674 18.2791 11.0779 18.3119C11.0804 18.3203 11.0222 17.9934 11.0853 18.3374C11.1439 18.6577 11.446 18.8971 11.7216 19.1067C12.4697 19.6751 13.3507 20.1097 14.1801 20.5734C14.4428 20.72 14.7056 20.8665 14.9684 21.0133C16.3406 21.7792 17.3651 22.3516 18.8731 23.1349C20.2676 23.8592 22.034 24.7393 22.5462 25C23.0661 24.9174 23.0956 24.9128 23.6153 24.8302C24.7811 24.6448 25.1416 24.6043 26.3061 24.4088C26.903 24.3085 27.2701 24.232 27.6544 24.1245C28.259 23.955 28.3958 23.9023 28.9294 23.6286C29.2935 23.4418 29.6714 23.1437 29.8528 22.7764C29.8989 22.6833 29.9166 22.5589 29.9492 22.4613C30.0543 22.1467 30.0036 21.5599 29.729 21.1665C29.4201 20.7239 28.9652 20.4352 28.479 20.1681C28.0771 19.9471 27.6608 19.7445 27.2524 19.5332C26.4035 19.0944 25.5491 18.6648 24.6941 18.2363C24.6869 18.2329 24.6798 18.2294 24.673 18.2258Z" fill="#E3000F"/>
 		</svg></div>
-		<div class="chatbot__title">Fonds-Azubi-Bot</div>
+		<div class="chatbot__title">Chatbot title</div>
 		<f:if condition="{showEasychatToggle}">
-			<button class="easychat__toggle" aria-expanded="false" aria-controls="#chatbot">
+		    <button class="easychat__toggle" aria-expanded="false" aria-controls="#chatbot">
 				<svg width="13" height="8" viewBox="0 0 13 8" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<path d="M1.41406 1.41431L6.41406 6.41431" stroke="#FEF7EC" stroke-width="2" stroke-linecap="square"/>
 					<path d="M11.4141 1.41431L6.41406 6.41431" stroke="#FEF7EC" stroke-width="2" stroke-linecap="square"/>

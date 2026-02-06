@@ -33,7 +33,7 @@
 	<div class="chatbot" hidden id="chatbot">
 		<div class="chatbot__stage">
 
-			<f:render section="ChatbotHeader" arguments="{additionalAttributes: ' hidden', showEasychatToggle: 1}"/>
+			<f:render partial="ChatbotHeader" arguments="{additionalAttributes: ' hidden', showEasychatToggle: 1}"/>
 
 			<div class="chatbot__consent" hidden>
 				<div class="chatbot__image">
@@ -41,7 +41,7 @@
 				</div>
 
 				<div class="chatbot__content">
-					<f:render section="ChatbotHeader"/>
+					<f:render partial="ChatbotHeader"/>
 					<div class="chatbot__text">
 						<f:variable name="dataProtectionConsentTextLLL" value="{f:translate(key: 'easychat_dataProtectionConsentText')}" />
 						<f:format.html>{settings.dataProtectionConsentText ?: dataProtectionConsentTextLLL}</f:format.html>
@@ -102,30 +102,9 @@
 
 <f:asset.script type="module" priority="true" identifier="deepChat.bundle" src="EXT:easychat/Resources/Public/deepChat.bundle.js" />
 
-<f:comment>
-	!!Either set the script as "module" or place your code in a timeout in order to wait for the component to load
-</f:comment>
 <f:asset.script type="module" identifier="deepChat.config">
 	<f:render partial="Script.js"/>
 </f:asset.script>
-
-<f:section name="ChatbotHeader">
-	<div class="chatbot__header"{additionalAttributes}>
-		<div class="chatbot__logo"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-			<rect width="40" height="40" rx="20" fill="white"/>
-			<rect width="40" height="40" rx="20" fill="white"/>
-		</svg></div>
-		<div class="chatbot__title">Chatbot title</div>
-		<f:if condition="{showEasychatToggle}">
-		    <button class="easychat__toggle" aria-expanded="false" aria-controls="#chatbot">
-				<svg width="13" height="8" viewBox="0 0 13 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M1.41406 1.41431L6.41406 6.41431" stroke="#FEF7EC" stroke-width="2" stroke-linecap="square"/>
-					<path d="M11.4141 1.41431L6.41406 6.41431" stroke="#FEF7EC" stroke-width="2" stroke-linecap="square"/>
-				</svg>
-			</button>
-		</f:if>
-	</div>
-</f:section>
 </html>
 
 

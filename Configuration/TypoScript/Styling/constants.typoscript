@@ -1,12 +1,12 @@
 plugin.tx_easychat {
-  view {
-    # cat=easychat_main/file; type=string; label= Path to template root (FE)
-    templateRootPath = EXT:easychat/Resources/Private/Templates/Styling
+    view {
+        # cat=easychat_main/file; type=string; label= Path to template root (FE)
+        templateRootPath = EXT:easychat/Resources/Private/Templates/Styling
 
-    # cat=easychat_main/file; type=string; label= Path to template partials (FE)
+        # cat=easychat_main/file; type=string; label= Path to template partials (FE)
         partialRootPath = EXT:easychat/Resources/Private/Partials/Styling
 
-    # cat=easychat_main/file; type=string; label= Path to template layouts (FE)
-    layoutRootPath = EXT:easychat/Resources/Private/Layouts/Styling
-  }
+        # cat=easychat_main/file; type=string; label= Path to template layouts (FE)
+        layoutRootPath = EXT:easychat/Resources/Private/Layouts/Styling
+    }
 }

@@ -2,24 +2,17 @@
 			data-namespace-typo3-fluid="true"
 			lang="en">
 
-<f:flashMessages />
-
-<h1>Deep Chat</h1>
-<!-- Attributes can be set as strings either directly on the element (demo/textInput) or via a `setAttribute` method on its reference (introMessage).
-	When passing JSON objects make sure that they are first correctly stringified (use the following tool https://jsonlint.com/), functions assigned
-	to properties must not have external references and all regex values are properly escaped.
-	You can also pass values into the component via properties by using the element reference (history).
-	-->
+<f:asset.css identifier="easychat.styling" priority="true" href="EXT:easychat/Resources/Public/Css/Easychat.css"/>
 
 <style>
-	:root {
+	.easychat {
 		--easychat-chatbot-width: 96vw;
 		--easychat-chatbot-max-width: 400px;
+		--easychat-border-color: rgba(0,0,0,.3);
 		--easychat-shine-degree: 120deg;
 		--easychat-shine-color: rgba(255, 255, 255, 0.2);
 		--easychat-shine-effect: linear-gradient(var(--easychat-shine-degree), transparent, var(--easychat-shine-color), transparent);
 		--easychat-shine-transition: all #{$anim-speed}s ease-in-out;
-		--easychat-border-color: rgba(0,0,0,.3);
 	}
 </style>
 
@@ -27,15 +20,14 @@
 
 	<div class="easychat__nagscreen" hidden>
 		<button>
-			<span class="show-for-sr">Schließen</span>
+			<span class="show-for-sr">{f:translate(key: 'easychat_close')}</span>
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<g clip-path="url(#clip0_1505_4881)">
 					<path d="M12 22C6.477 22 2 17.523 2 12C2 6.477 6.477 2 12 2C17.523 2 22 6.477 22 12C22 17.523 17.523 22 12 22ZM12 10.586L9.172 7.757L7.757 9.172L10.586 12L7.757 14.828L9.172 16.243L12 13.414L14.828 16.243L16.243 14.828L13.414 12L16.243 9.172L14.828 7.757L12 10.586Z" fill="#fff"/>
 				</g>
 			</svg>
 		</button>
-		<b>Chatbot:</b><br>
-		Ask questions here
+		{f:translate(key: 'easychat_nagscreenMessage')}
 	</div>
 
 	<div class="chatbot" hidden id="chatbot">
@@ -50,15 +42,20 @@
 
 				<div class="chatbot__content">
 					<f:render section="ChatbotHeader"/>
-					<div class="chatbot__text"><f:format.html>{settings.dataProtectionConsentText}</f:format.html></div>
+					<div class="chatbot__text">
+						<f:variable name="dataProtectionConsentTextLLL" value="{f:translate(key: 'easychat_dataProtectionConsentText')}" />
+						<f:format.html>{settings.dataProtectionConsentText ?: dataProtectionConsentTextLLL}</f:format.html>
+					</div>
 				</div>
 
 				<div class="chatbot__buttons">
-					<button class="consent-button button tertiary">
-						{settings.dataProtectionConsentButtonYes}
+					<button class="consent-button chatbot__accept">
+						<f:variable name="dataProtectionConsentButtonYesLLL" value="{f:translate(key: 'easychat_dataProtectionConsentButtonYes')}"/>
+						{settings.dataProtectionConsentButtonYes ?: dataProtectionConsentButtonYesLLL}
 					</button>
-					<button class="consent-button button tertiary hollow easychat__toggle">
-						{settings.dataProtectionConsentButtonNo}
+					<button class="consent-button chatbot__deny easychat__toggle">
+						<f:variable name="dataProtectionConsentButtonNoLLL" value="{f:translate(key: 'easychat_dataProtectionConsentButtonNo')}"/>
+						{settings.dataProtectionConsentButtonNo ?: dataProtectionConsentButtonNoLLL}
 					</button>
 				</div>
 			</div>
@@ -74,11 +71,13 @@
 				}
 			}"/>
 
-			<f:variable name="inputPlaceholder" value="{placeholder: {text: settings.placeholder}}"/>
+			<f:variable name="placeholderLLL" value="{f:translate(key: 'easychat_placeholder')}"/>
+			<f:variable name="placeholder">{settings.placeholder ?: placeholderLLL}</f:variable>
+			<f:variable name="textInput" value="{placeholder: {text: placeholder}}"/>
 
 			<deep-chat id="chat-assistant"
 					   connect="{connect->f:format.json()}"
-					   textInput="{inputPlaceholder->f:format.json()}"
+					   textInput="{textInput->f:format.json()}"
 					   auxiliaryStyle="{styles}"
 					   style="border: none; width: 100%; height: 100%;"
 					   hidden
@@ -88,7 +87,7 @@
 	</div>
 
 	<p class="revoke" hidden>
-		<button class="revoke-button small">Zustimmung zur Nutzung des Assistenten widerrufen</button>
+		<button class="revoke-button small">{f:translate(key: 'easychat_dataProtectionConsentButtonRevoke')}</button>
 	</p>
 
 	<div class="easychat__home">

@@ -1,6 +1,12 @@
+<f:variable name="consentAcceptedMessageLLL" value="{f:translate(key: 'easychat_dataProtectionConsentAcceptedMessage')}"/>
+<f:variable name="introMessageLLL" value="{f:translate(key: 'easychat_introMessage')}"/>
+<f:variable name="introMessage">{settings.introMessage ?: introMessageLLL}</f:variable>
+
 const EASYCHAT_COOKIE_SESSION = 'easychat_session_id';
 const EASYCHAT_COOKIE_NAGSCREEN = 'easychat_nagscreen';
 const EASYCHAT_CONSENT_SETTING = '{settings.enableDataProtectionConsent}';
+const EASYCHAT_CONSENT_ACCEPTED = '{consentAcceptedMessageLLL}';
+const EASYCHAT_INTRO_MESSAGE  = `{introMessage}`;
 const easychat = document.querySelector('.easychat');
 const easychatNagscreen = easychat.querySelector('.easychat__nagscreen');
 const easychatToggles = easychat.querySelectorAll('.easychat__toggle');
@@ -64,7 +70,7 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
     deepchat.hidden = false;
     header.hidden = false;
 } else {
-    chatbot.querySelector('.chatbot__stage').innerHTML = `<div style="padding: 1rem;">Your cookie management needs to set a cookie named <b>easychat_session_id</b> to run the chatbot.</div>`;
+    chatbot.querySelector('.chatbot__stage').innerHTML = `<p style="background-color: yellow; padding: 0.5em 1em;">To run the chat assistant, your cookie management needs to set a cookie named <b>easychat_session_id</b>.</p>`;
 }
 
 deepchat.addEventListener('render', (e) => {
@@ -73,14 +79,13 @@ deepchat.addEventListener('render', (e) => {
     consentButton.addEventListener('click', () => {
         deepchat.focusInput();
         deepchat.clearMessages();
-        deepchat.addMessage({text: "Datenschutzerklärung zugestimmt", role: "moderator"});
+        deepchat.addMessage({text: EASYCHAT_CONSENT_ACCEPTED, role: "moderator"});
         addIntroMessage(deepchat);
     });
 });
 
 function addIntroMessage(chatbotReference) {
-    const introMessage  = `{settings.introMessage}`;
-    chatbotReference.addMessage({text: introMessage.replace(/\r?\n/g, "\n")});
+    chatbotReference.addMessage({text: EASYCHAT_INTRO_MESSAGE.replace(/\r?\n/g, "\n")});
 }
 
 function setCookie(cname, cvalue, exdays) {

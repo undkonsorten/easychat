@@ -1,86 +1,51 @@
+<f:variable name="introMessageLLL" value="{f:translate(key: 'easychat_introMessage')}"/>
+<f:variable name="introMessage">{settings.introMessage ?: introMessageLLL}</f:variable>
+
 const EASYCHAT_COOKIE_SESSION = 'easychat_session_id';
-const EASYCHAT_COOKIE_NAGSCREEN = 'easychat_nagscreen';
 const EASYCHAT_CONSENT_SETTING = '{settings.enableDataProtectionConsent}';
+const EASYCHAT_INTRO_MESSAGE  = `{introMessage}`;
 const easychat = document.querySelector('.easychat');
-const easychatNagscreen = easychat.querySelector('.easychat__nagscreen');
-const easychatToggles = easychat.querySelectorAll('.easychat__toggle');
-const chatbot = document.querySelector('.chatbot');
-const header = chatbot.querySelector('.chatbot__header');
-const consent = chatbot.querySelector('.chatbot__consent');
-const consentButton = consent.querySelector('.consent-button');
-const revoke = easychat.querySelector('.revoke');
-const revokeButton = revoke.querySelector('.revoke-button');
+const consent = easychat.querySelector('.easychat-consent');
+const consentButton = easychat.querySelector('.consent-button');
+const revokeButton = easychat.querySelector('.revoke-button');
 const deepchat = document.getElementById('chat-assistant');
 let easychatSession = getCookie(EASYCHAT_COOKIE_SESSION );
 
-if (getCookie(EASYCHAT_COOKIE_NAGSCREEN) === false) {
-    easychatNagscreen.hidden = false;
-}
-
-easychatNagscreen.querySelector('button').addEventListener('click', () => {
-    easychatNagscreen.hidden = true;
-    setCookie(EASYCHAT_COOKIE_NAGSCREEN , 'hidden', 30);
-})
-
-for (const easychatToggle of easychatToggles) {
-    easychatToggle.addEventListener('click', function() {
-        chatbot.hidden = !chatbot.hidden;
-        easychatNagscreen.hidden = true;
-
-        for (const easychatToggle of easychatToggles) {
-            easychatToggle.ariaExpanded = !chatbot.hidden;
-        }
-    });
-}
+deepchat.setAttribute(
+    "introMessage",
+    JSON.stringify({
+        text: EASYCHAT_INTRO_MESSAGE.replace(/\r?\n/g, "\n")
+    })
+);
 
 if (EASYCHAT_CONSENT_SETTING === 'consent') {
     if (easychatSession === false) {
         consent.hidden = false;
     } else {
         deepchat.hidden = false;
-        header.hidden = false;
-        // revoke.hidden = false;
+        revokeButton.hidden = false;
     }
 
     consentButton.addEventListener('click', () => {
         setCookie(EASYCHAT_COOKIE_SESSION , self.crypto.randomUUID(), 30);
         consent.hidden = true;
         deepchat.hidden = false;
-        header.hidden = false;
-        // revoke.hidden = false;
+        revokeButton.hidden = false;
     });
 
     revokeButton.addEventListener('click', () => {
         removeCookie('easychat_session_id');
         consent.hidden = false;
         deepchat.hidden = true;
-        header.hidden = true;
-        revoke.hidden = true;
+        revokeButton.hidden = true;
     });
 } else if (EASYCHAT_CONSENT_SETTING === 'without') {
     if (easychatSession === false) {
         setCookie(EASYCHAT_COOKIE_SESSION , self.crypto.randomUUID(), 30);
     }
     deepchat.hidden = false;
-    header.hidden = false;
 } else {
-    chatbot.querySelector('.chatbot__stage').innerHTML = `<div style="padding: 1rem;">Your cookie management needs to set a cookie named <b>easychat_session_id</b> to run the chatbot.</div>`;
-}
-
-deepchat.addEventListener('render', (e) => {
-    addIntroMessage(deepchat);
-
-    consentButton.addEventListener('click', () => {
-        deepchat.focusInput();
-        deepchat.clearMessages();
-        deepchat.addMessage({text: "Datenschutzerklärung zugestimmt", role: "moderator"});
-        addIntroMessage(deepchat);
-    });
-});
-
-function addIntroMessage(chatbotReference) {
-    const introMessage  = `{settings.introMessage}`;
-    chatbotReference.addMessage({text: introMessage.replace(/\r?\n/g, "\n")});
+    easychat.innerHTML = `<p style="background-color: yellow; padding: 0.5em 1em;">To run the chat assistant, your cookie management needs to set a cookie named <b>easychat_session_id</b>.</p>`;
 }
 
 function setCookie(cname, cvalue, exdays) {

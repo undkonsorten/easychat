@@ -32,7 +32,6 @@ EasyChat is **focused on privacy** and data protection, since all chat conversio
   * Optional **privacy consent** before the chat starts
   * Automated **cleaning of user data** (scheduler task)
 
-
 * ⛁ **Knoledge base** connector (to vector database)
 
 ---
@@ -157,14 +156,41 @@ Steps:
 
 ## Theming & Templates
 
-You can add your own beautiful 💐 templates, js and css files with the following TypoScript configuration:
+### Chat Fronend: Deep Chat
+
+EasyChat comes along with *Deep Chat* - an **open source chat web component** in the frontend.
+
+[![Click to enlarge: Deep-Chat Styles](Documentation/Assets/DeepChat_Thumb.png)](Documentation/Assets/DeepChat.png)
+
+For simplicity we integrated *Deep Chat* as a plain **Vanilla JS** web component, but [it can be used with many other frameworks](https://deepchat.dev/examples/frameworks) (e.g. React, Vue, Svele, Angular).
+EasyChat is able to communicate with popular AI providers, but can also connect to your own servers - in our example with TYPO3.
+
+DeepChat is an example implemention. Feel free to use another chatbot frontend.
+The default dummy template is located at
+* `/Resources/Private/Templates/ChatFrontend.html`.
+
+### Styled version
+
+If you want to use our *suggested default styles for ChatBot & Cookie Consent* you need to include the TypoScript templates in `/Configuration/Styling/`.
+
+[![Click to enlarge: Include Styles via TypoScript](Documentation/Assets/Styling-TypoScript_Thumb.png)](Documentation/Assets/Styling-TypoScript.png)
+
+### How to add your own styles 💐
+
+You can either overlay the default template or the styled template, by setting your own template paths.
 
 ```typoscript
+# overlay the easychat styled version
 plugin.tx_easychat.view {
     partialRootPaths.10 = EXT:my-sitepackage/Resources/Private/_Default/Easychat/Partials/
     templateRootPaths.10 = EXT:my-sitepackage/Resources/Private/_Default/Easychat/Templates/
 }
 ```
+
+Be aware,
+* there a many ways to inject styles to a web component like `<deep-chat>`
+* keep also in mind the styles for the chatbot trigger button and the consent module
+
 
 ---
 
@@ -189,16 +215,10 @@ Questions? Suggestions? Support needed? Feel free to 📧 [contact us](https://u
 
 [GNU General Public License, version 2](http://www.gnu.org/licenses/gpl-2.0.html)
 
----
-
-## To Do
-
-* Documentation
-  * Theming DeepChat
 
 ---
 
 ## Planned Featues
 
+* Impoved documentation for the connector to vector database as a knowledge base for the chatbot
 * Website scraping/indexing via TYPO3 for the knowledge base (via vector database)
-* Impoved connector to vector database as a knowledge base for the chatbot

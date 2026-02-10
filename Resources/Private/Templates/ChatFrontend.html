@@ -3,6 +3,12 @@
 			lang="en">
 
 <div class="easychat" aria-live="polite">
+	<f:comment>
+		<!--
+			This is the EasyChat cookie optin module.
+			It is shown if in the plugin the view option "Cookie with internal consent" is selected.
+		-->
+	</f:comment>
 	<f:if condition="{settings.enableDataProtectionConsent} == 'consent'">
 		<style>
 			.easychat-consent {
@@ -34,10 +40,24 @@
 	<f:variable name="placeholder">{settings.placeholder ?: placeholderLLL}</f:variable>
 	<f:variable name="textInput" value="{placeholder: {text: placeholder}}"/>
 
+	<f:comment>
+		<!--
+			This is the deep chat web compontent
+			Documentation: https://deepchat.dev/docs/introduction
+		-->
+	</f:comment>
 	<deep-chat id="chat-assistant"
 			   connect="{connect->f:format.json()}"
 			   textInput="{textInput->f:format.json()}"
-			   style="border-radius: 8px;"
+				 inputAreaStyle='{"backgroundColor": "#DDF5C6"}'
+				 style="border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,.4);"
+				 messageStyles='{
+						"default": {
+							"shared": {"bubble": {"color": "white"}},
+							"ai": {"bubble": {"backgroundColor": "#030"}},
+							"user": {"bubble": {"backgroundColor": "#DDF5C6", "color": "#030"}}
+						}
+					}'
 			   hidden
 	></deep-chat>
 

@@ -3,7 +3,7 @@
     margin-bottom: 0;
     box-shadow: none;
     border: unset;
-    border-top: 1px solid var(--easychat-primary-color, #005CA9);
+    border-top: 1px solid var(--easychat-primary-color, DarkSlateGray);
     border-radius: 0;
 }
 
@@ -46,7 +46,6 @@
     svg {
         color: #fff;
         filter: none !important;
-
         translate: -2px 1px;
     }
 

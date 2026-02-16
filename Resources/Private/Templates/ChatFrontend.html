@@ -46,16 +46,25 @@
 			Documentation: https://deepchat.dev/docs/introduction
 		-->
 	</f:comment>
+	<style>
+		deep-chat {
+			--deep-chat-primary-color: #030;
+		}
+	</style>
 	<deep-chat id="chat-assistant"
 			   connect="{connect->f:format.json()}"
 			   textInput="{textInput->f:format.json()}"
 				 inputAreaStyle='{"backgroundColor": "#DDF5C6"}'
-				 style="border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,.4);"
+				 style="
+				 	border-radius: 8px;
+				 	box-shadow: 0 0 10px
+				 	rgba(0,0,0,.4);
+				 	width: auto"
 				 messageStyles='{
 						"default": {
-							"shared": {"bubble": {"color": "white"}},
+							"shared": {"bubble": {"color": "white", "max-width": "80%"}},
 							"ai": {"bubble": {"backgroundColor": "#030"}},
-							"user": {"bubble": {"backgroundColor": "#DDF5C6", "color": "#030"}}
+							"user": {"bubble": {"backgroundColor": "#DDF5C6", "color": "var(--deep-chat-primary-color, DarkSlateGray"}}
 						}
 					}'
 			   hidden

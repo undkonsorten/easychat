@@ -6,6 +6,8 @@
 
 <style>
 	.easychat {
+		--easychat-primary-color: #030;
+		--easychat-accent-color: #56D25B;
 		--easychat-chatbot-width: 96vw;
 		--easychat-chatbot-max-width: 400px;
 		--easychat-border-color: rgba(0,0,0,.3);
@@ -14,16 +16,24 @@
 		--easychat-shine-effect: linear-gradient(var(--easychat-shine-degree), transparent, var(--easychat-shine-color), transparent);
 		--easychat-shine-transition: all #{$anim-speed}s ease-in-out;
 	}
+	/* Hotfix for BootsTrap Package / remove to top button */
+	a.scroll-top {
+		display: none !important;
+	}
 </style>
 
 <div class="easychat" aria-live="polite">
-
+	<f:comment>
+		<!-- this is the tagline above the button in order to attract attention -->
+	</f:comment>
 	<div class="easychat__nagscreen" hidden>
 		<button>
 			<span class="show-for-sr">{f:translate(key: 'easychat_close')}</span>
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<g clip-path="url(#clip0_1505_4881)">
-					<path d="M12 22C6.477 22 2 17.523 2 12C2 6.477 6.477 2 12 2C17.523 2 22 6.477 22 12C22 17.523 17.523 22 12 22ZM12 10.586L9.172 7.757L7.757 9.172L10.586 12L7.757 14.828L9.172 16.243L12 13.414L14.828 16.243L16.243 14.828L13.414 12L16.243 9.172L14.828 7.757L12 10.586Z" fill="#fff"/>
+					<path
+						d="M12 22C6.477 22 2 17.523 2 12C2 6.477 6.477 2 12 2C17.523 2 22 6.477 22 12C22 17.523 17.523 22 12 22ZM12 10.586L9.172 7.757L7.757 9.172L10.586 12L7.757 14.828L9.172 16.243L12 13.414L14.828 16.243L16.243 14.828L13.414 12L16.243 9.172L14.828 7.757L12 10.586Z"
+						fill="var(--easychat-accent-color, yellow)"/>
 				</g>
 			</svg>
 		</button>
@@ -33,7 +43,7 @@
 	<div class="chatbot" hidden id="chatbot">
 		<div class="chatbot__stage">
 
-			<f:render partial="ChatbotHeader" arguments="{additionalAttributes: ' hidden', showEasychatToggle: 1}"/>
+			<f:render partial="ChatbotHeader" section="main" arguments="{additionalAttributes: ' hidden', showEasychatToggle: 1}"/>
 
 			<div class="chatbot__consent" hidden>
 				<div class="chatbot__image">
@@ -76,11 +86,16 @@
 			<f:variable name="textInput" value="{placeholder: {text: placeholder}}"/>
 
 			<deep-chat id="chat-assistant"
-					   connect="{connect->f:format.json()}"
-					   textInput="{textInput->f:format.json()}"
-					   auxiliaryStyle="{styles}"
-					   style="border: none; width: 100%; height: 100%;"
-					   hidden
+				connect="{connect->f:format.json()}"
+				textInput="{textInput->f:format.json()}"
+				auxiliaryStyle="{styles}"
+				style="border: none; width: 100%; height: 100%;"
+				messageStyles='{
+					"default": {
+						"shared": {"bubble": {"max-width": "80%"}}
+					}
+				}'
+				hidden
 			></deep-chat>
 
 		</div>
@@ -92,14 +107,19 @@
 
 	<div class="easychat__home">
 		<button id="easychat__toggle" class="easychat__toggle" aria-expanded="false" aria-controls="#chatbot">
-			<svg width="84" height="82" viewBox="0 0 84 82" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<path d="M 64.771,66.6667 83.3335,81.25 V 4.16667 c 0,-1.10507 -0.439,-2.16488 -1.2204,-2.94628 C 81.3317,0.438987 80.2719,0 79.1668,0 H 4.16682 C 3.06175,0 2.00195,0.438987 1.22054,1.22039 0.43914,2.00179 1.52588e-4,3.0616 1.52588e-4,4.16667 V 62.5 c 0,1.1051 0.438987412,2.1649 1.220387412,2.9463 0.78141,0.7814 1.84121,1.2204 2.94628,1.2204 z" fill="#005ca9"/>
+			<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M48.635 50.5897L62 61V5.97436C62 5.18551 61.6839 4.42897 61.1213 3.87117C60.5587 3.31337 59.7956 3 59 3H5.00001C4.20436 3 3.44129 3.31337 2.87868 3.87117C2.31607 4.42897 2 5.18551 2 5.97436V47.6154C2 48.4042 2.31607 49.1608 2.87868 49.7186C3.44129 50.2764 4.20436 50.5897 5.00001 50.5897H48.635Z"
+							fill="#030"/>
+				<path d="M42.6066 34.3365C45.4196 31.5474 47 27.7647 47 23.8205H41C41 26.187 40.0518 28.4567 38.364 30.1301C36.6761 31.8035 34.3869 32.7436 32 32.7436C29.6131 32.7436 27.3239 31.8035 25.636 30.1301C23.9482 28.4567 23 26.187 23 23.8205H17C17 27.7647 18.5804 31.5474 21.3934 34.3365C24.2064 37.1255 28.0218 38.6923 32 38.6923C35.9782 38.6923 39.7936 37.1255 42.6066 34.3365Z"
+							fill="white" fill-opacity="0.9"/>
 			</svg>
 		</button>
 	</div>
 </div>
 
-
+<f:comment>
+	<!-- include the deepChat js bundle as partial with the consent and DeepChat module -->
+</f:comment>
 <f:asset.script type="module" priority="true" identifier="deepChat.bundle" src="EXT:easychat/Resources/Public/deepChat.bundle.js" />
 
 <f:asset.script type="module" identifier="deepChat.config">

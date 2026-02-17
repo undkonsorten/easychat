@@ -11,7 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use Undkonsorten\Easychat\Domain\Model\Session;
 use Undkonsorten\Easychat\Domain\Repository\SessionRepository;
-use Undkonsorten\Taskqueue\Domain\Repository\TaskRepository;
 
 class DeleteSessionsCommand extends Command
 {

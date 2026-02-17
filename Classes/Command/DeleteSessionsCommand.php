@@ -17,12 +17,13 @@ class DeleteSessionsCommand extends Command
 {
 
    public function __construct(
-       private SessionRepository $sessionRepository,
-       private PersistenceManagerInterface $persistenceManager,
-       string $name = null
+       private readonly SessionRepository           $sessionRepository,
+       private readonly PersistenceManagerInterface $persistenceManager,
+       ?string                                      $name = null,
+       ?callable                                    $code = null
    )
    {
-       parent::__construct($name);
+       parent::__construct($name,$code);
    }
 
     protected function configure()

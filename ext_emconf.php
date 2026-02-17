@@ -9,5 +9,5 @@ $EM_CONF[$_EXTKEY] = [
     'author_email' => 'es@undkonsorten.com',
     'author_company' => 'undkonsorten GbR',
     'state' => 'excludeFromUpdates',
-    'version' => '2.0.0',
+    'version' => '0.1.0',
 ];

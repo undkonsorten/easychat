@@ -14,7 +14,11 @@
 			.easychat-consent {
 				background-color: #fff; padding: 1em;
 				box-shadow: 0 0 10px rgba(0,0,0,.5);
-				border-radius: .5em;
+				border-radius: 8px;
+				width: 322px;
+			}
+			.revoke-button {
+				margin-top: 1rem;
 			}
 		</style>
 		<div class="easychat-consent" hidden>
@@ -57,14 +61,12 @@
 				 inputAreaStyle='{"backgroundColor": "#DDF5C6"}'
 				 style="
 				 	border-radius: 8px;
-				 	box-shadow: 0 0 10px
-				 	rgba(0,0,0,.4);
-				 	width: auto"
+				 	box-shadow: 0 0 10px rgba(0,0,0,.4);"
 				 messageStyles='{
 						"default": {
 							"shared": {"bubble": {"color": "white", "max-width": "80%"}},
 							"ai": {"bubble": {"backgroundColor": "#030"}},
-							"user": {"bubble": {"backgroundColor": "#DDF5C6", "color": "var(--deep-chat-primary-color, DarkSlateGray"}}
+							"user": {"bubble": {"backgroundColor": "#DDF5C6", "color": "DarkSlateGray"}}
 						}
 					}'
 			   hidden

@@ -27,8 +27,7 @@
 		<!-- this is the tagline above the button in order to attract attention -->
 	</f:comment>
 	<div class="easychat__nagscreen" hidden>
-		<button>
-			<span class="show-for-sr">{f:translate(key: 'easychat_close')}</span>
+		<button aria-label="{f:translate(key: 'easychat_close')}">
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<g clip-path="url(#clip0_1505_4881)">
 					<path
@@ -43,7 +42,7 @@
 	<div class="chatbot" hidden id="chatbot">
 		<div class="chatbot__stage">
 
-			<f:render partial="ChatbotHeader" section="main" arguments="{additionalAttributes: ' hidden', showEasychatToggle: 1}"/>
+			<f:render partial="ChatbotHeader" section="Main" arguments="{additionalAttributes: ' hidden', showEasychatToggle: 1}"/>
 
 			<div class="chatbot__consent" hidden>
 				<div class="chatbot__image">
@@ -51,7 +50,7 @@
 				</div>
 
 				<div class="chatbot__content">
-					<f:render partial="ChatbotHeader"/>
+					<f:render partial="ChatbotHeader" section="Main"/>
 					<div class="chatbot__text">
 						<f:variable name="dataProtectionConsentTextLLL" value="{f:translate(key: 'easychat_dataProtectionConsentText')}" />
 						<f:format.html>{settings.dataProtectionConsentText ?: dataProtectionConsentTextLLL}</f:format.html>

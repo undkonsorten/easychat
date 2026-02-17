@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" backupGlobals="true" colors="true" bootstrap="./Bootstrap/UnitTestsBootstrap.php" processIsolation="false" stopOnError="false" stopOnFailure="false" stopOnIncomplete="false" stopOnSkipped="false" beStrictAboutTestsThatDoNotTestAnything="false" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.2/phpunit.xsd" cacheDirectory=".phpunit.cache" requireCoverageMetadata="false">
+  <coverage>
+    <report>
+      <clover outputFile="./build/coverage/coverage.xml"/>
+      <html outputDirectory="./build/coverage/html" lowUpperBound="35" highLowerBound="70"/>
+      <php outputFile="./build/coverage/coverage.serialized"/>
+    </report>
+  </coverage>
+  <testsuites>
+    <testsuite name="Easychat unit tests">
+      <directory>./Unit/</directory>
+    </testsuite>
+  </testsuites>
+  <logging>
+    <junit outputFile="./build/tests/logfile_unit.xml"/>
+    <testdoxHtml outputFile="./build/tests/testdox_unit.html"/>
+    <testdoxText outputFile="./build/tests/testdox_unit.txt"/>
+  </logging>
+  <source>
+    <include>
+      <directory suffix=".php">../Classes/</directory>
+    </include>
+  </source>
+</phpunit>

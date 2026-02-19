@@ -191,7 +191,20 @@ Be aware,
 * there a many ways to inject styles to a web component like `<deep-chat>`
 * keep also in mind the styles for the chatbot trigger button and the consent module
 
+### How to Change the texts
 
+Your edit some of the content directly in the Frontend.
+
+You can ovverride texts used in the template via locallang.xml oder via TypoScript.
+
+```typoscript
+plugin.tx_easychat {
+    _LOCAL_LANG {
+        default.easychat_nagscreenMessage = Hast du Fragen zu unserem Angebot?
+        default.easychat_dataProtectionConsentAcceptedMessage = Einwilligung erteilt
+    }
+}
+```
 ---
 
 ## Credits

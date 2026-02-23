@@ -27,7 +27,7 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
     }
 
     consentButton.addEventListener('click', () => {
-        setCookie(EASYCHAT_COOKIE_SESSION , self.crypto.randomUUID(), 30);
+        setCookie(EASYCHAT_COOKIE_SESSION , self.crypto.randomUUID(), '{settings.cookieExpirationMinutes}');
         consent.hidden = true;
         deepchat.hidden = false;
         revokeButton.hidden = false;
@@ -41,16 +41,16 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
     });
 } else if (EASYCHAT_CONSENT_SETTING === 'without') {
     if (easychatSession === false) {
-        setCookie(EASYCHAT_COOKIE_SESSION , self.crypto.randomUUID(), 30);
+        setCookie(EASYCHAT_COOKIE_SESSION , self.crypto.randomUUID(), '{settings.cookieExpirationMinutes}');
     }
     deepchat.hidden = false;
 } else {
     easychat.innerHTML = `<p style="background-color: yellow; padding: 0.5em 1em;">To run the chat assistant, your cookie management needs to set a cookie named <b>easychat_session_id</b>.</p>`;
 }
 
-function setCookie(cname, cvalue, exdays) {
+function setCookie(cname, cvalue, exminutes) {
     const d = new Date();
-    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    d.setTime(d.getTime() + (exminutes * 60 * 1000));
     let expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }

@@ -73,6 +73,13 @@
                         </config>
                         <displayCond>FIELD:settings.enableDataProtectionConsent:=:consent</displayCond>
                     </settings.dataProtectionConsentButtonNo>
+                    <settings.cookieExpirationMinutes>
+                        <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.cookieExpirationMinutes</label>
+                        <config>
+                            <type>input</type>
+                            <default>1440</default>
+                        </config>
+                    </settings.cookieExpirationMinutes>
                 </el>
             </ROOT>
         </sDEF>

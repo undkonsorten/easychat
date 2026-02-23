@@ -31,6 +31,9 @@
 			<trans-unit id="flexform.tab.general.dataProtectionConsentButtonNo">
 				<source>No</source>
 			</trans-unit>
+			<trans-unit id="flexform.tab.general.cookieExpirationMinutes">
+				<source>Cookie expiration (minutes)</source>
+			</trans-unit>
 			<trans-unit id="flexform.tab.general.enableDataProtectionConsent.withConsent">
 				<source>Cookie with internal consent</source>
 			</trans-unit>

@@ -25,7 +25,7 @@ if (getCookie(EASYCHAT_COOKIE_NAGSCREEN) === false) {
 
 easychatNagscreen.querySelector('button').addEventListener('click', () => {
     easychatNagscreen.hidden = true;
-    setCookie(EASYCHAT_COOKIE_NAGSCREEN , 'hidden', 30);
+    setCookie(EASYCHAT_COOKIE_NAGSCREEN , 'hidden', '{settings.cookieExpirationMinutes}');
 })
 
 for (const easychatToggle of easychatToggles) {
@@ -49,7 +49,7 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
     }
 
     consentButton.addEventListener('click', () => {
-        setCookie(EASYCHAT_COOKIE_SESSION , self.crypto.randomUUID(), 30);
+        setCookie(EASYCHAT_COOKIE_SESSION , self.crypto.randomUUID(), '{settings.cookieExpirationMinutes}');
         consent.hidden = true;
         deepchat.hidden = false;
         header.hidden = false;
@@ -65,7 +65,7 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
     });
 } else if (EASYCHAT_CONSENT_SETTING === 'without') {
     if (easychatSession === false) {
-        setCookie(EASYCHAT_COOKIE_SESSION , self.crypto.randomUUID(), 30);
+        setCookie(EASYCHAT_COOKIE_SESSION , self.crypto.randomUUID(), '{settings.cookieExpirationMinutes}');
     }
     deepchat.hidden = false;
     header.hidden = false;
@@ -88,9 +88,9 @@ function addIntroMessage(chatbotReference) {
     chatbotReference.addMessage({text: EASYCHAT_INTRO_MESSAGE.replace(/\r?\n/g, "\n")});
 }
 
-function setCookie(cname, cvalue, exdays) {
+function setCookie(cname, cvalue, exminutes) {
     const d = new Date();
-    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+	d.setTime(d.getTime() + (exminutes * 60 * 1000));
     let expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }

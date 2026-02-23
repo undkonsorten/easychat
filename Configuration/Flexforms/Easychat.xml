@@ -79,6 +79,7 @@
                             <type>input</type>
                             <default>1440</default>
                             <required>true</required>
+                            <eval>trim,num</eval>
                         </config>
                     </settings.cookieExpirationMinutes>
                 </el>

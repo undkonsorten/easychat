@@ -12,7 +12,8 @@ call_user_func(static function () {
         $pluginName,
         $pluginTitle,
         'tx-easychat-extension',
-        'Easychat'
+        'Easychat',
+        'LLL:EXT:easychat/Resources/Private/Language/locallang.xlf:easychat_frontend_plugin_description'
     );
 
     ExtensionManagementUtility::addPiFlexFormValue(

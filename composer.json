@@ -20,9 +20,6 @@
 		"symfony/ai-store": "^0.1",
 		"symfony/ai-generic-platform": "^0.1"
 	},
-	"replace": {
-		"easychat": "self.version"
-	},
 	"suggest": {
 		"symfony/ai-qdrant-store": "^0.1",
 		"symfony/ai-similarity-search-tool": "^0.1"

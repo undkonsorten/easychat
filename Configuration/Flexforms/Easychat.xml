@@ -78,6 +78,7 @@
                         <config>
                             <type>input</type>
                             <default>1440</default>
+                            <required>true</required>
                         </config>
                     </settings.cookieExpirationMinutes>
                 </el>

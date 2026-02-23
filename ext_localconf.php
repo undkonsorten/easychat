@@ -23,7 +23,7 @@ ExtensionUtility::configurePlugin(
 );
 
 if (getenv('TYPO3_MINIMUM_LOGLEVEL')) {
-    $GLOBALS['TYPO3_CONF_VARS']['LOG']['Undkonsorten']['MyMotions'] = [
+    $GLOBALS['TYPO3_CONF_VARS']['LOG']['Undkonsorten']['Easychat'] = [
         'writerConfiguration' => [
             getenv('TYPO3_MINIMUM_LOGLEVEL') => [
                 FileWriter::class => [

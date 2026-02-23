@@ -10,4 +10,13 @@ $EM_CONF[$_EXTKEY] = [
     'author_company' => 'undkonsorten GbR',
     'state' => 'excludeFromUpdates',
     'version' => '0.1.0',
+    'constraints' => [
+        'depends' => [
+            'typo3' => '12.4.0-13.99.99',
+        ],
+        'conflicts' => [
+        ],
+        'suggests' => [
+        ],
+    ],
 ];

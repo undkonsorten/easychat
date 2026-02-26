@@ -2,9 +2,11 @@
 
 /** @noinspection PhpUndefinedVariableInspection */
 $EM_CONF[$_EXTKEY] = [
-    'title' => 'Easychat',
-    'description' => 'AI powered chat or search engine.',
-    'category' => 'misc',
+    'title' => 'Easychat: The ai chatbot/assistent from heaven',
+    'description' => 'A lightweight chatbot/assistant without third party chat tools.
+    All you need is TYPO3 and an LLM endpoint. Works with nearly any LLM (ollama, chatgpt, mistral, gemini etc)
+    Focused on privacy and data protection (DSGVO)',
+    'category' => 'Frontend Plugins',
     'author' => 'Eike Starkmann',
     'author_email' => 'es@undkonsorten.com',
     'author_company' => 'undkonsorten GbR',

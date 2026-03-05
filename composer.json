@@ -1,7 +1,7 @@
 {
 	"name": "undkonsorten/easychat",
-	"description": "AI powered chat or search engine for TYPO3",
-	"keywords": ["typo3", "ai", "chat"],
+	"description": "A TYPO3 chatbot/assistant without third party tools. Only TYPO3 + LLM endpoint needed (ChatGpt, Mistral...). Privacy focused (GDPR). Chats stored in TYPO3 only.",
+	"keywords": ["typo3", "ai", "chat", "chatbot", "assistant"],
 	"type": "typo3-cms-extension",
 	"license": "GPL-3.0-or-later",
 	"authors": [

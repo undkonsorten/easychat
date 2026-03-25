@@ -6,7 +6,12 @@
 
 ----
 
-<span style="float:right;margin-inline-start: 1em">![EasyChat Logo](Documentation/Assets/EasyChat-Logo.png)</span>
+![EasyChat Logo](Documentation/Assets/EasyChat-Logo.png)
+
+----
+
+
+
 **EasyChat** is a lightweight open source chatbot for [TYPO3](https://typo3.org) websites without third party chat tools.
 
 All you need is TYPO3 and an LLM endpoint.

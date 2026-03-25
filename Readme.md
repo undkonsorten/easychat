@@ -11,7 +11,6 @@
 ----
 
 
-
 **EasyChat** is a lightweight open source chatbot for [TYPO3](https://typo3.org) websites without third party chat tools.
 
 All you need is TYPO3 and an LLM endpoint.

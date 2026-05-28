@@ -110,16 +110,6 @@
 	position: relative;
 }
 
-.easychat__nagscreen:before {
-	content: "";
-	position: absolute;
-	top: 0;
-	width: 100%;
-	height: 100%;
-	background: var(--easychat-shine-effect, rgba(255, 255, 255, 0.2));
-	-webkit-animation: shine 5s ease-in-out infinite;
-	animation: shine 5s ease-in-out infinite;
-}
 
 .easychat__nagscreen button {
     float: right;

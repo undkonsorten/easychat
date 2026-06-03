@@ -22,11 +22,11 @@
 	}
 </style>
 
-<div class="easychat" aria-live="polite">
+<div class="easychat" id="easychat" aria-live="polite">
 	<f:comment>
 		<!-- this is the tagline above the button in order to attract attention -->
 	</f:comment>
-	<div class="easychat__nagscreen" hidden>
+	<div class="easychat__nagscreen" id="easychat-nagscreen" hidden>
 		<button aria-label="{f:translate(key: 'easychat_close')}">
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<g clip-path="url(#clip0_1505_4881)">
@@ -40,11 +40,11 @@
 	</div>
 
 	<div class="chatbot" hidden id="chatbot">
-		<div class="chatbot__stage">
+		<div class="chatbot__stage" id="chatbot-stage">
 
-			<f:render partial="ChatbotHeader" section="Main" arguments="{additionalAttributes: ' hidden', showEasychatToggle: 1}"/>
+			<f:render partial="ChatbotHeader" section="Main" arguments="{additionalAttributes: ' hidden', showEasychatToggle: 1, headerId: 'chatbot-header'}"/>
 
-			<div class="chatbot__consent" hidden>
+			<div class="chatbot__consent" id="chatbot-consent" hidden>
 				<div class="chatbot__image">
 
 				</div>
@@ -58,11 +58,11 @@
 				</div>
 
 				<div class="chatbot__buttons">
-					<button class="consent-button chatbot__accept">
+					<button class="consent-button chatbot__accept" id="consent-button">
 						<f:variable name="dataProtectionConsentButtonYesLLL" value="{f:translate(key: 'easychat_dataProtectionConsentButtonYes')}"/>
 						{settings.dataProtectionConsentButtonYes ?: dataProtectionConsentButtonYesLLL}
 					</button>
-					<button class="consent-button chatbot__deny easychat__toggle">
+					<button class="consent-button chatbot__deny easychat__toggle" id="easychat-toggle-consent">
 						<f:variable name="dataProtectionConsentButtonNoLLL" value="{f:translate(key: 'easychat_dataProtectionConsentButtonNo')}"/>
 						{settings.dataProtectionConsentButtonNo ?: dataProtectionConsentButtonNoLLL}
 					</button>
@@ -100,12 +100,12 @@
 		</div>
 	</div>
 
-	<p class="revoke" hidden>
-		<button class="revoke-button small">{f:translate(key: 'easychat_dataProtectionConsentButtonRevoke')}</button>
+	<p class="revoke" id="revoke" hidden>
+		<button class="revoke-button small" id="revoke-button">{f:translate(key: 'easychat_dataProtectionConsentButtonRevoke')}</button>
 	</p>
 
 	<div class="easychat__home">
-		<button id="easychat__toggle" class="easychat__toggle" aria-expanded="false" aria-controls="#chatbot">
+		<button id="easychat-toggle" class="easychat__toggle" aria-expanded="false" aria-controls="#chatbot">
 			<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<path d="M48.635 50.5897L62 61V5.97436C62 5.18551 61.6839 4.42897 61.1213 3.87117C60.5587 3.31337 59.7956 3 59 3H5.00001C4.20436 3 3.44129 3.31337 2.87868 3.87117C2.31607 4.42897 2 5.18551 2 5.97436V47.6154C2 48.4042 2.31607 49.1608 2.87868 49.7186C3.44129 50.2764 4.20436 50.5897 5.00001 50.5897H48.635Z"
 							fill="#030"/>

@@ -6,8 +6,12 @@
 
 ----
 
-<span style="float:right;margin-inline-start: 1em">![EasyChat Logo (Icon)](Documentation/Assets/EasyChat-Icon.png)</span>
-**EasyChat** is a lightweight open source chatbot für [TYPO3](https://typo3.org) websites without third party chat tools.
+![EasyChat Logo](Documentation/Assets/EasyChat-Logo.png)
+
+----
+
+
+**EasyChat** is a lightweight open source chatbot for [TYPO3](https://typo3.org) websites without third party chat tools.
 
 All you need is TYPO3 and an LLM endpoint.
 
@@ -112,7 +116,7 @@ Last but not least you need to setup a *content element for the chatbot*.
 * Add/create a new content element "Chatbot".
 * Connect the content Element to the reaction.
 
-[![Click to enlarge: Content Element EasyChat](Documentation/Assets/Content-Element_Thumb.png)]((Documentation/Assets/Content-Element.png))
+[![Click to enlarge: Content Element EasyChat](Documentation/Assets/Content-Element_Thumb.png)](Documentation/Assets/Content-Element.png)
 
 ### ✨ YOU ARE DONE!!! 👊 CONGRATULATIONS 🎉
 

@@ -59,6 +59,9 @@
             <trans-unit id="easychat_frontend_plugin_title">
                 <source>Easychat Frontend</source>
             </trans-unit>
+            <trans-unit id="easychat_frontend_plugin_description">
+                <source>Display an Easychat chatbot to your website</source>
+            </trans-unit>
             <trans-unit id="easychat_dataProtectionConsentText">
                 <source>Do you accept the privacy policy?</source>
             </trans-unit>

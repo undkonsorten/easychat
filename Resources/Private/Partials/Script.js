@@ -2,17 +2,17 @@
 <f:variable name="introMessageLLL" value="{f:translate(key: 'easychat_introMessage')}"/>
 <f:variable name="introMessage">{settings.introMessage ?: introMessageLLL}</f:variable>
 
-const easychat = document.querySelector('.easychat');
+const easychat = document.getElementById('easychat');
 const EASYCHAT_COOKIE_SESSION = 'easychat_session_id';
 const EASYCHAT_COOKIE_NAGSCREEN = 'easychat_nagscreen';
 const EASYCHAT_CONSENT_SETTING = '{settings.enableDataProtectionConsent}';
 const EASYCHAT_CONSENT_ACCEPTED = '{consentAcceptedMessageLLL}';
 const EASYCHAT_INTRO_MESSAGE = `{introMessage}`;
-const easychatNagscreen = easychat.querySelector('.easychat__nagscreen');
-const easychatToggles = easychat.querySelectorAll('.easychat__toggle');
-const chatbot = document.querySelector('.chatbot');
-const header = chatbot.querySelector('.chatbot__header');
-const revoke = easychat.querySelector('.revoke');
+const easychatNagscreen = document.getElementById('easychat-nagscreen');
+const easychatToggles = document.querySelectorAll('#easychat-toggle, #easychat-toggle-header, #easychat-toggle-consent');
+const chatbot = document.getElementById('chatbot');
+const header = document.getElementById('chatbot-header');
+const revoke = document.getElementById('revoke');
 const deepchat = document.getElementById('chat-assistant');
 let easychatSession = getCookie(EASYCHAT_COOKIE_SESSION);
 
@@ -62,9 +62,9 @@ for (const easychatToggle of easychatToggles) {
 }
 
 if (EASYCHAT_CONSENT_SETTING === 'consent') {
-	const consent = chatbot.querySelector('.chatbot__consent');
-	const consentButton = consent?.querySelector('.consent-button');
-	const revokeButton = revoke?.querySelector('.revoke-button');
+	const consent = document.getElementById('chatbot-consent');
+	const consentButton = document.getElementById('consent-button');
+	const revokeButton = document.getElementById('revoke-button');
 
 	if (easychatSession === false) {
 		if (consent) consent.hidden = false;
@@ -125,7 +125,7 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
 			addIntroMessage(deepchat);
 		});
 	} else {
-		chatbot.querySelector('.chatbot__stage').innerHTML = `<p style="background-color: yellow; padding: 0.5em 1em;">To run the chat assistant, your cookie management needs to set a cookie named <b>easychat_session_id</b>.</p>`;
+		document.getElementById('chatbot-stage').innerHTML = `<p style="background-color: yellow; padding: 0.5em 1em;">To run the chat assistant, your cookie management needs to set a cookie named <b>easychat_session_id</b>.</p>`;
 	}
 }
 

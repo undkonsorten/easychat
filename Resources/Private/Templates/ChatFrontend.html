@@ -2,7 +2,7 @@
 			data-namespace-typo3-fluid="true"
 			lang="en">
 
-<div class="easychat" aria-live="polite">
+<div class="easychat" id="easychat" aria-live="polite">
 	<f:comment>
 		<!--
 			This is the EasyChat cookie optin module.
@@ -24,13 +24,13 @@
 	</f:if>
 
 	<div class="chatbot" id="chatbot">
-		<div class="chatbot__stage">
+		<div class="chatbot__stage" id="chatbot-stage">
 
 			<f:if condition="{settings.enableDataProtectionConsent} == 'consent'">
-				<div class="chatbot__consent" hidden>
+				<div class="chatbot__consent" id="chatbot-consent" hidden>
 					<f:variable name="dataProtectionConsentTextLLL" value="{f:translate(key: 'easychat_dataProtectionConsentText')}" />
 					<f:format.html>{settings.dataProtectionConsentText ?: dataProtectionConsentTextLLL}</f:format.html>
-					<button class="consent-button">
+					<button class="consent-button" id="consent-button">
 						<f:variable name="dataProtectionConsentButtonYesLLL" value="{f:translate(key: 'easychat_dataProtectionConsentButtonYes')}"/>
 						{settings.dataProtectionConsentButtonYes ?: dataProtectionConsentButtonYesLLL}
 					</button>
@@ -82,8 +82,8 @@
 	</div>
 
 	<f:if condition="{settings.enableDataProtectionConsent} == 'consent'">
-		<p class="revoke" hidden>
-			<button class="revoke-button">{f:translate(key: 'easychat_dataProtectionConsentButtonRevoke')}</button>
+		<p class="revoke" id="revoke" hidden>
+			<button class="revoke-button" id="revoke-button">{f:translate(key: 'easychat_dataProtectionConsentButtonRevoke')}</button>
 		</p>
 	</f:if>
 

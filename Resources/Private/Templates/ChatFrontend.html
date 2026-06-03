@@ -11,7 +11,7 @@
 	</f:comment>
 	<f:if condition="{settings.enableDataProtectionConsent} == 'consent'">
 		<style>
-			.easychat-consent {
+			.chatbot__consent {
 				background-color: #fff; padding: 1em;
 				box-shadow: 0 0 10px rgba(0,0,0,.5);
 				border-radius: 8px;
@@ -21,59 +21,70 @@
 				margin-top: 1rem;
 			}
 		</style>
-		<div class="easychat-consent" hidden>
-			<f:variable name="dataProtectionConsentTextLLL" value="{f:translate(key: 'easychat_dataProtectionConsentText')}" />
-			<f:format.html>{settings.dataProtectionConsentText ?: dataProtectionConsentTextLLL}</f:format.html>
-			<button class="consent-button">
-				<f:variable name="dataProtectionConsentButtonYesLLL" value="{f:translate(key: 'easychat_dataProtectionConsentButtonYes')}"/>
-				{settings.dataProtectionConsentButtonYes ?: dataProtectionConsentButtonYesLLL}
-			</button>
-		</div>
 	</f:if>
 
-	<f:variable name="connect" value="{
-		url: settings.url,
-		method: 'POST',
-		headers: {
-			accept: 'application/json',
-			x-api-key: settings.apiKey
-		}
-	}"/>
+	<div class="chatbot" id="chatbot">
+		<div class="chatbot__stage">
 
-	<f:variable name="placeholderLLL" value="{f:translate(key: 'easychat_placeholder')}"/>
-	<f:variable name="placeholder">{settings.placeholder ?: placeholderLLL}</f:variable>
-	<f:variable name="textInput" value="{placeholder: {text: placeholder}}"/>
+			<f:if condition="{settings.enableDataProtectionConsent} == 'consent'">
+				<div class="chatbot__consent" hidden>
+					<f:variable name="dataProtectionConsentTextLLL" value="{f:translate(key: 'easychat_dataProtectionConsentText')}" />
+					<f:format.html>{settings.dataProtectionConsentText ?: dataProtectionConsentTextLLL}</f:format.html>
+					<button class="consent-button">
+						<f:variable name="dataProtectionConsentButtonYesLLL" value="{f:translate(key: 'easychat_dataProtectionConsentButtonYes')}"/>
+						{settings.dataProtectionConsentButtonYes ?: dataProtectionConsentButtonYesLLL}
+					</button>
+				</div>
+			</f:if>
 
-	<f:comment>
-		<!--
-			This is the deep chat web compontent
-			Documentation: https://deepchat.dev/docs/introduction
-		-->
-	</f:comment>
-	<style>
-		deep-chat {
-			--deep-chat-primary-color: #030;
-		}
-	</style>
-	<deep-chat id="chat-assistant"
-			   connect="{connect->f:format.json()}"
-			   textInput="{textInput->f:format.json()}"
-				 inputAreaStyle='{"backgroundColor": "#DDF5C6"}'
-				 style="
-				 	border-radius: 8px;
-				 	box-shadow: 0 0 10px rgba(0,0,0,.4);"
-				 messageStyles='{
-						"default": {
-							"shared": {"bubble": {"color": "white", "max-width": "80%"}},
-							"ai": {"bubble": {"backgroundColor": "#030"}},
-							"user": {"bubble": {"backgroundColor": "#DDF5C6", "color": "DarkSlateGray"}}
-						}
-					}'
-			   hidden
-	></deep-chat>
+			<f:variable name="connect" value="{
+				url: settings.url,
+				method: 'POST',
+				headers: {
+					accept: 'application/json',
+					x-api-key: settings.apiKey
+				}
+			}"/>
+
+			<f:variable name="placeholderLLL" value="{f:translate(key: 'easychat_placeholder')}"/>
+			<f:variable name="placeholder">{settings.placeholder ?: placeholderLLL}</f:variable>
+			<f:variable name="textInput" value="{placeholder: {text: placeholder}}"/>
+
+			<f:comment>
+				<!--
+					This is the deep chat web compontent
+					Documentation: https://deepchat.dev/docs/introduction
+				-->
+			</f:comment>
+			<style>
+				deep-chat {
+					--deep-chat-primary-color: #030;
+				}
+			</style>
+			<deep-chat id="chat-assistant"
+					   connect="{connect->f:format.json()}"
+					   textInput="{textInput->f:format.json()}"
+					   inputAreaStyle='{"backgroundColor": "#DDF5C6"}'
+					   style="
+					   	border-radius: 8px;
+					   	box-shadow: 0 0 10px rgba(0,0,0,.4);"
+					   messageStyles='{
+							"default": {
+								"shared": {"bubble": {"color": "white", "max-width": "80%"}},
+								"ai": {"bubble": {"backgroundColor": "#030"}},
+								"user": {"bubble": {"backgroundColor": "#DDF5C6", "color": "DarkSlateGray"}}
+							}
+						}'
+					   hidden
+			></deep-chat>
+
+		</div>
+	</div>
 
 	<f:if condition="{settings.enableDataProtectionConsent} == 'consent'">
-		<button class="revoke-button" hidden>{f:translate(key: 'easychat_dataProtectionConsentButtonRevoke')}</button>
+		<p class="revoke" hidden>
+			<button class="revoke-button">{f:translate(key: 'easychat_dataProtectionConsentButtonRevoke')}</button>
+		</p>
 	</f:if>
 
 </div>

@@ -12,6 +12,7 @@ const easychatNagscreen = easychat.querySelector('.easychat__nagscreen');
 const easychatToggles = easychat.querySelectorAll('.easychat__toggle');
 const chatbot = document.querySelector('.chatbot');
 const header = chatbot.querySelector('.chatbot__header');
+const revoke = easychat.querySelector('.revoke');
 const deepchat = document.getElementById('chat-assistant');
 let easychatSession = getCookie(EASYCHAT_COOKIE_SESSION);
 
@@ -52,7 +53,6 @@ for (const easychatToggle of easychatToggles) {
 			easychatToggle.ariaExpanded = !chatbot.hidden;
 		}
 
-		const revoke = easychat.querySelector('.revoke');
 		if (revoke && EASYCHAT_CONSENT_SETTING === 'consent') {
 			revoke.hidden = opening ? getCookie(EASYCHAT_COOKIE_SESSION) === false : true;
 		}
@@ -64,7 +64,6 @@ for (const easychatToggle of easychatToggles) {
 if (EASYCHAT_CONSENT_SETTING === 'consent') {
 	const consent = chatbot.querySelector('.chatbot__consent');
 	const consentButton = consent?.querySelector('.consent-button');
-	const revoke = easychat.querySelector('.revoke');
 	const revokeButton = revoke?.querySelector('.revoke-button');
 
 	if (easychatSession === false) {
@@ -87,7 +86,7 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
 
 	if (revokeButton) {
 		revokeButton.addEventListener('click', () => {
-			removeCookie('easychat_session_id');
+			removeCookie(EASYCHAT_COOKIE_SESSION);
 			if (consent) consent.hidden = false;
 			deepchat.hidden = true;
 			if (header) header.hidden = true;
@@ -95,7 +94,7 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
 		});
 	}
 
-	deepchat.addEventListener('render', (e) => {
+	deepchat.addEventListener('render', () => {
 		addIntroMessage(deepchat);
 
 		if (consentButton) {
@@ -108,16 +107,13 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
 		}
 	});
 } else if (EASYCHAT_CONSENT_SETTING === 'without') {
-
 	if (easychatSession === false) {
 		setCookie(EASYCHAT_COOKIE_SESSION, self.crypto.randomUUID(), '{settings.cookieExpirationMinutes}');
-		easychatSession = getCookie(EASYCHAT_COOKIE_SESSION)
-		console.log(easychatSession)
 	}
 	deepchat.hidden = false;
 	if (header) header.hidden = false;
 
-	deepchat.addEventListener('render', (e) => {
+	deepchat.addEventListener('render', () => {
 		addIntroMessage(deepchat);
 	});
 } else {
@@ -125,7 +121,7 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
 		deepchat.hidden = false;
 		if (header) header.hidden = false;
 
-		deepchat.addEventListener('render', (e) => {
+		deepchat.addEventListener('render', () => {
 			addIntroMessage(deepchat);
 		});
 	} else {
@@ -138,9 +134,7 @@ function addIntroMessage(chatbotReference) {
 }
 
 function setCookie(cname, cvalue, exminutes) {
-	const d = new Date();
-	d.setTime(d.getTime() + (exminutes * 60 * 1000));
-	let expires = "expires=" + d.toUTCString();
+	const expires = "expires=" + new Date(Date.now() + exminutes * 60 * 1000).toUTCString();
 	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 

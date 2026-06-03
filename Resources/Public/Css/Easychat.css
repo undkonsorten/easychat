@@ -31,6 +31,7 @@
     border-radius: 50%;
     aspect-ratio: 1 / 1;
     background-color: var(--easychat-accent-color, blue);
+    overflow: hidden;
 }
 .easychat__home button svg {
 	width: 2em;
@@ -64,7 +65,7 @@
     position: absolute;
     top: 0;
     width: 100%;
-    height: calc(100% - 18px);
+    height: 100%;
     background: var(--easychat-shine-effect, rgba(255, 255, 255, 0.2));
     -webkit-animation: shine 5s ease-in-out infinite;
     animation: shine 5s ease-in-out infinite;

@@ -116,7 +116,7 @@ Last but not least you need to setup a *content element for the chatbot*.
 * Add/create a new content element "Chatbot".
 * Connect the content Element to the reaction.
 
-[![Click to enlarge: Content Element EasyChat](Documentation/Assets/Content-Element_Thumb.png)]((Documentation/Assets/Content-Element.png))
+[![Click to enlarge: Content Element EasyChat](Documentation/Assets/Content-Element_Thumb.png)](Documentation/Assets/Content-Element.png)
 
 ### ✨ YOU ARE DONE!!! 👊 CONGRATULATIONS 🎉
 

@@ -23,19 +23,38 @@ if (getCookie(EASYCHAT_COOKIE_NAGSCREEN) === false) {
     easychatNagscreen.hidden = false;
 }
 
-easychatNagscreen.querySelector('button').addEventListener('click', () => {
+easychatNagscreen.querySelector('button').addEventListener('click', (e) => {
+	e.stopPropagation();
     easychatNagscreen.hidden = true;
     setCookie(EASYCHAT_COOKIE_NAGSCREEN , 'hidden', '{settings.cookieExpirationMinutes}');
 })
 
+function focusDeepChat() {
+	if (!deepchat.hidden) {
+		requestAnimationFrame(() => deepchat.focusInput());
+	}
+}
+
+easychatNagscreen.addEventListener('click', () => {
+	chatbot.hidden = false;
+	easychatNagscreen.hidden = true;
+	for (const easychatToggle of easychatToggles) {
+		easychatToggle.ariaExpanded = true;
+	}
+	focusDeepChat();
+})
+
 for (const easychatToggle of easychatToggles) {
     easychatToggle.addEventListener('click', function() {
-        chatbot.hidden = !chatbot.hidden;
+		const opening = chatbot.hidden;
+		chatbot.hidden = !chatbot.hidden;
         easychatNagscreen.hidden = true;
 
         for (const easychatToggle of easychatToggles) {
             easychatToggle.ariaExpanded = !chatbot.hidden;
         }
+
+		if (opening) focusDeepChat();
     });
 }
 

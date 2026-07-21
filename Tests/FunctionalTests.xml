@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" backupGlobals="true" colors="true" bootstrap="../../../typo3/testing-framework/Resources/Core/Build/FunctionalTestsBootstrap.php" processIsolation="true" stopOnError="false" stopOnFailure="false" stopOnIncomplete="false" stopOnSkipped="false" beStrictAboutTestsThatDoNotTestAnything="false" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.2/phpunit.xsd" cacheDirectory=".phpunit.cache" requireCoverageMetadata="false">
+  <php>
+    <env name="typo3DatabaseDriver" value="mysqli"/>
+    <env name="typo3DatabaseHost" value="db"/>
+    <env name="typo3DatabaseUsername" value="db"/>
+    <env name="typo3DatabasePassword" value="db"/>
+    <env name="typo3DatabasePort" value="3306"/>
+    <env name="typo3DatabaseName" value="test_easychat"/>
+  </php>
+  <testsuites>
+    <testsuite name="Easychat functional tests">
+      <directory>./Functional/</directory>
+    </testsuite>
+  </testsuites>
+  <logging>
+    <junit outputFile="./build/tests/logfile_functional.xml"/>
+    <testdoxHtml outputFile="./build/tests/testdox_functional.html"/>
+    <testdoxText outputFile="./build/tests/testdox_functional.txt"/>
+  </logging>
+  <source>
+    <include>
+      <directory suffix=".php">../Classes/</directory>
+    </include>
+  </source>
+</phpunit>

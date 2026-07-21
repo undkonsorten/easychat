@@ -42,11 +42,25 @@ class AiPlatformFactory
             ],
         ]);
 
-        // Embeddings can be hosted on a different endpoint/provider than the chat
-        // LLM; fall back to the chat LLM's url/api_key when not overridden.
-        $url = $configuration['vector_db_embeddings_url'] ?: $configuration['url'];
-        $apiKey = $configuration['vector_db_embeddings_api_key'] ?: $configuration['api_key'];
+        return GenericPlatformFactory::create(
+            self::resolveEmbeddingsUrl($configuration),
+            self::resolveEmbeddingsApiKey($configuration),
+            HttpClient::create(),
+            $modelCatalog,
+        );
+    }
 
-        return GenericPlatformFactory::create($url, $apiKey, HttpClient::create(), $modelCatalog);
+    /**
+     * Embeddings can be hosted on a different endpoint/provider than the chat LLM;
+     * fall back to the chat LLM's url/api_key when not overridden.
+     */
+    public static function resolveEmbeddingsUrl(array $configuration): string
+    {
+        return $configuration['vector_db_embeddings_url'] ?: $configuration['url'];
+    }
+
+    public static function resolveEmbeddingsApiKey(array $configuration): string
+    {
+        return $configuration['vector_db_embeddings_api_key'] ?: $configuration['api_key'];
     }
 }

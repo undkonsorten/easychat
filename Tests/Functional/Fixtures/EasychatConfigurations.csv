@@ -1,0 +1,7 @@
+"tx_easychat_configuration"
+,"uid","pid","system_message","vector_db","index_configurations","hidden","deleted"
+,1,1,"","qdrant","5,9","0","0"
+,2,1,"","qdrant","9","0","0"
+,3,1,"","none","5","0","0"
+,4,1,"","qdrant","5","1","0"
+,5,1,"","qdrant","5","0","1"

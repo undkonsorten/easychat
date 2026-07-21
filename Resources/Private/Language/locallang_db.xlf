@@ -103,6 +103,27 @@
 			<trans-unit id="tx_easychat_configuration.vector_db_embeddings_model">
 				<source>Emeddings model</source>
 			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_embeddings_url">
+				<source>Embeddings API url (optional)</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_embeddings_url.description">
+				<source>Leave empty to use the same API url as the LLM above. Set this only if the embeddings model is hosted on a different endpoint/provider.</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_embeddings_api_key">
+				<source>Embeddings API key (optional)</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_embeddings_api_key.description">
+				<source>Leave empty to use the same API key as the LLM above. Set this only if the embeddings model is hosted on a different endpoint/provider.</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_dimensions">
+				<source>Embedding dimensions</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.index_configurations">
+				<source>Index configurations</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.index_configurations.description">
+				<source>EXT:index configurations whose indexed pages/files should be embedded into this chatbot's vector store.</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

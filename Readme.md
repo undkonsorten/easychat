@@ -157,6 +157,45 @@ Steps:
 
 ----
 
+## Knowledge base (RAG) via EXT:index
+
+EasyChat can answer questions using your own site content instead of (or in addition to) the LLM's
+general knowledge, by embedding your pages/files into a **Qdrant** vector store and retrieving relevant
+chunks at chat time (`Symfony\AI\Agent\Bridge\SimilaritySearch\SimilaritySearch`, already wired into
+`ChatReaction`).
+
+Indexing itself is delegated to [`lochmueller/index`](https://github.com/lochmueller/index), a generic
+TYPO3 content-crawling framework. EasyChat listens to its `IndexPageEvent`/`IndexFileEvent` (see
+`Classes/Indexing/IndexEventListener.php`) and pushes the crawled content into the vector store(s) of any
+matching *Configuration* record.
+
+Setup:
+
+1. Require the vector store bridge: `composer require symfony/ai-qdrant-store` (not installed by default,
+   since not every EasyChat site uses a vector database).
+2. Create a `tx_index_domain_model_configuration` record (EXT:index) on your site's root page — pick a
+   *technology* (`Database` is fastest, `Frontend` renders real page markup), enable *content indexing*,
+   and set the languages/levels to crawl. See [EXT:index's README](https://github.com/lochmueller/index)
+   for the full field reference.
+3. Create the two scheduler tasks EXT:index needs to actually run: `index:queue` (fills the queue) and
+   `messenger:consume index` (processes it) — see EXT:index's README for details.
+4. On your EasyChat *Configuration* record, set *Vector db* to `Qdrant`, fill in the connection fields
+   (host, port, collection name, API key, embeddings model, and the embedding model's output *dimensions*
+   — e.g. `1536` for `text-embedding-3-small`), and select the index configuration(s) from step 2 in the
+   new *Index configurations* field.
+   * By default the embeddings model is called on the **same API url/key as the chat LLM** above (just a
+     different model id). If your embeddings model lives on a different endpoint/provider, set the
+     optional *Embeddings API url* / *Embeddings API key* fields to override it.
+
+Once a scheduler run has indexed some pages, ask the chatbot a question whose answer only exists in your
+site content — the agent will call the similarity-search tool automatically when relevant.
+
+*Known limitation:* re-indexing a page overwrites its previous vectors, but if a page's content shrinks
+across runs (fewer chunks than before), the extra old chunks from the larger version are not cleaned up
+automatically.
+
+----
+
 
 ## Theming & Templates
 
@@ -237,5 +276,5 @@ Questions? Suggestions? Support needed? Feel free to 📧 [contact us](https://u
 
 ## Planned Featues
 
-* Impoved documentation for the connector to vector database as a knowledge base for the chatbot
-* Website scraping/indexing via TYPO3 for the knowledge base (via vector database)
+* ~~Website scraping/indexing via TYPO3 for the knowledge base (via vector database)~~ — done, see
+  [Knowledge base (RAG) via EXT:index](#knowledge-base-rag-via-extindex)

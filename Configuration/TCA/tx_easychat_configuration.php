@@ -31,12 +31,12 @@ return [
         'llm' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.llm.label',
             'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.llm.description',
-            'showitem' => 'model,url,api_key,--linebreak--,system_message'
+            'showitem' => 'url,api_key,--linebreak--,model,--linebreak--,system_message'
         ],
         'vector' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.label',
             'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.description',
-            'showitem' => 'vector_db,vector_db_host,vector_db_port,vector_db_name,vector_db_api_key,vector_db_embeddings_model,vector_db_dimensions,--linebreak--,vector_db_embeddings_url,vector_db_embeddings_api_key,--linebreak--,index_configurations'
+            'showitem' => 'vector_db_host,vector_db,vector_db_port,vector_db_name,--linebreak--,vector_db_api_key,vector_db_dimensions,--linebreak--,vector_db_embeddings_model,--linebreak--,vector_db_embeddings_url,vector_db_embeddings_api_key,--linebreak--,index_configurations'
         ],
     ],
     'columns' => [
@@ -86,11 +86,15 @@ return [
         'model' => [
             'exclude' => 1,
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.model',
+            'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.model.description',
             'config' => [
                 'type' => 'input',
-                'size' => 30,
+                'size' => 50,
                 'eval' => 'trim',
-                'required' => true
+                'required' => true,
+                'valuePicker' => [
+                    'items' => [],
+                ],
             ],
         ],
         'system_message' => [
@@ -105,6 +109,7 @@ return [
         'url' => [
             'exclude' => 1,
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.url',
+            'onChange' => 'reload',
             'config' => [
                 'type' => 'input',
                 'size' => 30,
@@ -115,6 +120,7 @@ return [
         'api_key' => [
             'exclude' => 1,
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.api_key',
+            'onChange' => 'reload',
             'config' => [
                 'type' => 'input',
                 'size' => 30,
@@ -209,6 +215,7 @@ return [
         ],
         'vector_db_embeddings_model' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_embeddings_model',
+            'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_embeddings_model.description',
             'displayCond' => [
                 'AND' => [
                     'FIELD:vector_db:!=:none',
@@ -220,14 +227,18 @@ return [
             ],
             'config' => [
                 'type' => 'input',
-                'size' => 30,
+                'size' => 50,
                 'eval' => 'trim',
-                'required' => true
+                'required' => true,
+                'valuePicker' => [
+                    'items' => [],
+                ],
             ],
         ],
         'vector_db_embeddings_url' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_embeddings_url',
             'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_embeddings_url.description',
+            'onChange' => 'reload',
             'displayCond' => [
                 'AND' => [
                     'FIELD:vector_db:!=:none',
@@ -246,6 +257,7 @@ return [
         'vector_db_embeddings_api_key' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_embeddings_api_key',
             'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_embeddings_api_key.description',
+            'onChange' => 'reload',
             'displayCond' => [
                 'AND' => [
                     'FIELD:vector_db:!=:none',

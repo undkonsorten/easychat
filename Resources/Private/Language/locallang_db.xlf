@@ -67,6 +67,9 @@
 			<trans-unit id="tx_easychat_configuration.model">
 				<source>Model</source>
 			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.model.description">
+				<source>Pick a model from the dropdown (fetched from the configured API url), or type a custom model name if the server doesn't list it.</source>
+			</trans-unit>
 			<trans-unit id="tx_easychat_configuration.system_message">
 				<source>System prompt</source>
 			</trans-unit>
@@ -102,6 +105,9 @@
 			</trans-unit>
 			<trans-unit id="tx_easychat_configuration.vector_db_embeddings_model">
 				<source>Emeddings model</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_embeddings_model.description">
+				<source>Pick a model from the dropdown (fetched from the embeddings API url, or the LLM API url if that's left empty), or type a custom model name if the server doesn't list it.</source>
 			</trans-unit>
 			<trans-unit id="tx_easychat_configuration.vector_db_embeddings_url">
 				<source>Embeddings API url (optional)</source>

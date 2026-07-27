@@ -116,6 +116,8 @@ Last but not least you need to setup a *content element for the chatbot*.
 * Add/create a new content element "Chatbot".
 * Connect the content Element to the reaction.
 
+> Hint: Use /typo3/reaction/XXXXXXXX-XXXXX instead of https://mydomain.dev/XXXXXXXX-XXXXX in order to be domain independent
+
 [![Click to enlarge: Content Element EasyChat](Documentation/Assets/Content-Element_Thumb.png)](Documentation/Assets/Content-Element.png)
 
 ### ✨ YOU ARE DONE!!! 👊 CONGRATULATIONS 🎉
@@ -209,7 +211,7 @@ Setup:
    and set the languages/levels to crawl. See [EXT:index's README](https://github.com/lochmueller/index)
    for the full field reference.
 3. Create the two scheduler tasks EXT:index needs to actually run: `index:queue` (fills the queue) and
-   `messenger:consume index` (processes it) — see EXT:index's README for details.
+   `messenger:consume` fill `index` in the field **Argument** (processes it) — see EXT:index's README for details.
 4. On your EasyChat *Configuration* record, set *Vector db* to `Qdrant`, fill in the connection fields
    (host, port, collection name, API key, embeddings model, and the embedding model's output *dimensions*
    — e.g. `1536` for `text-embedding-3-small`), and select the index configuration(s) from step 2 in the

@@ -132,6 +132,37 @@ With the **EasyChat backend module** you can watch, review and delete single cha
 ----
 
 
+## Extension Configuration
+
+EasyChat has a small set of global options in the **Extension Configuration**
+(*Admin Tools → Settings → Extension Configuration → `easychat`*, or in
+`config/system/settings.php` under `EXTENSIONS.easychat`):
+
+| Key | Default | Meaning |
+|:----|:--------|:--------|
+| `storagePid` | `1` | Page/folder UID where chat sessions (`tx_easychat_domain_model_session`) are **stored and read**. This applies both to the chat endpoint that saves conversations and to the backend module that lists them — they always use the same value. |
+| `itemsPerPage` | `50` | Number of sessions per page in the backend module list. |
+
+```php
+// config/system/settings.php
+'EXTENSIONS' => [
+    'easychat' => [
+        'storagePid' => '1',
+        'itemsPerPage' => '50',
+    ],
+],
+```
+
+> **Note:** `storagePid` is set here, **not** via TypoScript. A
+> `plugin.tx_easychat.persistence.storagePid` in TypoScript has **no effect**,
+> because sessions are persisted from a TYPO3 *Reaction* (outside the Extbase
+> plugin request), which reads this value directly from the extension
+> configuration. We recommend pointing `storagePid` at a dedicated **sysfolder**
+> rather than the root page.
+
+----
+
+
 ## Automated cleaner task for deleting old chat session
 
 For data protection we recommend to setup the 🗑 *cleaner task* in order to delete old chat sessions.

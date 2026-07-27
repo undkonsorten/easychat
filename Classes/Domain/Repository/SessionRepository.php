@@ -68,6 +68,7 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
         $session = $this->findBy(['session_id' => $this->sessionId])->getFirst();
         if(is_null($session)){
             $session = GeneralUtility::makeInstance(Session::class);
+            $session->setPid($this->pid);
             $session->setSessionId($this->sessionId);
             $session->setMessages($this->serializer->serialize($messages->getMessages(), 'json'));
             $this->add($session);

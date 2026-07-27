@@ -46,7 +46,13 @@ class IndexEventListener
             content: $event->content,
             uri: $event->uri,
             indexConfigurationRecordId: $event->indexConfigurationRecordId,
-            idSeed: sprintf('page:%s:%d:%d', $event->site->getIdentifier(), $event->language, $event->pageUid),
+            // EXT:index dispatches one event per content element when contentIndexing
+            // is enabled, and one per record variant on top of that. All of them share
+            // site/language/pageUid, so the uri (its "#c<uid>" fragment, plus the route
+            // arguments a variant encodes into path or query) is the only discriminator
+            // available — without it every element of a page collides on the same id and
+            // silently overwrites the one before it.
+            idSeed: sprintf('page:%s:%d:%d:%s', $event->site->getIdentifier(), $event->language, $event->pageUid, self::uriDiscriminator($event->uri)),
             extraMetadata: [
                 'pageUid' => $event->pageUid,
                 'language' => $event->language,
@@ -67,6 +73,23 @@ class IndexEventListener
                 'fileIdentifier' => $event->fileIdentifier,
             ],
         );
+    }
+
+    /**
+     * Reduces a uri to the part that distinguishes it from other uris of the same
+     * page: path, query and fragment. The scheme and host are dropped so that ids
+     * stay stable when the same content is indexed from a different environment.
+     */
+    private static function uriDiscriminator(string $uri): string
+    {
+        $parts = parse_url($uri);
+        if ($parts === false) {
+            return $uri;
+        }
+
+        return ($parts['path'] ?? '')
+            . (isset($parts['query']) ? '?' . $parts['query'] : '')
+            . (isset($parts['fragment']) ? '#' . $parts['fragment'] : '');
     }
 
     /**

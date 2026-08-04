@@ -133,9 +133,10 @@ With the **EasyChat backend module** you can watch, review, delete and export ch
 
 ### Exporting sessions as CSV
 
-Use the *Export as CSV* panel on the session list (or *Export this session as CSV* on a single
-session's detail view, to only export that one) to download conversations as CSV. Pick which
-columns to include: *Session id*, *Created at*, *System prompt*, *Questions*, *Answers*.
+Click *Export as CSV* on the session list (or *Export this session as CSV* on a single session's
+detail view, to only export that one) to open a settings dialog and download conversations as
+CSV. Pick which columns to include: *Session id*, *Created at*, *System prompt*, *Questions*,
+*Answers*.
 
 When *Questions* and/or *Answers* are selected, each question/answer turn of a conversation
 becomes its own CSV row (with the other selected columns repeated), instead of concatenating an

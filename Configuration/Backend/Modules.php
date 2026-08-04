@@ -14,7 +14,7 @@ return [
         'extensionName' => 'Easychat',
         'controllerActions' => [
             SessionController::class => [
-                'list', 'show', 'delete', 'export',
+                'list', 'show', 'delete', 'export', 'exportSettings',
             ],
         ],
     ]

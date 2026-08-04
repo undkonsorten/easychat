@@ -1,0 +1,15 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+<f:form action="export" controller="Session" method="get">
+	<f:if condition="{sessionUid}">
+		<f:form.hidden name="sessionUid" value="{sessionUid}" />
+	</f:if>
+	<p>{f:translate(key:'export.hint')}</p>
+	<f:for each="{exportFields}" as="label" key="field">
+		<div class="form-check form-check-inline">
+			<f:form.checkbox class="form-check-input" id="export-field-{field}" name="fields" value="{field}" multiple="1" checked="1" />
+			<label class="form-check-label" for="export-field-{field}"><f:translate key="export.field.{field}" default="{label}"/></label>
+		</div>
+	</f:for>
+</f:form>
+</html>

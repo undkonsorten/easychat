@@ -26,11 +26,17 @@ final class SessionControllerExportTest extends FunctionalTestCase
 
     protected array $testExtensionsToLoad = ['undkonsorten/easychat'];
 
-    public function testExportActionIsRegisteredForTheBackendModule(): void
+    public function testExportActionsAreRegisteredForTheBackendModule(): void
     {
         $moduleConfiguration = require __DIR__ . '/../../../Configuration/Backend/Modules.php';
+        $registeredActions = $moduleConfiguration['easychat']['controllerActions'][SessionController::class];
 
-        self::assertContains('export', $moduleConfiguration['easychat']['controllerActions'][SessionController::class]);
+        self::assertContains('export', $registeredActions);
+        self::assertContains(
+            'exportSettings',
+            $registeredActions,
+            'exportSettings renders the field-selection form loaded into the <typo3-recordlist-record-download-button> modal.',
+        );
     }
 
     public function testSingleSessionExportOnlyIncludesThatSessionsOwnTurns(): void

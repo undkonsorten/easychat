@@ -80,6 +80,26 @@ class SessionController extends ActionController
     }
 
     /**
+     * Renders the field-selection form shown inside the TYPO3 core "download" modal
+     * (<typo3-recordlist-record-download-button>, see Partials/Session/Export.html). Its
+     * "Download" button submits the form rendered here via plain JS form.submit() rather than a
+     * user click, which never fires the form's own submit event - the very thing the backend
+     * module iframe's SPA-style navigation interception hooks into. That's what lets the CSV
+     * download actually happen instead of being swallowed into a nested "frame in a frame".
+     *
+     * @param int|null $sessionUid when given, the form is set up to export only this one session
+     */
+    public function exportSettingsAction(?int $sessionUid = null): ResponseInterface
+    {
+        $this->view->assignMultiple([
+            'exportFields' => $this->sessionCsvExportService->getAvailableFields(),
+            'sessionUid' => $sessionUid,
+        ]);
+
+        return $this->htmlResponse();
+    }
+
+    /**
      * @param string[] $fields which columns to export, see SessionCsvExportService::getAvailableFields()
      * @param int|null $sessionUid when given, only this one session is exported instead of every session
      */

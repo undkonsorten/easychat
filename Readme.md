@@ -127,9 +127,33 @@ Last but not least you need to setup a *content element for the chatbot*.
 
 ## Backend module for chat session logs
 
-With the **EasyChat backend module** you can watch, review and delete single chat session.
+With the **EasyChat backend module** you can watch, review, delete and export chat sessions.
 
 [![Click to enlarge: EasyChat backend Module](Documentation/Assets/Backend-Module_Thumb.png)](Documentation/Assets/Backend-Module.png)
+
+### Exporting sessions as CSV
+
+Use the *Export as CSV* panel on the session list (or *Export this session as CSV* on a single
+session's detail view, to only export that one) to download conversations as CSV. Pick which
+columns to include: *Session id*, *Created at*, *System prompt*, *Questions*, *Answers*.
+
+When *Questions* and/or *Answers* are selected, each question/answer turn of a conversation
+becomes its own CSV row (with the other selected columns repeated), instead of concatenating an
+entire multi-turn conversation into one cell.
+
+### How chat sessions are stored
+
+Each browser session (the `easychat_session_id` cookie) maps to **exactly one row** in
+`tx_easychat_domain_model_session`. The whole conversation — the system prompt plus every
+question and answer — lives as one JSON blob in that row's `messages` column and is updated in
+place after every turn; a new row is only ever created the very first time a given session is
+seen.
+
+*Known limitation:* the system prompt is only ever read from the *Configuration* record's
+*System Message* field when a session is first created (see `ChatReaction::react()`). Editing
+that field later has **no effect on sessions that are already running** — they keep using
+whichever prompt was configured when they started. The new value only applies to sessions
+created after the change.
 
 ----
 

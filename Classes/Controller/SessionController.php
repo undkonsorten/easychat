@@ -8,6 +8,7 @@ use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
@@ -20,6 +21,7 @@ use TYPO3\CMS\Extbase\Property\TypeConverter\PersistentObjectConverter;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use Undkonsorten\Easychat\Domain\Model\Session;
 use Undkonsorten\Easychat\Domain\Repository\SessionRepository;
+use Undkonsorten\Easychat\Service\SessionCsvExportService;
 
 class SessionController extends ActionController
 {
@@ -30,6 +32,7 @@ class SessionController extends ActionController
         private readonly ModuleTemplateFactory $moduleTemplateFactory,
         private readonly IconFactory $iconFactory,
         private readonly ExtensionConfiguration $extensionConfiguration,
+        private readonly SessionCsvExportService $sessionCsvExportService,
     ){}
 
     public function initializeAction(): void
@@ -71,14 +74,43 @@ class SessionController extends ActionController
             'sessions' => $paginator->getPaginatedItems(),
             'pagination' => $pagination,
             'paginator' => $paginator,
+            'exportFields' => $this->sessionCsvExportService->getAvailableFields(),
         ]);
         return $this->moduleTemplate->renderResponse('Session/List');
     }
+
+    /**
+     * @param string[] $fields which columns to export, see SessionCsvExportService::getAvailableFields()
+     * @param int|null $sessionUid when given, only this one session is exported instead of every session
+     */
+    public function exportAction(array $fields = [], ?int $sessionUid = null): ResponseInterface
+    {
+        if ($sessionUid !== null) {
+            $session = $this->sessionRepository->findByUid($sessionUid);
+            $sessions = $session !== null ? [$session] : [];
+            $filenameSubject = $session !== null ? 'session-' . $session->getSessionId() : 'session';
+        } else {
+            $sessions = $this->sessionRepository->findAll();
+            $filenameSubject = 'sessions';
+        }
+
+        $csv = $this->sessionCsvExportService->export($sessions, $fields);
+
+        $response = new Response('php://temp', 200, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="easychat-' . $filenameSubject . '-' . date('Y-m-d-His') . '.csv"',
+        ]);
+        $response->getBody()->write($csv);
+
+        return $response;
+    }
+
     public function showAction(Session $session): ResponseInterface
     {
         $this->moduleTemplate->assignMultiple([
             'session' => $session,
-            'messages' => json_decode((string) $session->getMessages(), true)
+            'messages' => json_decode((string) $session->getMessages(), true),
+            'exportFields' => $this->sessionCsvExportService->getAvailableFields(),
         ]);
         return $this->moduleTemplate->renderResponse('Session/Show');
     }

@@ -6,6 +6,7 @@
 <h1>Single View for Session</h1>
 
 <f:flashMessages />
+<f:render partial="Session/Export" arguments="{exportFields:exportFields,session:session}" />
   <div class="panel panel-space panel-default">
     <div class="panel-heading">
 			{session.sessionId}

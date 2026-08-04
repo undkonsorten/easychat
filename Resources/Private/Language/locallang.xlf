@@ -56,6 +56,33 @@
             <trans-unit id="module.filter.label">
                 <source>Choose a status</source>
             </trans-unit>
+            <trans-unit id="export.headline">
+                <source>Export as CSV</source>
+            </trans-unit>
+            <trans-unit id="export.headline.single">
+                <source>Export this session as CSV</source>
+            </trans-unit>
+            <trans-unit id="export.hint">
+                <source>Choose which columns to include in the CSV export.</source>
+            </trans-unit>
+            <trans-unit id="export.field.sessionId">
+                <source>Session id</source>
+            </trans-unit>
+            <trans-unit id="export.field.createdAt">
+                <source>Created at</source>
+            </trans-unit>
+            <trans-unit id="export.field.systemPrompt">
+                <source>System prompt</source>
+            </trans-unit>
+            <trans-unit id="export.field.questions">
+                <source>Questions</source>
+            </trans-unit>
+            <trans-unit id="export.field.answers">
+                <source>Answers</source>
+            </trans-unit>
+            <trans-unit id="export.submit">
+                <source>Export CSV</source>
+            </trans-unit>
             <trans-unit id="easychat_frontend_plugin_title">
                 <source>Easychat Frontend</source>
             </trans-unit>

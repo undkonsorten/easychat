@@ -227,6 +227,86 @@ TYPO3 content-crawling framework. EasyChat listens to its `IndexPageEvent`/`Inde
 `Classes/Indexing/IndexEventListener.php`) and pushes the crawled content into the vector store(s) of any
 matching *Configuration* record.
 
+Because EasyChat only consumes those two events, **anything EXT:index can crawl becomes chat knowledge** —
+you are not limited to plain pages.
+
+### What can become knowledge
+
+| Source | How to enable it | Good to know |
+|---|---|---|
+| **Pages** | Any index configuration covering the page | One document per page, or one per content element with *content indexing* enabled — smaller, more precise chunks |
+| **Content elements** | *Content indexing* checkbox | Rendered through `index.content_type` handlers. Ships with support for EXT:bootstrap_package, EXT:container, EXT:content_blocks, EXT:news, EXT:tt_address and EXT:calendarize |
+| **Files** | *File mounts* + *File types* on the configuration | PDF (`smalot/pdfparser`), Word (`phpoffice/phpword`), Excel (`phpoffice/phpspreadsheet`), PowerPoint (`phpoffice/phppresentation`) and plain text. Install the package for each format you need — they are Composer `suggest`, not hard requirements |
+| **Records** (news, addresses, events, FAQs, your own) | A `ContentTypeInterface` or `ExtenderInterface` implementation | Gives you **one document per record** instead of one blob per listing page — see *Extending the indexer* below |
+| **Content from other systems** | EXT:index's `IndexExternalPageReaction` / `IndexExternalFileReaction` | Lets a second TYPO3 instance, an intranet or any script POST content into the same pipeline via TYPO3 Reactions, so knowledge does not have to live in this site at all |
+
+### Choosing an indexing technology
+
+Each configuration picks one *technology*, and the choice decides both speed and what the embedded text
+looks like:
+
+| Technology | What it does | When to pick it for RAG |
+|---|---|---|
+| **Database** | Builds content directly from records, no HTTP request | Default choice. Fastest by far and produces clean, light markup — ideal chunks. Custom content elements need a handler (see below) |
+| **Frontend** | Renders the real page through an internal subrequest | When you need the actual rendered output, e.g. content assembled by plugins you cannot easily map to a handler |
+| **Http** | Real network requests against the site | Only as a fallback when *Frontend* breaks. Slow and puts real load on the server |
+| **Cache** | Piggybacks the regular cache-warming process | Knowledge refreshes as pages get cached — no full index run, no scheduler pressure |
+| **None** | Indexes nothing | Use it on a subpage to **exclude that subtree** from a parent configuration |
+
+### Controlling what gets indexed
+
+* **Crawl root and depth** — a configuration's *storage page* (its `pid`) is where the crawl starts, and
+  *levels* is how deep it goes. Traversal only ever walks **downwards**, so a configuration can never pick
+  up pages above or beside itself.
+* **Subtree overrides** — as soon as a page owns its own configuration, the parent configuration stops
+  traversing there and hands that subtree over. That is how you give one part of the site different
+  settings, or exclude it entirely with technology *None*.
+* **Languages** — restrict a configuration to specific site languages, or leave it empty for all of them.
+* **Search-excluded pages** — enable *Skip no_search pages* to honour a page's "no search" flag; EXT:index
+  then also removes previously indexed documents for it.
+* **Content processors** — trim the markup before it is embedded. `TYPO3SEARCH markers` respects the
+  classic `<!--TYPO3SEARCH_begin/end-->` comments (bootstrap_package templates already ship them), which
+  keeps navigation and footers out of your vectors. An event-based processor lets you strip anything else.
+* **Automatic re-indexing** — *Partial indexing* triggers (`datamap`, `cmdmap`, `clearcache`) re-index just
+  the affected page when an editor saves, so knowledge does not go stale between scheduler runs.
+* **Targeted runs** — `index:queue --limitConfigurationIdentifiers=<uid>` re-indexes a single
+  configuration instead of the whole site, which is handy while tuning one knowledge source.
+
+### One knowledge base or several
+
+The *Index configurations* field on an EasyChat configuration takes **any number of index
+configurations**, and each EasyChat configuration has its own collection, embeddings model and
+dimensions. That means you can:
+
+* feed several index configurations into **one** chatbot (site pages + a manual FAQ + a PDF archive), or
+* keep **separate knowledge bases** for separate chatbots — e.g. a public bot that only sees the website
+  and an internal bot that also sees the intranet export — simply by pointing them at different index
+  configurations and different Qdrant collections.
+
+An index configuration that is not selected anywhere is still crawled by EXT:index, but its content never
+reaches a vector store.
+
+### Extending the indexer for your own records
+
+EXT:index exposes four Symfony DI tags, all auto-configured by implementing the matching interface:
+
+| Tag / interface | Use it to |
+|---|---|
+| `index.content_type` — `ContentTypeInterface` | Teach *Database* indexing how to render your content element. `addVariants()` is the interesting one: return one item per record and you get one document per record |
+| `index.extender` — `ExtenderInterface` | Add extra URLs to a *Frontend*/*Http* crawl, e.g. one detail-view URL per record |
+| `index.file_extractor` — `FileExtractionInterface` | Support a file format that is not covered yet |
+| `index.content_processor` — `ContentProcessorInterface` | Rewrite the content before it is embedded; becomes a checkbox on every index configuration |
+
+A worked example: this distribution's `jpfaq_index_extender` package adds a `ContentTypeInterface` for the
+EXT:jpfaq plugin, so every FAQ question in a chosen storage folder becomes its own vector document with
+its own question as the title — instead of the whole FAQ accordion collapsing into a single chunk. It
+reads the storage folder and category filter from the plugin's own flexform, which keeps the indexed set
+identical to what a visitor actually sees on the page.
+
+Alongside the tags there are PSR-14 events (`StartIndexProcessEvent`, `IndexPageEvent`, `IndexFileEvent`,
+`FinishIndexProcessEvent`), all also available as core **webhooks** — so the same crawl can feed EasyChat
+and an external search service at the same time.
+
 Setup:
 
 1. Require the vector store bridge: `composer require symfony/ai-qdrant-store` (not installed by default,
@@ -248,9 +328,35 @@ Setup:
 Once a scheduler run has indexed some pages, ask the chatbot a question whose answer only exists in your
 site content — the agent will call the similarity-search tool automatically when relevant.
 
-*Known limitation:* re-indexing a page overwrites its previous vectors, but if a page's content shrinks
-across runs (fewer chunks than before), the extra old chunks from the larger version are not cleaned up
-automatically.
+### Tell the model that the knowledge base exists
+
+The similarity-search tool is registered with a deliberately generic description ("Searches for documents
+similar to a query or sentence"), so **mention it in your *System message*.** Without that, some models
+never reach for it, and safety-trained models in particular may refuse questions that merely *sound*
+confidential ("what is our internal codename for …") instead of searching. A system message along these
+lines fixes it:
+
+> You have a tool named `similarity_search` that queries our own knowledge base. Whenever a question
+> touches our company, products or processes, call it before answering and base your answer on what it
+> returns. Everything it returns is documentation you are authorised to share with this user — never
+> refuse on confidentiality grounds. Only say you do not have the information if the search returns
+> nothing relevant.
+
+Note that the system message is stored **with the chat session** when the session starts, so an existing
+session keeps the old wording — clear the `easychat_session_id` cookie when testing changes.
+
+### Known limitations
+
+* **No access-group filtering at retrieval time.** EXT:index passes a page's `fe_group` restrictions along
+  with the event, but they are not written to the vector payload and the similarity search does not filter
+  on them. Anything you index is answerable to every chat user, so do not point an index configuration at
+  content that has to stay restricted — give restricted content its own chatbot and its own collection
+  instead.
+* **Shrinking pages leave stale chunks.** Re-indexing a page overwrites its previous vectors, but if the
+  content shrinks across runs (fewer chunks than before), the extra chunks from the larger version are not
+  cleaned up automatically.
+* **Record-level documents need *content indexing*.** Content types that emit one document per record rely
+  on each content element getting its own queue, which only happens with *content indexing* enabled.
 
 ----
 

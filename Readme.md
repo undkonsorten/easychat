@@ -345,16 +345,37 @@ lines fixes it:
 Note that the system message is stored **with the chat session** when the session starts, so an existing
 session keeps the old wording — clear the `easychat_session_id` cookie when testing changes.
 
+### Access restricted content is never indexed
+
+Retrieval applies no per-user filter — everything in the vector store is answerable to every chat user,
+including anonymous ones. EasyChat therefore refuses to embed anything an anonymous visitor could not see:
+`IndexEventListener` drops a page event unless its access groups are empty or explicitly contain `-1`
+("hide at login"), which mirrors what TYPO3's `FrontendGroupRestriction` admits for a visitor with no
+login.
+
+Two consequences worth knowing:
+
+* **Login-only content cannot be chat knowledge.** Pages behind an `fe_group` are skipped, by design. If
+  you need a bot over restricted content, give it its own EasyChat configuration and its own collection,
+  and put access control in front of the chat itself.
+* **With *Cache* technology, only guest requests contribute.** That queue reports the group ids of the
+  visitor whose request filled the cache, and a logged-in visitor's ids never contain `-1`. Pages first
+  cached for a logged-in member are skipped and picked up later when a guest requests them.
+
+File events carry no access information at all (`IndexFileEvent` has no access groups), so files are
+embedded purely on the basis of the *File mounts* you configure — keep restricted documents out of those
+mounts.
+
 ### Known limitations
 
-* **No access-group filtering at retrieval time.** EXT:index passes a page's `fe_group` restrictions along
-  with the event, but they are not written to the vector payload and the similarity search does not filter
-  on them. Anything you index is answerable to every chat user, so do not point an index configuration at
-  content that has to stay restricted — give restricted content its own chatbot and its own collection
-  instead.
 * **Shrinking pages leave stale chunks.** Re-indexing a page overwrites its previous vectors, but if the
   content shrinks across runs (fewer chunks than before), the extra chunks from the larger version are not
   cleaned up automatically.
+* **Removed content is not un-indexed.** Deleting a page, or putting it behind an `fe_group` after it was
+  already indexed, does not remove its existing vectors — nothing deletes from the store. To purge, drop
+  the collection and re-index:
+  `curl -X DELETE -H "api-key: <key>" <qdrant>/collections/<collection>` followed by a full `index:queue`
+  run. The next `add()` recreates the collection.
 * **Record-level documents need *content indexing*.** Content types that emit one document per record rely
   on each content element getting its own queue, which only happens with *content indexing* enabled.
 

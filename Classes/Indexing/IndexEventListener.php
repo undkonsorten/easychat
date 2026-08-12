@@ -41,6 +41,12 @@ class IndexEventListener
     #[AsEventListener(identifier: 'easychat/index-page')]
     public function onIndexPage(IndexPageEvent $event): void
     {
+        // Retrieval applies no per-user filter, so everything in the store is answerable to
+        // every chat user. Access restricted content therefore must not enter it at all.
+        if (!self::isVisibleToAnonymousVisitor($event->accessGroups)) {
+            return;
+        }
+
         $this->handle(
             title: $event->title,
             content: $event->content,
@@ -56,8 +62,29 @@ class IndexEventListener
             extraMetadata: [
                 'pageUid' => $event->pageUid,
                 'language' => $event->language,
+                // Always empty or [-1] by the check above. Stored so that a point can be
+                // told apart from one written before access filtering existed.
+                'accessGroups' => array_values($event->accessGroups),
             ],
         );
+    }
+
+    /**
+     * Mirrors what TYPO3's FrontendGroupRestriction admits for a visitor without a login,
+     * whose group ids are [0, -1]: either no restriction at all, or one that explicitly
+     * includes "-1" (hide at login).
+     *
+     * What $accessGroups means depends on the technology, and the same rule is correct for
+     * both readings. The database/frontend/http queues report the page's own fe_group. The
+     * cache queue instead reports the group ids of the visitor whose request filled the
+     * cache — a logged-in visitor's ids never contain -1, so content cached for a member is
+     * skipped and only picked up again when a guest triggers the same page.
+     *
+     * @param int[] $accessGroups
+     */
+    private static function isVisibleToAnonymousVisitor(array $accessGroups): bool
+    {
+        return $accessGroups === [] || \in_array(-1, $accessGroups, true);
     }
 
     #[AsEventListener(identifier: 'easychat/index-file')]

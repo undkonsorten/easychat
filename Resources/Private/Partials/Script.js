@@ -1,6 +1,7 @@
 <f:variable name="consentAcceptedMessageLLL" value="{f:translate(key: 'easychat_dataProtectionConsentAcceptedMessage')}"/>
 <f:variable name="introMessageLLL" value="{f:translate(key: 'easychat_introMessage')}"/>
 <f:variable name="introMessage">{settings.introMessage ?: introMessageLLL}</f:variable>
+<f:variable name="cookieExpirationMinutes">{settings.cookieExpirationMinutes ?: 30}</f:variable>
 
 const easychat = document.getElementById('easychat');
 const EASYCHAT_COOKIE_SESSION = 'easychat_session_id';
@@ -24,7 +25,7 @@ if (easychatNagscreen) {
 	easychatNagscreen.querySelector('button').addEventListener('click', (e) => {
 		e.stopPropagation();
 		easychatNagscreen.hidden = true;
-		setCookie(EASYCHAT_COOKIE_NAGSCREEN, 'hidden', '{settings.cookieExpirationMinutes}');
+		setCookie(EASYCHAT_COOKIE_NAGSCREEN, 'hidden', '{cookieExpirationMinutes}');
 	});
 
 	easychatNagscreen.addEventListener('click', () => {
@@ -76,7 +77,7 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
 
 	if (consentButton) {
 		consentButton.addEventListener('click', () => {
-			setCookie(EASYCHAT_COOKIE_SESSION, self.crypto.randomUUID(), '{settings.cookieExpirationMinutes}');
+			setCookie(EASYCHAT_COOKIE_SESSION, self.crypto.randomUUID(), '{cookieExpirationMinutes}');
 			if (consent) consent.hidden = true;
 			deepchat.hidden = false;
 			if (header) header.hidden = false;
@@ -108,7 +109,7 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
 	});
 } else if (EASYCHAT_CONSENT_SETTING === 'without') {
 	if (easychatSession === false) {
-		setCookie(EASYCHAT_COOKIE_SESSION, self.crypto.randomUUID(), '{settings.cookieExpirationMinutes}');
+		setCookie(EASYCHAT_COOKIE_SESSION, self.crypto.randomUUID(), '{cookieExpirationMinutes}');
 	}
 	deepchat.hidden = false;
 	if (header) header.hidden = false;

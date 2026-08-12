@@ -13,3 +13,9 @@ services:
       - name: 'console.command'
         command: 'easychat:delete-sessions'
         description: 'Deletes sessions older than given date interval.'
+
+  # TYPO3 core instantiates FormDataProviders via GeneralUtility::makeInstance()
+  # without constructor arguments, bypassing constructor injection unless the
+  # service is public in the DI container.
+  Undkonsorten\Easychat\FormDataProvider\ModelValuePickerDataProvider:
+    public: true

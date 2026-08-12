@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Undkonsorten\Easychat\Tests\Functional\FormDataProvider;
 
 use TYPO3\CMS\Backend\Form\FormDataProvider\TcaInputPlaceholders;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Undkonsorten\Easychat\FormDataProvider\ModelValuePickerDataProvider;
 
@@ -33,6 +34,31 @@ final class ModelValuePickerDataProviderTest extends FunctionalTestCase
     public function testProviderIsAutowireableFromTheRealContainer(): void
     {
         $provider = $this->get(ModelValuePickerDataProvider::class);
+
+        self::assertInstanceOf(ModelValuePickerDataProvider::class, $provider);
+    }
+
+    /**
+     * Regression test for a bug where editing ANY record (e.g. a page) failed with
+     * "Too few arguments to function ModelValuePickerDataProvider::__construct()".
+     *
+     * FormEngine's OrderedProviderList instantiates every registered tcaDatabaseRecord
+     * provider via `GeneralUtility::makeInstance($providerClassName)` with no
+     * constructor arguments (see TYPO3\CMS\Backend\Form\FormDataGroup\OrderedProviderList).
+     * makeInstance() only delegates to the DI container - and thus only performs
+     * constructor injection - for services the container reports as *public*
+     * (`self::$container->has($className)`); everything else falls back to a bare
+     * `new $className()`.
+     *
+     * self::get() above is not equivalent: it falls back to the testing framework's
+     * private container and would happily resolve a non-public service, so it passed
+     * even while this extension's Services.yaml default of `public: false` left
+     * ModelValuePickerDataProvider unreachable in production. Only makeInstance()
+     * reproduces the real crash.
+     */
+    public function testProviderCanBeBuiltByGeneralUtilityMakeInstanceWithoutArgumentsLikeFormEngineDoes(): void
+    {
+        $provider = GeneralUtility::makeInstance(ModelValuePickerDataProvider::class);
 
         self::assertInstanceOf(ModelValuePickerDataProvider::class, $provider);
     }

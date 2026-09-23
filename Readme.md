@@ -264,6 +264,8 @@ looks like:
 * **Languages** — restrict a configuration to specific site languages, or leave it empty for all of them.
 * **Search-excluded pages** — enable *Skip no_search pages* to honour a page's "no search" flag; EXT:index
   then also removes previously indexed documents for it.
+* **Plain text** — EasyChat converts the HTML of pages to readable text (tags and attributes dropped, block
+  boundaries kept as line breaks) before it is embedded, so markup never reaches the vectors or the model.
 * **Content processors** — trim the markup before it is embedded. `TYPO3SEARCH markers` respects the
   classic `<!--TYPO3SEARCH_begin/end-->` comments (bootstrap_package templates already ship them), which
   keeps navigation and footers out of your vectors. An event-based processor lets you strip anything else.
@@ -361,6 +363,12 @@ Two consequences worth knowing:
 * **With *Cache* technology, only guest requests contribute.** That queue reports the group ids of the
   visitor whose request filled the cache, and a logged-in visitor's ids never contain `-1`. Pages first
   cached for a logged-in member are skipped and picked up later when a guest requests them.
+
+**Hidden and scheduled content stays out, too — also with the Frontend technology.** On the command line
+(`index:queue`, the scheduler) TYPO3 sets a visibility that includes hidden pages, hidden content and
+content outside its start/stop time, and EXT:index renders Frontend pages without resetting it. EasyChat
+decorates EXT:index's `FrontendContextBuilder` (`GuestFrontendContextBuilder`) so that these pages are
+rendered exactly as an anonymous visitor sees them.
 
 File events carry no access information at all (`IndexFileEvent` has no access groups), so files are
 embedded purely on the basis of the *File mounts* you configure — keep restricted documents out of those

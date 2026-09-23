@@ -142,6 +142,36 @@
 			<trans-unit id="tx_easychat_configuration.vector_db_sync_removals.description">
 				<source>At the end of every index run, delete what the run did not index again: deleted, hidden, expired, access restricted or no_search content and removed files. A full run cleans the whole index configuration, a partial run (on save) only the pages it re-indexed.</source>
 			</trans-unit>
+			<trans-unit id="tx_easychat_index_point">
+				<source>Vector store point (index tracking)</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_index_point.configuration">
+				<source>EasyChat configuration (store)</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_index_point.index_configuration">
+				<source>Index configuration</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_index_point.kind">
+				<source>Kind (page or file)</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_index_point.page_uid">
+				<source>Page</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_index_point.language">
+				<source>Language</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_index_point.point_id">
+				<source>Point id in the vector store</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_index_point.document_id">
+				<source>Document id (all chunks of one document share it)</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_index_point.index_process">
+				<source>Index run that last wrote it</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_index_point.tstamp">
+				<source>Last written</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

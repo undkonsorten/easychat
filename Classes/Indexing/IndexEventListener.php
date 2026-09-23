@@ -73,7 +73,8 @@ class IndexEventListener implements LoggerAwareInterface
 
         $this->handle(
             title: $event->title,
-            content: $event->content,
+            // Pages arrive as HTML; files are already plain text from their extractors.
+            content: HtmlToText::convert($event->content),
             uri: $event->uri,
             indexConfigurationRecordId: $event->indexConfigurationRecordId,
             indexProcessId: $event->indexProcessId,
@@ -135,9 +136,9 @@ class IndexEventListener implements LoggerAwareInterface
      * for a single messenger worker. A partial run on a page whose last content element was
      * removed emits no page event, so that page is only cleaned by the next full run.
      *
-     * EXT:index logs and swallows exceptions, both its own (a page that fails to render or
-     * fetch is simply not emitted) and ours (e.g. the embeddings API went down), so a run can
-     * reach its end with current content never re-written. A process in which writing failed,
+     * A run can reach its end with current content never re-written: EXT:index skips pages that
+     * fail to render or fetch without telling anyone, and a failure to write into the store (e.g.
+     * the embeddings API went down) is logged here rather than passed on. A process in which writing failed,
      * or that wrote nothing, is therefore not swept, and a sweep that is not limited to the
      * pages the process emitted is skipped when it would remove more than the configured
      * share (vector_db_sync_removals_threshold).
@@ -159,42 +160,54 @@ class IndexEventListener implements LoggerAwareInterface
                 continue;
             }
 
-            $uid = (int)$configuration['uid'];
-            if ($event->type === IndexType::Full) {
-                if ($this->registry->countOfProcess($uid, $indexConfiguration, $event->indexProcessId) > 0) {
-                    $this->sweepUnlessExcessive(
-                        $configuration,
-                        $indexConfiguration,
-                        $this->registry->findNotInProcess($uid, $indexConfiguration, $event->indexProcessId),
-                        $this->registry->countTracked($uid, $indexConfiguration),
-                    );
-                }
-                continue;
+            try {
+                $this->sweep($configuration, $indexConfiguration, $event);
+            } catch (\Throwable $exception) {
+                $this->logFailure('Removing vectors after an index run failed', $exception, $configuration, ['indexProcess' => $event->indexProcessId]);
             }
+        }
+    }
 
-            // A partial run only re-emits what it was triggered for — for the Cache technology one
-            // page in one language — so anything outside of that is still current. Only the pages
-            // it emitted can be swept, which also means a page that failed to render is never in
-            // scope.
-            $pages = $this->registry->pagesOfProcess($uid, $indexConfiguration, $event->indexProcessId);
-            if ($pages !== []) {
-                $this->removePoints(
-                    $configuration,
-                    $indexConfiguration,
-                    $this->registry->findNotInProcess($uid, $indexConfiguration, $event->indexProcessId, IndexPointRegistry::KIND_PAGE, $pages),
-                );
-            }
-
-            // The Cache technology re-emits every file of the configuration with each page it
-            // caches, so a partial run that emitted files emitted all of them.
-            if ($this->registry->countOfProcess($uid, $indexConfiguration, $event->indexProcessId, IndexPointRegistry::KIND_FILE) > 0) {
+    /**
+     * @param array<string, mixed> $configuration
+     */
+    private function sweep(array $configuration, int $indexConfiguration, FinishIndexProcessEvent $event): void
+    {
+        $uid = (int)$configuration['uid'];
+        if ($event->type === IndexType::Full) {
+            if ($this->registry->countOfProcess($uid, $indexConfiguration, $event->indexProcessId) > 0) {
                 $this->sweepUnlessExcessive(
                     $configuration,
                     $indexConfiguration,
-                    $this->registry->findNotInProcess($uid, $indexConfiguration, $event->indexProcessId, IndexPointRegistry::KIND_FILE),
-                    $this->registry->countTracked($uid, $indexConfiguration, IndexPointRegistry::KIND_FILE),
+                    $this->registry->findNotInProcess($uid, $indexConfiguration, $event->indexProcessId),
+                    $this->registry->countTracked($uid, $indexConfiguration),
                 );
             }
+            return;
+        }
+
+        // A partial run only re-emits what it was triggered for — for the Cache technology one
+        // page in one language — so anything outside of that is still current. Only the pages
+        // it emitted can be swept, which also means a page that failed to render is never in
+        // scope.
+        $pages = $this->registry->pagesOfProcess($uid, $indexConfiguration, $event->indexProcessId);
+        if ($pages !== []) {
+            $this->removePoints(
+                $configuration,
+                $indexConfiguration,
+                $this->registry->findNotInProcess($uid, $indexConfiguration, $event->indexProcessId, IndexPointRegistry::KIND_PAGE, $pages),
+            );
+        }
+
+        // The Cache technology re-emits every file of the configuration with each page it
+        // caches, so a partial run that emitted files emitted all of them.
+        if ($this->registry->countOfProcess($uid, $indexConfiguration, $event->indexProcessId, IndexPointRegistry::KIND_FILE) > 0) {
+            $this->sweepUnlessExcessive(
+                $configuration,
+                $indexConfiguration,
+                $this->registry->findNotInProcess($uid, $indexConfiguration, $event->indexProcessId, IndexPointRegistry::KIND_FILE),
+                $this->registry->countTracked($uid, $indexConfiguration, IndexPointRegistry::KIND_FILE),
+            );
         }
     }
 
@@ -212,8 +225,13 @@ class IndexEventListener implements LoggerAwareInterface
         }
 
         foreach ($this->getSyncingConfigurations() as $configuration) {
-            foreach ($this->registry->findOnPage((int)$configuration['uid'], $page['pageUid'], $page['language']) as $indexConfiguration => $pointIds) {
-                $this->removePoints($configuration, $indexConfiguration, $pointIds);
+            try {
+                foreach ($this->registry->findOnPage((int)$configuration['uid'], $page['pageUid'], $page['language']) as $indexConfiguration => $pointIds) {
+                    $this->removePoints($configuration, $indexConfiguration, $pointIds);
+                }
+            } catch (\Throwable $exception) {
+                // Runs inside the editor's save; a store that is down must not break it.
+                $this->logFailure('Removing the vectors of a no_search page failed', $exception, $configuration, ['uri' => $event->uri]);
             }
         }
     }
@@ -281,8 +299,11 @@ class IndexEventListener implements LoggerAwareInterface
                     $this->registry->findStaleChunks($uid, $indexConfigurationRecordId, $documentId, $chunkIds),
                 );
             } catch (\Throwable $exception) {
+                // Never passed on: with the Cache technology and a synchronous transport this runs
+                // inside a visitor's page request, and EXT:index only catches \Exception, so an
+                // \Error (e.g. symfony/ai 0.1's TypeError on a rate limit) would break the page.
                 $this->failedProcesses[$indexProcessId] = true;
-                throw $exception;
+                $this->logFailure('Indexing into the vector store failed', $exception, $configuration, ['uri' => $uri, 'indexProcess' => $indexProcessId]);
             }
         }
     }
@@ -369,6 +390,18 @@ class IndexEventListener implements LoggerAwareInterface
             $this->resolveTarget($configuration)->remover->remove($orphans);
         }
         $this->registry->forget($uid, $indexConfiguration, $pointIds);
+    }
+
+    /**
+     * @param array<string, mixed> $configuration
+     * @param array<string, mixed> $context
+     */
+    private function logFailure(string $message, \Throwable $exception, array $configuration, array $context): void
+    {
+        $this->logger?->error($message . ': ' . $exception->getMessage(), $context + [
+            'configuration' => (int)$configuration['uid'],
+            'exception' => $exception,
+        ]);
     }
 
     /**

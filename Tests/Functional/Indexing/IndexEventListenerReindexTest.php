@@ -267,20 +267,20 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
         self::assertCount(2, $this->store->points());
     }
 
-    public function testNothingIsRemovedAfterARunThatFailedToWrite(): void
+    /**
+     * With the Cache technology and a synchronous transport, indexing runs inside a visitor's
+     * page request, and EXT:index only catches \Exception. A failure — here the TypeError
+     * symfony/ai 0.1 throws on a rate limit — must therefore stay inside the listener.
+     */
+    public function testAFailedWriteNeitherEscapesNorLeadsToRemovals(): void
     {
         $failingVectorizer = $this->createStub(VectorizerInterface::class);
-        $failingVectorizer->method('vectorize')->willThrowException(new \RuntimeException('embeddings API down'));
+        $failingVectorizer->method('vectorize')->willThrowException(new \TypeError('RateLimitExceededException::__construct(): Argument #1 must be of type ?int, string given'));
 
         $this->indexTwoElements($this->createListener(), self::WITH_SYNC, 'run-1');
 
         $listener = $this->createListener($failingVectorizer);
-        try {
-            $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'run-2', 10, 'Kept element.'));
-            self::fail('The vectorizer exception must not be swallowed.');
-        } catch (\RuntimeException) {
-            // EXT:index logs it and carries on to the finish event.
-        }
+        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'run-2', 10, 'Kept element.'));
         $listener->onFinishIndexProcess($this->finishEvent(self::WITH_SYNC, 'run-2', IndexType::Full));
 
         self::assertCount(2, $this->store->points());

@@ -130,6 +130,12 @@
 			<trans-unit id="tx_easychat_configuration.index_configurations.description">
 				<source>EXT:index configurations whose indexed pages/files should be embedded into this chatbot's vector store.</source>
 			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_sync_removals">
+				<source>Remove unpublished content from the vector store</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_sync_removals.description">
+				<source>At the end of every index run, delete what the run did not index again: deleted, hidden, expired, access restricted or no_search content and removed files. A full run cleans the whole index configuration, a partial run (on save) only the pages it re-indexed.</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

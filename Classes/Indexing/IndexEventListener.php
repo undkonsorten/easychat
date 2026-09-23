@@ -2,27 +2,36 @@
 
 namespace Undkonsorten\Easychat\Indexing;
 
+use Lochmueller\Index\Enums\IndexType;
+use Lochmueller\Index\Event\FinishIndexProcessEvent;
 use Lochmueller\Index\Event\IndexFileEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
 use Symfony\AI\Store\Document\Metadata;
 use Symfony\AI\Store\Document\TextDocument;
 use Symfony\AI\Store\Document\Transformer\TextSplitTransformer;
-use Symfony\AI\Store\Document\Vectorizer;
-use Symfony\AI\Store\StoreInterface;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use Undkonsorten\Easychat\Factories\StoreFactory;
-use Undkonsorten\Easychat\Factories\VectorizerFactory;
 
 /**
  * Bridges EXT:index's page/file crawl events into the vector store(s) configured
  * on tx_easychat_configuration records, so the SimilaritySearch tool used in
  * ChatReaction has content to retrieve.
  *
- * Known limitation: chunk ids are deterministic per page/file so re-indexing
- * overwrites existing chunks, but if a page shrinks to fewer chunks than a
- * previous run, the trailing stale chunks are not deleted (StoreInterface
- * exposes no delete/filtered-delete operation).
+ * Chunk ids are deterministic per page/file, so re-indexing overwrites existing
+ * chunks in place; chunks left over from a larger previous version of the same
+ * document are deleted right after.
+ *
+ * Content that is no longer emitted at all (deleted, hidden, access restricted,
+ * no_search, ...) is only removed when the configuration enables
+ * vector_db_sync_removals: at the end of an index process, every point of that
+ * index configuration not re-written by the process is deleted — the whole
+ * configuration after a full run, only the pages touched after a partial one.
+ *
+ * Which points exist is tracked in IndexPointRegistry, and deleting only needs a
+ * delete-by-id, so none of this depends on a particular vector store. Points written
+ * before the registry existed are unknown to it and never deleted; drop the
+ * collection and re-index once to get rid of them.
  */
 class IndexEventListener
 {
@@ -31,11 +40,16 @@ class IndexEventListener
     /** @var array<int, array<int, array<string, mixed>>> indexConfigurationRecordId => matching tx_easychat_configuration rows */
     private array $targetsByIndexConfiguration = [];
 
-    /** @var array<int, array{store: StoreInterface, vectorizer: Vectorizer}> configuration uid => resolved store/vectorizer */
+    /** @var array<int, VectorTarget> configuration uid => resolved store/vectorizer/remover */
     private array $resolved = [];
+
+    /** @var array<string, true> index process ids in which writing to a store failed */
+    private array $failedProcesses = [];
 
     public function __construct(
         private readonly ConnectionPool $connectionPool,
+        private readonly VectorTargetFactory $vectorTargetFactory,
+        private readonly IndexPointRegistry $registry,
     ) {}
 
     #[AsEventListener(identifier: 'easychat/index-page')]
@@ -52,6 +66,8 @@ class IndexEventListener
             content: $event->content,
             uri: $event->uri,
             indexConfigurationRecordId: $event->indexConfigurationRecordId,
+            indexProcessId: $event->indexProcessId,
+            pageUid: $event->pageUid,
             // EXT:index dispatches one event per content element when contentIndexing
             // is enabled, and one per record variant on top of that. All of them share
             // site/language/pageUid, so the uri (its "#c<uid>" fragment, plus the route
@@ -95,11 +111,62 @@ class IndexEventListener
             content: $event->content,
             uri: $event->uri,
             indexConfigurationRecordId: $event->indexConfigurationRecordId,
+            indexProcessId: $event->indexProcessId,
+            pageUid: 0,
             idSeed: sprintf('file:%s:%s', $event->site->getIdentifier(), $event->fileIdentifier),
             extraMetadata: [
                 'fileIdentifier' => $event->fileIdentifier,
             ],
         );
+    }
+
+    /**
+     * Relies on EXT:index dispatching the finish message after all page/file messages of the
+     * process, and on those being handled before it — true for the synchronous transport and
+     * for a single messenger worker. A partial run on a page whose last content element was
+     * removed emits no page event, so that page is only cleaned by the next full run.
+     *
+     * EXT:index logs and swallows exceptions from page handlers, so a run can reach its end
+     * with part of the content never re-written (e.g. the embeddings API went down). Sweeping
+     * then would delete perfectly current content, so a process that failed, or wrote nothing
+     * at all, is not swept.
+     */
+    #[AsEventListener(identifier: 'easychat/index-finish')]
+    public function onFinishIndexProcess(FinishIndexProcessEvent $event): void
+    {
+        if ($event->indexConfigurationRecordId === null) {
+            return;
+        }
+        if (isset($this->failedProcesses[$event->indexProcessId])) {
+            unset($this->failedProcesses[$event->indexProcessId]);
+            return;
+        }
+
+        foreach ($this->getTargetConfigurations($event->indexConfigurationRecordId) as $configuration) {
+            if (!(bool)($configuration['vector_db_sync_removals'] ?? false)) {
+                continue;
+            }
+
+            $uid = (int)$configuration['uid'];
+            if ($event->type === IndexType::Full) {
+                if ($this->registry->countOfProcess($uid, $event->indexConfigurationRecordId, $event->indexProcessId) === 0) {
+                    continue;
+                }
+                $pageUids = null;
+            } else {
+                // A partial run only re-emits the pages it was triggered for, so anything outside
+                // of them is still current and must not be swept.
+                $pageUids = $this->registry->pageUidsOfProcess($uid, $event->indexConfigurationRecordId, $event->indexProcessId);
+                if ($pageUids === []) {
+                    continue;
+                }
+            }
+
+            $this->removePoints(
+                $configuration,
+                $this->registry->findNotInProcess($uid, $event->indexConfigurationRecordId, $event->indexProcessId, $pageUids),
+            );
+        }
     }
 
     /**
@@ -122,22 +189,29 @@ class IndexEventListener
     /**
      * @param array<string, mixed> $extraMetadata
      */
-    private function handle(string $title, string $content, string $uri, int $indexConfigurationRecordId, string $idSeed, array $extraMetadata): void
+    private function handle(string $title, string $content, string $uri, int $indexConfigurationRecordId, string $indexProcessId, int $pageUid, string $idSeed, array $extraMetadata): void
     {
         if (trim($content) === '') {
             return;
         }
 
         foreach ($this->getTargetConfigurations($indexConfigurationRecordId) as $configuration) {
-            $this->indexInto($configuration, $title, $content, $uri, $idSeed, $extraMetadata);
+            try {
+                $chunkIds = $this->indexInto($configuration, $title, $content, $uri, $idSeed, $extraMetadata);
+                $this->registerChunks($configuration, $idSeed, $chunkIds, $indexConfigurationRecordId, $indexProcessId, $pageUid);
+            } catch (\Throwable $exception) {
+                $this->failedProcesses[$indexProcessId] = true;
+                throw $exception;
+            }
         }
     }
 
     /**
      * @param array<string, mixed> $configuration
      * @param array<string, mixed> $extraMetadata
+     * @return string[] ids of the chunks written
      */
-    private function indexInto(array $configuration, string $title, string $content, string $uri, string $idSeed, array $extraMetadata): void
+    private function indexInto(array $configuration, string $title, string $content, string $uri, string $idSeed, array $extraMetadata): array
     {
         $target = $this->resolveTarget($configuration);
 
@@ -170,33 +244,53 @@ class IndexEventListener
             );
         }
 
-        $target['store']->add(...$target['vectorizer']->vectorize($chunks));
+        $target->store->add(...$target->vectorizer->vectorize($chunks));
+
+        return array_map(static fn (TextDocument $chunk): string => $chunk->getId()->toRfc4122(), $chunks);
+    }
+
+    /**
+     * Records the chunks just written and deletes the ones a larger, previous version of the
+     * same document left behind — upserting only overwrites chunks that still exist, so those
+     * would otherwise stay retrievable.
+     *
+     * @param array<string, mixed> $configuration
+     * @param string[] $chunkIds
+     */
+    private function registerChunks(array $configuration, string $idSeed, array $chunkIds, int $indexConfigurationRecordId, string $indexProcessId, int $pageUid): void
+    {
+        $uid = (int)$configuration['uid'];
+        $documentId = DeterministicUuid::generate($idSeed)->toRfc4122();
+
+        $this->registry->record($uid, $documentId, $chunkIds, $indexConfigurationRecordId, $indexProcessId, $pageUid);
+        $this->removePoints($configuration, $this->registry->findStaleChunks($uid, $documentId, $chunkIds));
+    }
+
+    /**
+     * Deletes from the store first and from the registry only afterwards, so ids whose deletion
+     * failed stay known and are retried on the next run.
+     *
+     * @param array<string, mixed> $configuration
+     * @param string[] $pointIds
+     */
+    private function removePoints(array $configuration, array $pointIds): void
+    {
+        if ($pointIds === []) {
+            return;
+        }
+
+        $this->resolveTarget($configuration)->remover->remove($pointIds);
+        $this->registry->forget((int)$configuration['uid'], $pointIds);
     }
 
     /**
      * @param array<string, mixed> $configuration
-     * @return array{store: StoreInterface, vectorizer: Vectorizer}
      */
-    private function resolveTarget(array $configuration): array
+    private function resolveTarget(array $configuration): VectorTarget
     {
         $uid = (int)$configuration['uid'];
-        if (!isset($this->resolved[$uid])) {
-            $store = StoreFactory::create(
-                $configuration['vector_db'],
-                $configuration['vector_db_host'] . ':' . $configuration['vector_db_port'],
-                $configuration['vector_db_api_key'],
-                $configuration['vector_db_name'],
-                (int)$configuration['vector_db_dimensions'],
-            );
-            $store->setup();
 
-            $this->resolved[$uid] = [
-                'store' => $store,
-                'vectorizer' => VectorizerFactory::create($configuration),
-            ];
-        }
-
-        return $this->resolved[$uid];
+        return $this->resolved[$uid] ??= $this->vectorTargetFactory->create($configuration);
     }
 
     /**
@@ -210,7 +304,9 @@ class IndexEventListener
                 ->select('*')
                 ->from(self::TABLE)
                 ->where(
-                    $queryBuilder->expr()->eq('vector_db', $queryBuilder->createNamedParameter('qdrant')),
+                    // Every configured store takes part; one StoreFactory cannot build fails loudly
+                    // there instead of being skipped here without notice.
+                    $queryBuilder->expr()->notIn('vector_db', $queryBuilder->createNamedParameter(['none', ''], Connection::PARAM_STR_ARRAY)),
                     $queryBuilder->expr()->inSet('index_configurations', $queryBuilder->createNamedParameter((string)$indexConfigurationRecordId)),
                 )
                 ->executeQuery()

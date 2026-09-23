@@ -36,7 +36,7 @@ return [
         'vector' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.label',
             'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.description',
-            'showitem' => 'vector_db_host,vector_db,vector_db_port,vector_db_name,--linebreak--,vector_db_api_key,vector_db_dimensions,--linebreak--,vector_db_embeddings_model,--linebreak--,vector_db_embeddings_url,vector_db_embeddings_api_key,--linebreak--,index_configurations'
+            'showitem' => 'vector_db_host,vector_db,vector_db_port,vector_db_name,--linebreak--,vector_db_api_key,vector_db_dimensions,--linebreak--,vector_db_embeddings_model,--linebreak--,vector_db_embeddings_url,vector_db_embeddings_api_key,--linebreak--,index_configurations,--linebreak--,vector_db_sync_removals'
         ],
     ],
     'columns' => [
@@ -307,6 +307,24 @@ return [
                 'allowed' => 'tx_index_domain_model_configuration',
                 'size' => 5,
                 'maxitems' => 99,
+            ],
+        ],
+        'vector_db_sync_removals' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_sync_removals',
+            'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_sync_removals.description',
+            'displayCond' => [
+                'AND' => [
+                    'FIELD:vector_db:!=:none',
+                    'REC:NEW:false',
+                    'OR' => [
+                        'FIELD:vector_db:=:qdrant',
+                    ]
+                ]
+            ],
+            'config' => [
+                'type' => 'check',
+                'renderType' => 'checkboxToggle',
+                'default' => 0,
             ],
         ],
         'llm' => [

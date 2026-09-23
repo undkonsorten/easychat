@@ -366,16 +366,45 @@ File events carry no access information at all (`IndexFileEvent` has no access g
 embedded purely on the basis of the *File mounts* you configure — keep restricted documents out of those
 mounts.
 
+### Keeping the knowledge base in sync
+
+**Changed content is updated in place.** Every chunk has a deterministic id (site, language, page and
+the content element's `#c<uid>`), so re-indexing an edited content element overwrites its vectors rather
+than adding new ones. If the element got shorter and now splits into fewer chunks, the chunks left over
+from the longer version are deleted right away.
+
+**Removed content is only deleted with *Sync removals*.** A content element or page that is deleted,
+hidden, expired, put behind an `fe_group`, or flagged *no_search* is simply no longer emitted by EXT:index,
+so by default its vectors stay answerable. Enable *Remove unpublished content from the vector store*
+(`vector_db_sync_removals`) on the EasyChat configuration to delete, at the end of every index run,
+everything of that index configuration the run did not write again:
+
+* after a **full** run (`index:queue`), across the whole index configuration, files included;
+* after a **partial** run (triggered on save), only on the pages that run re-indexed.
+
+Which vector store point belongs to which document, index configuration, index run and page is tracked
+in the table `tx_easychat_index_point`. Deleting then only needs a delete-by-id, which every vector store
+supports, so none of this is tied to Qdrant (see
+[Documentation/Symfony-AI-Upgrade-Notes.md](Documentation/Symfony-AI-Upgrade-Notes.md) for how that
+becomes plain `StoreInterface::remove()` after upgrading symfony/ai).
+
+Safeguards and caveats:
+
+* A run in which writing to the store failed (e.g. the embeddings API was down) or that wrote nothing at
+  all is not swept, so an outage cannot wipe the knowledge base.
+* The sweep relies on a run's page messages being handled before its finish message — true for the
+  synchronous transport and a single `messenger:consume` worker, not for several parallel workers.
+* Removing the *last* content element of a page emits nothing for that page on save, so it is only
+  cleaned by the next full run.
+* Vectors written before this feature are not in `tx_easychat_index_point` and are never deleted. Drop the
+  collection and re-index once (see below) after upgrading.
+
 ### Known limitations
 
-* **Shrinking pages leave stale chunks.** Re-indexing a page overwrites its previous vectors, but if the
-  content shrinks across runs (fewer chunks than before), the extra chunks from the larger version are not
-  cleaned up automatically.
-* **Removed content is not un-indexed.** Deleting a page, or putting it behind an `fe_group` after it was
-  already indexed, does not remove its existing vectors — nothing deletes from the store. To purge, drop
-  the collection and re-index:
-  `curl -X DELETE -H "api-key: <key>" <qdrant>/collections/<collection>` followed by a full `index:queue`
-  run. The next `add()` recreates the collection.
+* **Purging everything.** To start over, drop the collection, forget its points and re-index:
+  `curl -X DELETE -H "api-key: <key>" <qdrant>/collections/<collection>`, then
+  `DELETE FROM tx_easychat_index_point WHERE configuration = <EasyChat configuration uid>`, followed by a
+  full `index:queue` run. The next `add()` recreates the collection.
 * **Record-level documents need *content indexing*.** Content types that emit one document per record rely
   on each content element getting its own queue, which only happens with *content indexing* enabled.
 

@@ -13,11 +13,13 @@ use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Routing\SiteMatcher;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Undkonsorten\Easychat\Indexing\IndexEventListener;
 use Undkonsorten\Easychat\Indexing\IndexPointRegistry;
 use Undkonsorten\Easychat\Indexing\QdrantPointRemover;
+use Undkonsorten\Easychat\Indexing\RouteArgumentsResolver;
 use Undkonsorten\Easychat\Indexing\VectorTarget;
 use Undkonsorten\Easychat\Indexing\VectorTargetFactory;
 use Undkonsorten\Easychat\Tests\Fixtures\Indexing\FakeVectorizer;
@@ -150,7 +152,12 @@ final class QdrantReindexTest extends FunctionalTestCase
 
         $connectionPool = $this->get(ConnectionPool::class);
 
-        return new IndexEventListener($connectionPool, $factory, new IndexPointRegistry($connectionPool));
+        return new IndexEventListener(
+            $connectionPool,
+            $factory,
+            new IndexPointRegistry($connectionPool),
+            new RouteArgumentsResolver($this->get(SiteMatcher::class)),
+        );
     }
 
     private function createPageEvent(string $processId, int $contentUid, string $content): IndexPageEvent

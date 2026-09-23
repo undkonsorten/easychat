@@ -8,7 +8,7 @@ use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 
 /**
  * Remembers which vector store point belongs to which indexed document, index configuration,
- * index run and page.
+ * index run, page and language.
  *
  * Vector stores only share a delete-by-id (StoreInterface::remove() in symfony/ai >= 0.4);
  * deleting or listing by metadata is store specific. Keeping this bookkeeping in TYPO3 is what
@@ -16,9 +16,15 @@ use TYPO3\CMS\Core\Database\Query\QueryBuilder;
  *
  * Every lookup is scoped by $configuration, the tx_easychat_configuration uid — that is, by
  * store — because several configurations can index the same content into different stores.
+ * Within a store, rows are owned per index configuration: two index configurations sharing a
+ * file mount write the same point, and each keeps its own row for it, so a point only leaves
+ * the store once no index configuration references it any more.
  */
 class IndexPointRegistry
 {
+    public const KIND_PAGE = 'page';
+    public const KIND_FILE = 'file';
+
     private const TABLE = 'tx_easychat_index_point';
 
     /** Keeps IN() lists well below the bound parameter limits of every DBMS. */
@@ -31,23 +37,23 @@ class IndexPointRegistry
     /**
      * @param string[] $pointIds
      */
-    public function record(int $configuration, string $documentId, array $pointIds, int $indexConfiguration, string $indexProcess, int $pageUid): void
+    public function record(int $configuration, int $indexConfiguration, string $documentId, array $pointIds, string $indexProcess, string $kind, int $pageUid, int $language): void
     {
         if ($pointIds === []) {
             return;
         }
 
-        $this->forget($configuration, $pointIds);
+        $this->forget($configuration, $indexConfiguration, $pointIds);
 
         $rows = [];
         foreach ($pointIds as $pointId) {
-            $rows[] = [$configuration, $pointId, $documentId, $indexConfiguration, $indexProcess, $pageUid, time()];
+            $rows[] = [$configuration, $indexConfiguration, $pointId, $documentId, $indexProcess, $kind, $pageUid, $language, time()];
         }
-        $this->getConnection()->bulkInsert(
+        $this->connectionPool->getConnectionForTable(self::TABLE)->bulkInsert(
             self::TABLE,
             $rows,
-            ['configuration', 'point_id', 'document_id', 'index_configuration', 'index_process', 'page_uid', 'tstamp'],
-            [Connection::PARAM_INT, Connection::PARAM_STR, Connection::PARAM_STR, Connection::PARAM_INT, Connection::PARAM_STR, Connection::PARAM_INT, Connection::PARAM_INT],
+            ['configuration', 'index_configuration', 'point_id', 'document_id', 'index_process', 'kind', 'page_uid', 'language', 'tstamp'],
+            [Connection::PARAM_INT, Connection::PARAM_INT, Connection::PARAM_STR, Connection::PARAM_STR, Connection::PARAM_STR, Connection::PARAM_STR, Connection::PARAM_INT, Connection::PARAM_INT, Connection::PARAM_INT],
         );
     }
 
@@ -55,16 +61,14 @@ class IndexPointRegistry
      * @param string[] $keepIds
      * @return string[] ids of the document's points that are not among $keepIds
      */
-    public function findStaleChunks(int $configuration, string $documentId, array $keepIds): array
+    public function findStaleChunks(int $configuration, int $indexConfiguration, string $documentId, array $keepIds): array
     {
         $queryBuilder = $this->getQueryBuilder();
         $queryBuilder
             ->select('point_id')
             ->from(self::TABLE)
-            ->where(
-                $queryBuilder->expr()->eq('configuration', $queryBuilder->createNamedParameter($configuration, Connection::PARAM_INT)),
-                $queryBuilder->expr()->eq('document_id', $queryBuilder->createNamedParameter($documentId)),
-            );
+            ->where(...$this->ownerConstraints($queryBuilder, $configuration, $indexConfiguration))
+            ->andWhere($queryBuilder->expr()->eq('document_id', $queryBuilder->createNamedParameter($documentId)));
         if ($keepIds !== []) {
             $queryBuilder->andWhere(
                 $queryBuilder->expr()->notIn('point_id', $queryBuilder->createNamedParameter(array_values($keepIds), Connection::PARAM_STR_ARRAY)),
@@ -74,73 +78,131 @@ class IndexPointRegistry
         return $queryBuilder->executeQuery()->fetchFirstColumn();
     }
 
-    public function countOfProcess(int $configuration, int $indexConfiguration, string $indexProcess): int
+    public function countOfProcess(int $configuration, int $indexConfiguration, string $indexProcess, ?string $kind = null): int
     {
         $queryBuilder = $this->getQueryBuilder();
-
-        return (int)$queryBuilder
+        $queryBuilder
             ->count('uid')
             ->from(self::TABLE)
-            ->where(...$this->processConstraints($queryBuilder, $configuration, $indexConfiguration, $indexProcess))
-            ->executeQuery()
-            ->fetchOne();
+            ->where(...$this->ownerConstraints($queryBuilder, $configuration, $indexConfiguration))
+            ->andWhere($queryBuilder->expr()->eq('index_process', $queryBuilder->createNamedParameter($indexProcess)));
+        $this->restrictToKind($queryBuilder, $kind);
+
+        return (int)$queryBuilder->executeQuery()->fetchOne();
     }
 
-    /**
-     * @return int[] pages that got at least one point written by the given index process
-     */
-    public function pageUidsOfProcess(int $configuration, int $indexConfiguration, string $indexProcess): array
+    public function countTracked(int $configuration, int $indexConfiguration, ?string $kind = null): int
     {
         $queryBuilder = $this->getQueryBuilder();
-
-        return array_map('intval', $queryBuilder
-            ->select('page_uid')
+        $queryBuilder
+            ->count('uid')
             ->from(self::TABLE)
-            ->where(...$this->processConstraints($queryBuilder, $configuration, $indexConfiguration, $indexProcess))
-            ->andWhere($queryBuilder->expr()->gt('page_uid', 0))
-            ->groupBy('page_uid')
-            ->executeQuery()
-            ->fetchFirstColumn());
+            ->where(...$this->ownerConstraints($queryBuilder, $configuration, $indexConfiguration));
+        $this->restrictToKind($queryBuilder, $kind);
+
+        return (int)$queryBuilder->executeQuery()->fetchOne();
     }
 
     /**
-     * @param int[]|null $pageUids null for no page restriction; points of files have no page and
-     *                             are therefore only included without one
-     * @return string[] ids of the index configuration's points that the given index process did not write
+     * @return list<array{0: int, 1: int}> [pageUid, language] of every page written by the given index process
      */
-    public function findNotInProcess(int $configuration, int $indexConfiguration, string $indexProcess, ?array $pageUids = null): array
+    public function pagesOfProcess(int $configuration, int $indexConfiguration, string $indexProcess): array
+    {
+        $queryBuilder = $this->getQueryBuilder();
+        $rows = $queryBuilder
+            ->select('page_uid', 'language')
+            ->from(self::TABLE)
+            ->where(...$this->ownerConstraints($queryBuilder, $configuration, $indexConfiguration))
+            ->andWhere($queryBuilder->expr()->eq('index_process', $queryBuilder->createNamedParameter($indexProcess)))
+            ->andWhere($queryBuilder->expr()->eq('kind', $queryBuilder->createNamedParameter(self::KIND_PAGE)))
+            ->groupBy('page_uid', 'language')
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        return array_map(static fn (array $row): array => [(int)$row['page_uid'], (int)$row['language']], $rows);
+    }
+
+    /**
+     * @param list<array{0: int, 1: int}>|null $pages [pageUid, language] pairs to restrict to, null for no restriction
+     * @return string[] ids of the index configuration's points (of $kind, if given) that the given index process did not write
+     */
+    public function findNotInProcess(int $configuration, int $indexConfiguration, string $indexProcess, ?string $kind = null, ?array $pages = null): array
     {
         $queryBuilder = $this->getQueryBuilder();
         $queryBuilder
             ->select('point_id')
             ->from(self::TABLE)
-            ->where(
-                $queryBuilder->expr()->eq('configuration', $queryBuilder->createNamedParameter($configuration, Connection::PARAM_INT)),
-                $queryBuilder->expr()->eq('index_configuration', $queryBuilder->createNamedParameter($indexConfiguration, Connection::PARAM_INT)),
-                $queryBuilder->expr()->neq('index_process', $queryBuilder->createNamedParameter($indexProcess)),
-            );
-        if ($pageUids !== null) {
-            $queryBuilder->andWhere(
-                $queryBuilder->expr()->in('page_uid', $queryBuilder->createNamedParameter(array_values($pageUids), Connection::PARAM_INT_ARRAY)),
-            );
+            ->where(...$this->ownerConstraints($queryBuilder, $configuration, $indexConfiguration))
+            ->andWhere($queryBuilder->expr()->neq('index_process', $queryBuilder->createNamedParameter($indexProcess)));
+        $this->restrictToKind($queryBuilder, $kind);
+        if ($pages !== null) {
+            $queryBuilder->andWhere($this->pagesConstraint($queryBuilder, $pages));
         }
 
         return $queryBuilder->executeQuery()->fetchFirstColumn();
     }
 
     /**
+     * @return array<int, string[]> index configuration => ids of its points on the given page and language
+     */
+    public function findOnPage(int $configuration, int $pageUid, int $language): array
+    {
+        $queryBuilder = $this->getQueryBuilder();
+        $rows = $queryBuilder
+            ->select('index_configuration', 'point_id')
+            ->from(self::TABLE)
+            ->where(
+                $queryBuilder->expr()->eq('configuration', $queryBuilder->createNamedParameter($configuration, Connection::PARAM_INT)),
+                $queryBuilder->expr()->eq('kind', $queryBuilder->createNamedParameter(self::KIND_PAGE)),
+                $this->pagesConstraint($queryBuilder, [[$pageUid, $language]]),
+            )
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        $pointIds = [];
+        foreach ($rows as $row) {
+            $pointIds[(int)$row['index_configuration']][] = (string)$row['point_id'];
+        }
+
+        return $pointIds;
+    }
+
+    /**
+     * @param string[] $pointIds
+     * @return string[] those of $pointIds that another index configuration of the same store still references
+     */
+    public function referencedElsewhere(int $configuration, int $indexConfiguration, array $pointIds): array
+    {
+        $referenced = [];
+        foreach (array_chunk(array_values($pointIds), self::CHUNK_SIZE) as $chunk) {
+            $queryBuilder = $this->getQueryBuilder();
+            $referenced[] = $queryBuilder
+                ->select('point_id')
+                ->from(self::TABLE)
+                ->where(
+                    $queryBuilder->expr()->eq('configuration', $queryBuilder->createNamedParameter($configuration, Connection::PARAM_INT)),
+                    $queryBuilder->expr()->neq('index_configuration', $queryBuilder->createNamedParameter($indexConfiguration, Connection::PARAM_INT)),
+                    $queryBuilder->expr()->in('point_id', $queryBuilder->createNamedParameter($chunk, Connection::PARAM_STR_ARRAY)),
+                )
+                ->groupBy('point_id')
+                ->executeQuery()
+                ->fetchFirstColumn();
+        }
+
+        return array_merge(...$referenced);
+    }
+
+    /**
      * @param string[] $pointIds
      */
-    public function forget(int $configuration, array $pointIds): void
+    public function forget(int $configuration, int $indexConfiguration, array $pointIds): void
     {
         foreach (array_chunk(array_values($pointIds), self::CHUNK_SIZE) as $chunk) {
             $queryBuilder = $this->getQueryBuilder();
             $queryBuilder
                 ->delete(self::TABLE)
-                ->where(
-                    $queryBuilder->expr()->eq('configuration', $queryBuilder->createNamedParameter($configuration, Connection::PARAM_INT)),
-                    $queryBuilder->expr()->in('point_id', $queryBuilder->createNamedParameter($chunk, Connection::PARAM_STR_ARRAY)),
-                )
+                ->where(...$this->ownerConstraints($queryBuilder, $configuration, $indexConfiguration))
+                ->andWhere($queryBuilder->expr()->in('point_id', $queryBuilder->createNamedParameter($chunk, Connection::PARAM_STR_ARRAY)))
                 ->executeStatement();
         }
     }
@@ -148,22 +210,39 @@ class IndexPointRegistry
     /**
      * @return string[]
      */
-    private function processConstraints(QueryBuilder $queryBuilder, int $configuration, int $indexConfiguration, string $indexProcess): array
+    private function ownerConstraints(QueryBuilder $queryBuilder, int $configuration, int $indexConfiguration): array
     {
         return [
             $queryBuilder->expr()->eq('configuration', $queryBuilder->createNamedParameter($configuration, Connection::PARAM_INT)),
             $queryBuilder->expr()->eq('index_configuration', $queryBuilder->createNamedParameter($indexConfiguration, Connection::PARAM_INT)),
-            $queryBuilder->expr()->eq('index_process', $queryBuilder->createNamedParameter($indexProcess)),
         ];
+    }
+
+    private function restrictToKind(QueryBuilder $queryBuilder, ?string $kind): void
+    {
+        if ($kind !== null) {
+            $queryBuilder->andWhere($queryBuilder->expr()->eq('kind', $queryBuilder->createNamedParameter($kind)));
+        }
+    }
+
+    /**
+     * @param list<array{0: int, 1: int}> $pages [pageUid, language] pairs
+     */
+    private function pagesConstraint(QueryBuilder $queryBuilder, array $pages): string
+    {
+        $pairs = [];
+        foreach ($pages as [$pageUid, $language]) {
+            $pairs[] = $queryBuilder->expr()->and(
+                $queryBuilder->expr()->eq('page_uid', $queryBuilder->createNamedParameter($pageUid, Connection::PARAM_INT)),
+                $queryBuilder->expr()->eq('language', $queryBuilder->createNamedParameter($language, Connection::PARAM_INT)),
+            );
+        }
+
+        return (string)$queryBuilder->expr()->or(...$pairs);
     }
 
     private function getQueryBuilder(): QueryBuilder
     {
         return $this->connectionPool->getQueryBuilderForTable(self::TABLE);
-    }
-
-    private function getConnection(): Connection
-    {
-        return $this->connectionPool->getConnectionForTable(self::TABLE);
     }
 }

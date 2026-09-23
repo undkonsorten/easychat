@@ -133,6 +133,12 @@
 			<trans-unit id="tx_easychat_configuration.vector_db_sync_removals">
 				<source>Remove unpublished content from the vector store</source>
 			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_sync_removals_threshold">
+				<source>Maximum share removed per run (%)</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_sync_removals_threshold.description">
+				<source>Safety net: if a full index run would remove more than this percentage of what it tracks, nothing is removed and a warning is logged. A page that fails to render or fetch is skipped by EXT:index without an error, so a broken run would otherwise look like a mass deletion. Set 100 to disable.</source>
+			</trans-unit>
 			<trans-unit id="tx_easychat_configuration.vector_db_sync_removals.description">
 				<source>At the end of every index run, delete what the run did not index again: deleted, hidden, expired, access restricted or no_search content and removed files. A full run cleans the whole index configuration, a partial run (on save) only the pages it re-indexed.</source>
 			</trans-unit>

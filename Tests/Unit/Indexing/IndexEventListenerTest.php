@@ -14,6 +14,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use Undkonsorten\Easychat\Indexing\IndexEventListener;
 use Undkonsorten\Easychat\Indexing\IndexPointRegistry;
+use Undkonsorten\Easychat\Indexing\RouteArgumentsResolver;
 use Undkonsorten\Easychat\Indexing\VectorTargetFactory;
 
 final class IndexEventListenerTest extends TestCase
@@ -23,7 +24,7 @@ final class IndexEventListenerTest extends TestCase
         $connectionPool = $this->createMock(ConnectionPool::class);
         $connectionPool->expects(self::never())->method('getQueryBuilderForTable');
 
-        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class));
+        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class), $this->createStub(RouteArgumentsResolver::class));
 
         $listener->onIndexPage(new IndexPageEvent(
             site: $this->createSiteStub(),
@@ -44,7 +45,7 @@ final class IndexEventListenerTest extends TestCase
         $connectionPool = $this->createMock(ConnectionPool::class);
         $connectionPool->expects(self::never())->method('getQueryBuilderForTable');
 
-        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class));
+        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class), $this->createStub(RouteArgumentsResolver::class));
 
         $listener->onIndexFile(new IndexFileEvent(
             site: $this->createSiteStub(),
@@ -76,7 +77,7 @@ final class IndexEventListenerTest extends TestCase
         $connectionPool = $this->createMock(ConnectionPool::class);
         $connectionPool->expects(self::never())->method('getQueryBuilderForTable');
 
-        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class));
+        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class), $this->createStub(RouteArgumentsResolver::class));
 
         $listener->onIndexPage($this->createPageEvent($accessGroups));
     }
@@ -104,7 +105,7 @@ final class IndexEventListenerTest extends TestCase
         $connectionPool = $this->createMock(ConnectionPool::class);
         $connectionPool->expects(self::once())->method('getQueryBuilderForTable');
 
-        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class));
+        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class), $this->createStub(RouteArgumentsResolver::class));
 
         $listener->onIndexPage($this->createPageEvent($accessGroups));
     }

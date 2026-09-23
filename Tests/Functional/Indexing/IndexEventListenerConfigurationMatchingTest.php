@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Undkonsorten\Easychat\Tests\Functional\Indexing;
 
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Routing\SiteMatcher;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Undkonsorten\Easychat\Indexing\IndexEventListener;
 use Undkonsorten\Easychat\Indexing\IndexPointRegistry;
+use Undkonsorten\Easychat\Indexing\RouteArgumentsResolver;
 use Undkonsorten\Easychat\Indexing\VectorTargetFactory;
 
 /**
@@ -79,7 +81,7 @@ final class IndexEventListenerConfigurationMatchingTest extends FunctionalTestCa
      */
     private function getTargetConfigurations(int $indexConfigurationRecordId): array
     {
-        $listener = new IndexEventListener($this->get(ConnectionPool::class), new VectorTargetFactory(), new IndexPointRegistry($this->get(ConnectionPool::class)));
+        $listener = new IndexEventListener($this->get(ConnectionPool::class), new VectorTargetFactory(), new IndexPointRegistry($this->get(ConnectionPool::class)), new RouteArgumentsResolver($this->get(SiteMatcher::class)));
 
         $method = new \ReflectionMethod($listener, 'getTargetConfigurations');
 

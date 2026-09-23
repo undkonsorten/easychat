@@ -3,9 +3,12 @@
 namespace Undkonsorten\Easychat\Indexing;
 
 use Lochmueller\Index\Enums\IndexType;
+use Lochmueller\Index\Event\DeIndexDocumentEvent;
 use Lochmueller\Index\Event\FinishIndexProcessEvent;
 use Lochmueller\Index\Event\IndexFileEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Symfony\AI\Store\Document\Metadata;
 use Symfony\AI\Store\Document\TextDocument;
 use Symfony\AI\Store\Document\Transformer\TextSplitTransformer;
@@ -18,23 +21,29 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
  * on tx_easychat_configuration records, so the SimilaritySearch tool used in
  * ChatReaction has content to retrieve.
  *
- * Chunk ids are deterministic per page/file, so re-indexing overwrites existing
- * chunks in place; chunks left over from a larger previous version of the same
- * document are deleted right after.
+ * Chunk ids are deterministic per document (see pageSeed()), so re-indexing
+ * overwrites existing chunks in place; chunks left over from a larger previous
+ * version of the same document are deleted right after.
  *
  * Content that is no longer emitted at all (deleted, hidden, access restricted,
  * no_search, ...) is only removed when the configuration enables
- * vector_db_sync_removals: at the end of an index process, every point of that
- * index configuration not re-written by the process is deleted — the whole
- * configuration after a full run, only the pages touched after a partial one.
+ * vector_db_sync_removals: at the end of an index process, the points of that
+ * index configuration not re-written by the process are deleted — all of them
+ * after a full run, only those of the pages (and files) the process re-emitted
+ * after a partial one.
  *
  * Which points exist is tracked in IndexPointRegistry, and deleting only needs a
  * delete-by-id, so none of this depends on a particular vector store. Points written
  * before the registry existed are unknown to it and never deleted; drop the
  * collection and re-index once to get rid of them.
+ *
+ * External content (EXT:index's webhook reactions) carries index configuration -1,
+ * which no EasyChat configuration can reference, so it never reaches a store.
  */
-class IndexEventListener
+class IndexEventListener implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     private const TABLE = 'tx_easychat_configuration';
 
     /** @var array<int, array<int, array<string, mixed>>> indexConfigurationRecordId => matching tx_easychat_configuration rows */
@@ -50,6 +59,7 @@ class IndexEventListener
         private readonly ConnectionPool $connectionPool,
         private readonly VectorTargetFactory $vectorTargetFactory,
         private readonly IndexPointRegistry $registry,
+        private readonly RouteArgumentsResolver $routeArgumentsResolver,
     ) {}
 
     #[AsEventListener(identifier: 'easychat/index-page')]
@@ -67,14 +77,10 @@ class IndexEventListener
             uri: $event->uri,
             indexConfigurationRecordId: $event->indexConfigurationRecordId,
             indexProcessId: $event->indexProcessId,
+            kind: IndexPointRegistry::KIND_PAGE,
             pageUid: $event->pageUid,
-            // EXT:index dispatches one event per content element when contentIndexing
-            // is enabled, and one per record variant on top of that. All of them share
-            // site/language/pageUid, so the uri (its "#c<uid>" fragment, plus the route
-            // arguments a variant encodes into path or query) is the only discriminator
-            // available — without it every element of a page collides on the same id and
-            // silently overwrites the one before it.
-            idSeed: sprintf('page:%s:%d:%d:%s', $event->site->getIdentifier(), $event->language, $event->pageUid, self::uriDiscriminator($event->uri)),
+            language: $event->language,
+            idSeed: $this->pageSeed($event),
             extraMetadata: [
                 'pageUid' => $event->pageUid,
                 'language' => $event->language,
@@ -112,8 +118,11 @@ class IndexEventListener
             uri: $event->uri,
             indexConfigurationRecordId: $event->indexConfigurationRecordId,
             indexProcessId: $event->indexProcessId,
+            kind: IndexPointRegistry::KIND_FILE,
             pageUid: 0,
-            idSeed: sprintf('file:%s:%s', $event->site->getIdentifier(), $event->fileIdentifier),
+            language: 0,
+            // External files come without an identifier; their uri is all that tells them apart.
+            idSeed: sprintf('file:%s:%s', $event->site->getIdentifier(), $event->fileIdentifier !== '' ? $event->fileIdentifier : $event->uri),
             extraMetadata: [
                 'fileIdentifier' => $event->fileIdentifier,
             ],
@@ -126,15 +135,18 @@ class IndexEventListener
      * for a single messenger worker. A partial run on a page whose last content element was
      * removed emits no page event, so that page is only cleaned by the next full run.
      *
-     * EXT:index logs and swallows exceptions from page handlers, so a run can reach its end
-     * with part of the content never re-written (e.g. the embeddings API went down). Sweeping
-     * then would delete perfectly current content, so a process that failed, or wrote nothing
-     * at all, is not swept.
+     * EXT:index logs and swallows exceptions, both its own (a page that fails to render or
+     * fetch is simply not emitted) and ours (e.g. the embeddings API went down), so a run can
+     * reach its end with current content never re-written. A process in which writing failed,
+     * or that wrote nothing, is therefore not swept, and a sweep that is not limited to the
+     * pages the process emitted is skipped when it would remove more than the configured
+     * share (vector_db_sync_removals_threshold).
      */
     #[AsEventListener(identifier: 'easychat/index-finish')]
     public function onFinishIndexProcess(FinishIndexProcessEvent $event): void
     {
-        if ($event->indexConfigurationRecordId === null) {
+        $indexConfiguration = $event->indexConfigurationRecordId;
+        if ($indexConfiguration === null) {
             return;
         }
         if (isset($this->failedProcesses[$event->indexProcessId])) {
@@ -142,54 +154,113 @@ class IndexEventListener
             return;
         }
 
-        foreach ($this->getTargetConfigurations($event->indexConfigurationRecordId) as $configuration) {
+        foreach ($this->getTargetConfigurations($indexConfiguration) as $configuration) {
             if (!(bool)($configuration['vector_db_sync_removals'] ?? false)) {
                 continue;
             }
 
             $uid = (int)$configuration['uid'];
             if ($event->type === IndexType::Full) {
-                if ($this->registry->countOfProcess($uid, $event->indexConfigurationRecordId, $event->indexProcessId) === 0) {
-                    continue;
+                if ($this->registry->countOfProcess($uid, $indexConfiguration, $event->indexProcessId) > 0) {
+                    $this->sweepUnlessExcessive(
+                        $configuration,
+                        $indexConfiguration,
+                        $this->registry->findNotInProcess($uid, $indexConfiguration, $event->indexProcessId),
+                        $this->registry->countTracked($uid, $indexConfiguration),
+                    );
                 }
-                $pageUids = null;
-            } else {
-                // A partial run only re-emits the pages it was triggered for, so anything outside
-                // of them is still current and must not be swept.
-                $pageUids = $this->registry->pageUidsOfProcess($uid, $event->indexConfigurationRecordId, $event->indexProcessId);
-                if ($pageUids === []) {
-                    continue;
-                }
+                continue;
             }
 
-            $this->removePoints(
-                $configuration,
-                $this->registry->findNotInProcess($uid, $event->indexConfigurationRecordId, $event->indexProcessId, $pageUids),
-            );
+            // A partial run only re-emits what it was triggered for — for the Cache technology one
+            // page in one language — so anything outside of that is still current. Only the pages
+            // it emitted can be swept, which also means a page that failed to render is never in
+            // scope.
+            $pages = $this->registry->pagesOfProcess($uid, $indexConfiguration, $event->indexProcessId);
+            if ($pages !== []) {
+                $this->removePoints(
+                    $configuration,
+                    $indexConfiguration,
+                    $this->registry->findNotInProcess($uid, $indexConfiguration, $event->indexProcessId, IndexPointRegistry::KIND_PAGE, $pages),
+                );
+            }
+
+            // The Cache technology re-emits every file of the configuration with each page it
+            // caches, so a partial run that emitted files emitted all of them.
+            if ($this->registry->countOfProcess($uid, $indexConfiguration, $event->indexProcessId, IndexPointRegistry::KIND_FILE) > 0) {
+                $this->sweepUnlessExcessive(
+                    $configuration,
+                    $indexConfiguration,
+                    $this->registry->findNotInProcess($uid, $indexConfiguration, $event->indexProcessId, IndexPointRegistry::KIND_FILE),
+                    $this->registry->countTracked($uid, $indexConfiguration, IndexPointRegistry::KIND_FILE),
+                );
+            }
         }
     }
 
     /**
-     * Reduces a uri to the part that distinguishes it from other uris of the same
-     * page: path, query and fragment. The scheme and host are dropped so that ids
-     * stay stable when the same content is indexed from a different environment.
+     * EXT:index dispatches this when a page is flagged no_search (and its index configuration
+     * skips such pages) — the one removal it announces explicitly.
      */
-    private static function uriDiscriminator(string $uri): string
+    #[AsEventListener(identifier: 'easychat/deindex-document')]
+    public function onDeIndexDocument(DeIndexDocumentEvent $event): void
+    {
+        $page = $this->routeArgumentsResolver->resolve($event->uri);
+        if ($page === null) {
+            $this->logger?->warning('Cannot resolve the uri of a page to de-index, its vectors stay in place.', ['uri' => $event->uri]);
+            return;
+        }
+
+        foreach ($this->getSyncingConfigurations() as $configuration) {
+            foreach ($this->registry->findOnPage((int)$configuration['uid'], $page['pageUid'], $page['language']) as $indexConfiguration => $pointIds) {
+                $this->removePoints($configuration, $indexConfiguration, $pointIds);
+            }
+        }
+    }
+
+    /**
+     * Seeds a page document's id from what the uri addresses rather than from how it is
+     * spelled: site, language, page, route arguments (a record variant's identity) and the
+     * "#c<uid>" fragment EXT:index adds per content element. A changed slug, or a record uri
+     * that EXT:index starts to build differently, therefore still overwrites the same points.
+     * Without the fragment every element of a page would collide on one id.
+     *
+     * Uris that cannot be routed fall back to their path, which is still unique. The Cache
+     * technology sends no uri at all, so there it is one document per page and language.
+     */
+    private function pageSeed(IndexPageEvent $event): string
+    {
+        $route = $this->routeArgumentsResolver->resolve($event->uri);
+        $fragment = (string)parse_url($event->uri, PHP_URL_FRAGMENT);
+
+        return sprintf(
+            'page:%s:%d:%d:%s#%s',
+            $event->site->getIdentifier(),
+            $event->language,
+            $event->pageUid,
+            $route !== null ? 'route:' . $route['arguments'] : 'path:' . self::uriPath($event->uri),
+            $fragment,
+        );
+    }
+
+    /**
+     * Path and query of a uri. Scheme and host are dropped so that ids stay stable when the
+     * same content is indexed from a different environment.
+     */
+    private static function uriPath(string $uri): string
     {
         $parts = parse_url($uri);
         if ($parts === false) {
             return $uri;
         }
 
-        return ($parts['path'] ?? '')
-            . (isset($parts['query']) ? '?' . $parts['query'] : '')
-            . (isset($parts['fragment']) ? '#' . $parts['fragment'] : '');
+        return ($parts['path'] ?? '') . (isset($parts['query']) ? '?' . $parts['query'] : '');
     }
 
     /**
      * @param array<string, mixed> $extraMetadata
      */
-    private function handle(string $title, string $content, string $uri, int $indexConfigurationRecordId, string $indexProcessId, int $pageUid, string $idSeed, array $extraMetadata): void
+    private function handle(string $title, string $content, string $uri, int $indexConfigurationRecordId, string $indexProcessId, string $kind, int $pageUid, int $language, string $idSeed, array $extraMetadata): void
     {
         if (trim($content) === '') {
             return;
@@ -198,7 +269,17 @@ class IndexEventListener
         foreach ($this->getTargetConfigurations($indexConfigurationRecordId) as $configuration) {
             try {
                 $chunkIds = $this->indexInto($configuration, $title, $content, $uri, $idSeed, $extraMetadata);
-                $this->registerChunks($configuration, $idSeed, $chunkIds, $indexConfigurationRecordId, $indexProcessId, $pageUid);
+
+                // Upserting only overwrites chunks that still exist; chunks a larger, previous
+                // version of the same document left behind would otherwise stay retrievable.
+                $uid = (int)$configuration['uid'];
+                $documentId = DeterministicUuid::generate($idSeed)->toRfc4122();
+                $this->registry->record($uid, $indexConfigurationRecordId, $documentId, $chunkIds, $indexProcessId, $kind, $pageUid, $language);
+                $this->removePoints(
+                    $configuration,
+                    $indexConfigurationRecordId,
+                    $this->registry->findStaleChunks($uid, $indexConfigurationRecordId, $documentId, $chunkIds),
+                );
             } catch (\Throwable $exception) {
                 $this->failedProcesses[$indexProcessId] = true;
                 throw $exception;
@@ -250,37 +331,44 @@ class IndexEventListener
     }
 
     /**
-     * Records the chunks just written and deletes the ones a larger, previous version of the
-     * same document left behind — upserting only overwrites chunks that still exist, so those
-     * would otherwise stay retrievable.
-     *
      * @param array<string, mixed> $configuration
-     * @param string[] $chunkIds
+     * @param string[] $pointIds
      */
-    private function registerChunks(array $configuration, string $idSeed, array $chunkIds, int $indexConfigurationRecordId, string $indexProcessId, int $pageUid): void
+    private function sweepUnlessExcessive(array $configuration, int $indexConfiguration, array $pointIds, int $tracked): void
     {
-        $uid = (int)$configuration['uid'];
-        $documentId = DeterministicUuid::generate($idSeed)->toRfc4122();
+        $threshold = (int)($configuration['vector_db_sync_removals_threshold'] ?? 25);
+        if ($tracked > 0 && \count($pointIds) * 100 > $threshold * $tracked) {
+            $this->logger?->warning(
+                'Index run would remove {remove} of {tracked} tracked vectors, more than the threshold of {threshold}%. Nothing was removed; if the removal is intended, raise the threshold or purge and re-index.',
+                ['remove' => \count($pointIds), 'tracked' => $tracked, 'threshold' => $threshold, 'configuration' => (int)$configuration['uid'], 'indexConfiguration' => $indexConfiguration],
+            );
+            return;
+        }
 
-        $this->registry->record($uid, $documentId, $chunkIds, $indexConfigurationRecordId, $indexProcessId, $pageUid);
-        $this->removePoints($configuration, $this->registry->findStaleChunks($uid, $documentId, $chunkIds));
+        $this->removePoints($configuration, $indexConfiguration, $pointIds);
     }
 
     /**
-     * Deletes from the store first and from the registry only afterwards, so ids whose deletion
-     * failed stay known and are retried on the next run.
+     * Drops the index configuration's claim on the given points. A point leaves the store only
+     * if no other index configuration still references it (two index configurations sharing a
+     * file mount write the same point). The store goes first, so ids whose deletion failed
+     * stay registered and are retried on the next run.
      *
      * @param array<string, mixed> $configuration
      * @param string[] $pointIds
      */
-    private function removePoints(array $configuration, array $pointIds): void
+    private function removePoints(array $configuration, int $indexConfiguration, array $pointIds): void
     {
         if ($pointIds === []) {
             return;
         }
 
-        $this->resolveTarget($configuration)->remover->remove($pointIds);
-        $this->registry->forget((int)$configuration['uid'], $pointIds);
+        $uid = (int)$configuration['uid'];
+        $orphans = array_values(array_diff($pointIds, $this->registry->referencedElsewhere($uid, $indexConfiguration, $pointIds)));
+        if ($orphans !== []) {
+            $this->resolveTarget($configuration)->remover->remove($orphans);
+        }
+        $this->registry->forget($uid, $indexConfiguration, $pointIds);
     }
 
     /**
@@ -314,5 +402,23 @@ class IndexEventListener
         }
 
         return $this->targetsByIndexConfiguration[$indexConfigurationRecordId];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>> configurations with a vector store and removal sync enabled
+     */
+    private function getSyncingConfigurations(): array
+    {
+        $queryBuilder = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
+
+        return $queryBuilder
+            ->select('*')
+            ->from(self::TABLE)
+            ->where(
+                $queryBuilder->expr()->notIn('vector_db', $queryBuilder->createNamedParameter(['none', ''], Connection::PARAM_STR_ARRAY)),
+                $queryBuilder->expr()->eq('vector_db_sync_removals', $queryBuilder->createNamedParameter(1, Connection::PARAM_INT)),
+            )
+            ->executeQuery()
+            ->fetchAllAssociative();
     }
 }

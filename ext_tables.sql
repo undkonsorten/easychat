@@ -43,6 +43,7 @@ CREATE TABLE tx_easychat_configuration (
 		vector_db_dimensions int(11) DEFAULT '1536' NOT NULL,
 		index_configurations varchar(255) DEFAULT '' NOT NULL,
 		vector_db_sync_removals smallint(1) unsigned DEFAULT '0' NOT NULL,
+		vector_db_sync_removals_threshold int(11) unsigned DEFAULT '25' NOT NULL,
 
 
 		tstamp int(11) unsigned DEFAULT '0' NOT NULL,
@@ -61,21 +62,27 @@ CREATE TABLE tx_easychat_configuration (
 
 #
 # Which vector store point belongs to which indexed document, index configuration, index
-# run and page. Vector stores can only delete by id in general (StoreInterface::remove()
-# in symfony/ai >= 0.4), so this is what lets IndexEventListener find the ids to delete.
+# run, page and language. Vector stores can only delete by id in general
+# (StoreInterface::remove() in symfony/ai >= 0.4), so this is what lets IndexEventListener
+# find the ids to delete. page_uid and index_configuration are signed because EXT:index
+# uses -1 for external content.
 #
 CREATE TABLE tx_easychat_index_point (
 	uid int(11) NOT NULL auto_increment,
 	configuration int(11) unsigned DEFAULT '0' NOT NULL,
+	index_configuration int(11) DEFAULT '0' NOT NULL,
 	point_id varchar(36) DEFAULT '' NOT NULL,
 	document_id varchar(36) DEFAULT '' NOT NULL,
-	index_configuration int(11) unsigned DEFAULT '0' NOT NULL,
 	index_process varchar(128) DEFAULT '' NOT NULL,
-	page_uid int(11) unsigned DEFAULT '0' NOT NULL,
+	kind varchar(8) DEFAULT '' NOT NULL,
+	page_uid int(11) DEFAULT '0' NOT NULL,
+	language int(11) DEFAULT '0' NOT NULL,
 	tstamp int(11) unsigned DEFAULT '0' NOT NULL,
 
 	PRIMARY KEY (uid),
-	UNIQUE KEY point (configuration, point_id),
-	KEY document (configuration, document_id),
+	UNIQUE KEY point (configuration, index_configuration, point_id),
+	KEY point_lookup (configuration, point_id),
+	KEY document (configuration, index_configuration, document_id),
 	KEY process (configuration, index_configuration, index_process),
+	KEY page (configuration, page_uid, language),
 );

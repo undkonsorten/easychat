@@ -45,6 +45,22 @@ final class InMemoryPointStore implements StoreInterface, PointRemoverInterface
     }
 
     /**
+     * @param array<string, mixed> $metadata
+     * @return list<string> the _text payload of every point whose metadata contains all of $metadata
+     */
+    public function textsMatching(array $metadata): array
+    {
+        $texts = [];
+        foreach ($this->points as $point) {
+            if (array_intersect_key($point->metadata->getArrayCopy(), $metadata) == $metadata) {
+                $texts[] = $point->metadata->getText();
+            }
+        }
+
+        return $texts;
+    }
+
+    /**
      * @return list<string> the _text payload of every point whose uri ends with $uriSuffix
      */
     public function textsOf(string $uriSuffix): array

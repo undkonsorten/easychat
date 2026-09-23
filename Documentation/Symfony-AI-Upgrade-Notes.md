@@ -62,6 +62,14 @@ needs deletion by id.
 * `MessageNormalizer` emits an ordered `parts` field for assistant messages. Existing sessions stored in
   the old shape may need a migration or a tolerant denormalizer.
 
+## EXT:index upgrades
+
+EasyChat was checked against `lochmueller/index` 2.3.0 and its unreleased `main` (September 2026). There,
+Database runs gain extenders, and record URIs get their route arguments. Point ids are derived from the
+page and its route arguments, not from the URL (`RouteArgumentsResolver`), so such changes to how URLs are
+built don't change the ids. Re-check `IndexEventListener` if EXT:index changes what its events carry,
+especially the Cache technology's missing uri or the External technology's index configuration `-1`.
+
 ## Known 0.1 issue the upgrade may fix
 
 When the embeddings API rate-limits, `Bridge\Generic\Embeddings\ResultConverter` passes the

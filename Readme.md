@@ -368,10 +368,11 @@ mounts.
 
 ### Keeping the knowledge base in sync
 
-**Changed content is updated in place.** Every chunk has a deterministic id (site, language, page and
-the content element's `#c<uid>`), so re-indexing an edited content element overwrites its vectors rather
-than adding new ones. If the element got shorter and now splits into fewer chunks, the chunks left over
-from the longer version are deleted right away.
+**Changed content is updated in place.** Every chunk has a deterministic id derived from *what* is indexed —
+site, language, page, the route arguments of a record (e.g. which news article) and the content element's
+`#c<uid>` — not from the URL. Re-indexing an edited content element therefore overwrites its vectors rather
+than adding new ones, and that still holds after its page's slug changed. If the element got shorter and
+now splits into fewer chunks, the chunks left over from the longer version are deleted right away.
 
 **Removed content is only deleted with *Sync removals*.** A content element or page that is deleted,
 hidden, expired, put behind an `fe_group`, or flagged *no_search* is simply no longer emitted by EXT:index,
@@ -380,24 +381,47 @@ so by default its vectors stay answerable. Enable *Remove unpublished content fr
 everything of that index configuration the run did not write again:
 
 * after a **full** run (`index:queue`), across the whole index configuration, files included;
-* after a **partial** run (triggered on save), only on the pages that run re-indexed.
+* after a **partial** run, only on the pages — in the languages — that run re-indexed, plus the files if
+  the run re-indexed files;
+* a page flagged *no_search* (with *Skip no_search pages* on the index configuration) is removed as soon
+  as it is saved.
 
-Which vector store point belongs to which document, index configuration, index run and page is tracked
-in the table `tx_easychat_index_point`. Deleting then only needs a delete-by-id, which every vector store
-supports, so none of this is tied to Qdrant (see
+Which vector store point belongs to which document, index configuration, index run, page and language is
+tracked in the table `tx_easychat_index_point`. Deleting then only needs a delete-by-id, which every vector
+store supports, so none of this is tied to Qdrant (see
 [Documentation/Symfony-AI-Upgrade-Notes.md](Documentation/Symfony-AI-Upgrade-Notes.md) for how that
-becomes plain `StoreInterface::remove()` after upgrading symfony/ai).
+becomes plain `StoreInterface::remove()` after upgrading symfony/ai). Two index configurations that index
+the same file (overlapping file mounts) each keep their own claim on it; the file only leaves the store
+once neither indexes it any more.
+
+How this plays out per EXT:index technology:
+
+| Technology | Updates in place | Removals (with *Sync removals*) |
+|---|---|---|
+| **Database** | on `index:queue`, and on save with *Partial indexing* | full run: everything no longer emitted · on save: removed content elements of that page |
+| **Frontend** / **Http** | same, one document per page URL (no per-element split) | same as Database |
+| **Cache** | whenever a guest's request fills the page cache — one document per page and language | only what is re-cached: the page itself and the configuration's files. Pages that are deleted or hidden are never cached again and stay until a purge. All variants of a page (e.g. news detail views) share one document, because this technology reports no URL — prefer *Database* for record-heavy pages |
+| **External** (webhooks) | — | — (see below) |
+
+**External content is not supported.** EXT:index's *index external page/file* reactions deliver content
+without an index configuration (`-1`), and EasyChat assigns content to a chatbot by index configuration,
+so it never reaches a vector store. EXT:index also has no way to announce that an external document is gone.
 
 Safeguards and caveats:
 
 * A run in which writing to the store failed (e.g. the embeddings API was down) or that wrote nothing at
   all is not swept, so an outage cannot wipe the knowledge base.
+* EXT:index skips pages that fail to render or fetch (an HTTP 500 or timeout, a rendering exception)
+  without telling anyone, which looks exactly like a deleted page. A full run that would therefore remove
+  more than *Maximum share removed per run* (`vector_db_sync_removals_threshold`, default 25%) of the
+  configuration's vectors removes nothing and logs a warning instead. Raise the value, or purge and
+  re-index, if a large removal is intended.
 * The sweep relies on a run's page messages being handled before its finish message — true for the
   synchronous transport and a single `messenger:consume` worker, not for several parallel workers.
 * Removing the *last* content element of a page emits nothing for that page on save, so it is only
   cleaned by the next full run.
-* Vectors written before this feature are not in `tx_easychat_index_point` and are never deleted. Drop the
-  collection and re-index once (see below) after upgrading.
+* Vectors written before this feature, or before ids became independent of the URL, are not in
+  `tx_easychat_index_point` and are never deleted. Purge and re-index once (see below) after upgrading.
 
 ### Known limitations
 

@@ -36,7 +36,7 @@ return [
         'vector' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.label',
             'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.description',
-            'showitem' => 'vector_db_host,vector_db,vector_db_port,vector_db_name,--linebreak--,vector_db_api_key,vector_db_dimensions,--linebreak--,vector_db_embeddings_model,--linebreak--,vector_db_embeddings_url,vector_db_embeddings_api_key,--linebreak--,index_configurations,--linebreak--,vector_db_sync_removals'
+            'showitem' => 'vector_db_host,vector_db,vector_db_port,vector_db_name,--linebreak--,vector_db_api_key,vector_db_dimensions,--linebreak--,vector_db_embeddings_model,--linebreak--,vector_db_embeddings_url,vector_db_embeddings_api_key,--linebreak--,index_configurations,--linebreak--,vector_db_sync_removals,vector_db_sync_removals_threshold'
         ],
     ],
     'columns' => [
@@ -325,6 +325,21 @@ return [
                 'type' => 'check',
                 'renderType' => 'checkboxToggle',
                 'default' => 0,
+            ],
+            'onChange' => 'reload',
+        ],
+        'vector_db_sync_removals_threshold' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_sync_removals_threshold',
+            'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_sync_removals_threshold.description',
+            'displayCond' => 'FIELD:vector_db_sync_removals:=:1',
+            'config' => [
+                'type' => 'number',
+                'size' => 5,
+                'default' => 25,
+                'range' => [
+                    'lower' => 1,
+                    'upper' => 100,
+                ],
             ],
         ],
         'llm' => [

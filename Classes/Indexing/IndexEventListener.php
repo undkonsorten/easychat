@@ -60,6 +60,7 @@ class IndexEventListener implements LoggerAwareInterface
         private readonly VectorTargetFactory $vectorTargetFactory,
         private readonly IndexPointRegistry $registry,
         private readonly RouteArgumentsResolver $routeArgumentsResolver,
+        private readonly AnonymousPageVisibility $pageVisibility,
     ) {}
 
     #[AsEventListener(identifier: 'easychat/index-page')]
@@ -68,6 +69,12 @@ class IndexEventListener implements LoggerAwareInterface
         // Retrieval applies no per-user filter, so everything in the store is answerable to
         // every chat user. Access restricted content therefore must not enter it at all.
         if (!self::isVisibleToAnonymousVisitor($event->accessGroups)) {
+            return;
+        }
+        // The access groups only cover the page's own fe_group. Check what a visitor would
+        // actually get, and drop what is already stored, e.g. from before the page was hidden.
+        if (!$this->pageVisibility->isVisible($event->pageUid)) {
+            $this->removePage($event->pageUid, $event->language, 'Removing the vectors of a page not visible to visitors failed');
             return;
         }
 
@@ -224,14 +231,22 @@ class IndexEventListener implements LoggerAwareInterface
             return;
         }
 
+        $this->removePage($page['pageUid'], $page['language'], 'Removing the vectors of a no_search page failed');
+    }
+
+    /**
+     * Removes a page's points in one language from every store that syncs removals.
+     */
+    private function removePage(int $pageUid, int $language, string $failureMessage): void
+    {
         foreach ($this->getSyncingConfigurations() as $configuration) {
             try {
-                foreach ($this->registry->findOnPage((int)$configuration['uid'], $page['pageUid'], $page['language']) as $indexConfiguration => $pointIds) {
+                foreach ($this->registry->findOnPage((int)$configuration['uid'], $pageUid, $language) as $indexConfiguration => $pointIds) {
                     $this->removePoints($configuration, $indexConfiguration, $pointIds);
                 }
             } catch (\Throwable $exception) {
-                // Runs inside the editor's save; a store that is down must not break it.
-                $this->logFailure('Removing the vectors of a no_search page failed', $exception, $configuration, ['uri' => $event->uri]);
+                // Can run inside the editor's save; a store that is down must not break it.
+                $this->logFailure($failureMessage, $exception, $configuration, ['pageUid' => $pageUid, 'language' => $language]);
             }
         }
     }

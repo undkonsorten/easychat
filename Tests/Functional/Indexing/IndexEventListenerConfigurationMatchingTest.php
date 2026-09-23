@@ -7,6 +7,7 @@ namespace Undkonsorten\Easychat\Tests\Functional\Indexing;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Routing\SiteMatcher;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Undkonsorten\Easychat\Indexing\AnonymousPageVisibility;
 use Undkonsorten\Easychat\Indexing\IndexEventListener;
 use Undkonsorten\Easychat\Indexing\IndexPointRegistry;
 use Undkonsorten\Easychat\Indexing\RouteArgumentsResolver;
@@ -81,7 +82,7 @@ final class IndexEventListenerConfigurationMatchingTest extends FunctionalTestCa
      */
     private function getTargetConfigurations(int $indexConfigurationRecordId): array
     {
-        $listener = new IndexEventListener($this->get(ConnectionPool::class), new VectorTargetFactory(), new IndexPointRegistry($this->get(ConnectionPool::class)), new RouteArgumentsResolver($this->get(SiteMatcher::class)));
+        $listener = new IndexEventListener($this->get(ConnectionPool::class), new VectorTargetFactory(), new IndexPointRegistry($this->get(ConnectionPool::class)), new RouteArgumentsResolver($this->get(SiteMatcher::class)), $this->createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
 
         $method = new \ReflectionMethod($listener, 'getTargetConfigurations');
 

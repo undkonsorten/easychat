@@ -16,6 +16,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Routing\SiteMatcher;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Undkonsorten\Easychat\Indexing\AnonymousPageVisibility;
 use Undkonsorten\Easychat\Indexing\IndexEventListener;
 use Undkonsorten\Easychat\Indexing\IndexPointRegistry;
 use Undkonsorten\Easychat\Indexing\RouteArgumentsResolver;
@@ -248,6 +249,47 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
         self::assertSame(['Other page.'], $this->store->textsOf('#c12'));
     }
 
+    public function testAHiddenOrScheduledPageIndexedOnSaveNeverReachesAStore(): void
+    {
+        $this->importCSVDataSet(__DIR__ . '/../Fixtures/PageVisibility.csv');
+        $listener = $this->createListener(pageVisibility: new AnonymousPageVisibility($this->get(ConnectionPool::class)));
+
+        // EXT:index emits a page saved on its own even if it is hidden (2) or scheduled (3).
+        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'save-1', 20, 'Hidden draft.', pageUid: 2, type: IndexType::Partial));
+        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'save-2', 30, 'Not yet published.', pageUid: 3, type: IndexType::Partial));
+
+        self::assertSame([], $this->store->points());
+        self::assertSame(0, $this->countRegisteredPoints());
+    }
+
+    public function testAPageBelowARestrictedSectionNeverReachesAStore(): void
+    {
+        $this->importCSVDataSet(__DIR__ . '/../Fixtures/PageVisibility.csv');
+        $listener = $this->createListener(pageVisibility: new AnonymousPageVisibility($this->get(ConnectionPool::class)));
+
+        // Page 6 has no fe_group of its own, so EXT:index reports it as public; its parent 5
+        // restricts itself and its subpages.
+        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'save-1', 60, 'Members only.', pageUid: 6, type: IndexType::Partial));
+
+        self::assertSame([], $this->store->points());
+    }
+
+    public function testHidingAnIndexedPageRemovesItWhereRemovalSyncIsEnabled(): void
+    {
+        $this->importCSVDataSet(__DIR__ . '/../Fixtures/PageVisibility.csv');
+        $listener = $this->createListener(pageVisibility: new AnonymousPageVisibility($this->get(ConnectionPool::class)));
+        $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-1', 10, 'Without sync.', pageUid: 16));
+        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'run-1', 11, 'With sync.', pageUid: 16));
+        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'run-1', 12, 'Other page.', pageUid: 1));
+
+        $this->get(ConnectionPool::class)->getConnectionForTable('pages')->update('pages', ['hidden' => 1], ['uid' => 16]);
+        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'save-1', 11, 'With sync.', pageUid: 16, type: IndexType::Partial));
+
+        self::assertSame(['Without sync.'], $this->store->textsOf('#c10'));
+        self::assertSame([], $this->store->textsOf('#c11'));
+        self::assertSame(['Other page.'], $this->store->textsOf('#c12'));
+    }
+
     public function testExternalContentNeverReachesAStore(): void
     {
         $listener = $this->createListener();
@@ -326,7 +368,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
         ]);
     }
 
-    private function createListener(?VectorizerInterface $vectorizer = null): IndexEventListener
+    private function createListener(?VectorizerInterface $vectorizer = null, ?AnonymousPageVisibility $pageVisibility = null): IndexEventListener
     {
         $factory = $this->createStub(VectorTargetFactory::class);
         $factory->method('create')->willReturn(new VectorTarget($this->store, $vectorizer ?? new FakeVectorizer(), $this->store));
@@ -338,6 +380,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
             $factory,
             new IndexPointRegistry($connectionPool),
             new RouteArgumentsResolver($this->get(SiteMatcher::class)),
+            $pageVisibility ?? $this->createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]),
         );
     }
 

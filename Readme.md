@@ -364,11 +364,14 @@ Two consequences worth knowing:
   visitor whose request filled the cache, and a logged-in visitor's ids never contain `-1`. Pages first
   cached for a logged-in member are skipped and picked up later when a guest requests them.
 
-**Hidden and scheduled content stays out, too — also with the Frontend technology.** On the command line
-(`index:queue`, the scheduler) TYPO3 sets a visibility that includes hidden pages, hidden content and
-content outside its start/stop time, and EXT:index renders Frontend pages without resetting it. EasyChat
-decorates EXT:index's `FrontendContextBuilder` (`GuestFrontendContextBuilder`) so that these pages are
-rendered exactly as an anonymous visitor sees them.
+**Only pages a visitor can open are embedded.** Before a page is embedded, `AnonymousPageVisibility`
+checks it the way the frontend does for a visitor without a login, whichever process runs the indexing
+(backend, scheduler, `index:queue`, queue worker). It skips a page if the page itself is hidden, outside
+its start/stop time or access restricted, or if a page above it restricts or hides its subpages
+(*Extend to subpages*). Where *Remove unpublished content from the vector store* is enabled, a page skipped
+this way is also removed, so hiding a page and saving it takes it out of the chatbot. Pages of the Frontend
+technology are also rendered as an anonymous visitor (`GuestFrontendContextBuilder`), so hidden and
+scheduled content elements stay out of them.
 
 File events carry no access information at all (`IndexFileEvent` has no access groups), so files are
 embedded purely on the basis of the *File mounts* you configure — keep restricted documents out of those

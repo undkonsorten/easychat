@@ -16,6 +16,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Routing\SiteMatcher;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Undkonsorten\Easychat\Indexing\AnonymousPageVisibility;
 use Undkonsorten\Easychat\Indexing\IndexEventListener;
 use Undkonsorten\Easychat\Indexing\IndexPointRegistry;
 use Undkonsorten\Easychat\Indexing\QdrantPointRemover;
@@ -157,6 +158,7 @@ final class QdrantReindexTest extends FunctionalTestCase
             $factory,
             new IndexPointRegistry($connectionPool),
             new RouteArgumentsResolver($this->get(SiteMatcher::class)),
+            $this->createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]),
         );
     }
 

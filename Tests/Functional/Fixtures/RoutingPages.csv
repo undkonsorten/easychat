@@ -1,0 +1,6 @@
+"pages"
+,"uid","pid","title","slug","doktype","is_siteroot","sys_language_uid","l10n_parent","hidden","deleted"
+,1,0,"Root","/","1","1","0","0","0","0"
+,2,1,"Page two","/page-two","1","0","0","0","0","0"
+,3,1,"Seite zwei","/seite-zwei","1","0","1","2","0","0"
+,4,1,"Deleted page","/deleted","1","0","0","0","0","1"

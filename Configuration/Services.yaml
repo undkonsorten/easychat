@@ -6,6 +6,8 @@ services:
 
   Undkonsorten\Easychat\:
     resource: '../Classes/*'
+    # Extends a class of the optional EXT:index, registered in Services.php only when it is installed
+    exclude: '../Classes/Indexing/GuestFrontendContextBuilder.php'
 
 
   Undkonsorten\Easychat\Command\DeleteSessionsCommand:
@@ -13,14 +15,6 @@ services:
       - name: 'console.command'
         command: 'easychat:delete-sessions'
         description: 'Deletes sessions older than given date interval.'
-
-  # Renders EXT:index's Frontend technology as an anonymous visitor, so hidden and scheduled
-  # content never reaches the vector store (see the class). Ignored without EXT:index.
-  Undkonsorten\Easychat\Indexing\GuestFrontendContextBuilder:
-    decorates: Lochmueller\Index\Indexing\Frontend\FrontendContextBuilder
-    decoration_on_invalid: ignore
-    arguments:
-      $inner: '@.inner'
 
   # TYPO3 core instantiates FormDataProviders via GeneralUtility::makeInstance()
   # without constructor arguments, bypassing constructor injection unless the

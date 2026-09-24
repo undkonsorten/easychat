@@ -2,7 +2,7 @@
 ,"uid","pid","title","slug","doktype","is_siteroot","hidden","starttime","endtime","fe_group","extendToSubpages","deleted"
 ,1,0,"Root","/","1","1","0","0","0","","0","0"
 ,2,1,"Hidden page","/hidden","1","0","1","0","0","","0","0"
-,3,1,"Scheduled page","/scheduled","1","0","0","4102444800","0","","0","0"
+,3,1,"Scheduled page","/scheduled","1","0","0","2000000000","0","","0","0"
 ,4,1,"Expired page","/expired","1","0","0","0","946684800","","0","0"
 ,5,1,"Members area","/members","1","0","0","0","0","1","1","0"
 ,6,5,"Members child","/members/child","1","0","0","0","0","","0","0"

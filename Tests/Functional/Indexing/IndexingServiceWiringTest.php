@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Undkonsorten\Easychat\Tests\Functional\Indexing;
 
 use Lochmueller\Index\Indexing\Frontend\FrontendContextBuilder;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Undkonsorten\Easychat\Indexing\GuestFrontendContextBuilder;
 use Undkonsorten\Easychat\Indexing\IndexEventListener;
@@ -14,6 +15,7 @@ use Undkonsorten\Easychat\Indexing\IndexEventListener;
  * without any error once EXT:index renames or moves FrontendContextBuilder — and hidden and
  * scheduled content would reach the vector store again. This makes that loud.
  */
+#[RequiresMethod(FrontendContextBuilder::class, 'executeInFrontendContext')]
 final class IndexingServiceWiringTest extends FunctionalTestCase
 {
     protected array $coreExtensionsToLoad = ['reactions', 'webhooks'];

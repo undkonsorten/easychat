@@ -6,7 +6,6 @@ namespace Undkonsorten\Easychat\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Throwable;
 
 /**
  * Lists models available on an OpenAI-compatible server (GET {baseUrl}/v1/models),
@@ -41,14 +40,14 @@ class ModelListService
             $data = $response->toArray();
 
             $modelIds = array_map(
-                static fn (array $model): string => (string)($model['id'] ?? ''),
+                static fn(array $model): string => (string)($model['id'] ?? ''),
                 $data['data'] ?? [],
             );
-            $modelIds = array_filter($modelIds, static fn (string $id): bool => $id !== '');
+            $modelIds = array_filter($modelIds, static fn(string $id): bool => $id !== '');
             sort($modelIds);
 
             return $modelIds;
-        } catch (Throwable) {
+        } catch (\Throwable) {
             return [];
         }
     }

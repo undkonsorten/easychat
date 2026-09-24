@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Undkonsorten\Easychat\Tests\Functional\Indexing;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use TYPO3\CMS\Core\Configuration\SiteConfiguration;
 use TYPO3\CMS\Core\Configuration\SiteWriter;
 use TYPO3\CMS\Core\Routing\SiteMatcher;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
@@ -26,7 +27,9 @@ final class RouteArgumentsResolverTest extends FunctionalTestCase
     {
         parent::setUp();
         $this->importCSVDataSet(__DIR__ . '/../Fixtures/RoutingPages.csv');
-        $this->get(SiteWriter::class)->write('main', [
+        // SiteWriter is TYPO3 v13+, v12 writes through SiteConfiguration
+        $siteWriter = class_exists(SiteWriter::class) ? $this->get(SiteWriter::class) : $this->get(SiteConfiguration::class);
+        $siteWriter->write('main', [
             'rootPageId' => 1,
             'base' => 'https://example.org/',
             'languages' => [

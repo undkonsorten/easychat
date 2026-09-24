@@ -13,7 +13,8 @@ class QdrantPointRemover implements PointRemoverInterface
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly string $endpointUrl,
-        #[\SensitiveParameter] private readonly string $apiKey,
+        #[\SensitiveParameter]
+        private readonly string $apiKey,
         private readonly string $collectionName,
     ) {}
 

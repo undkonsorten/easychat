@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 if (!defined('TYPO3')) {
     die('Access denied.');
@@ -21,7 +22,7 @@ return [
             'ignorePageTypeRestriction' => true,
         ],
         'searchFields' => 'session_id',
-        'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg'
+        'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg',
     ],
     'types' => [
         '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,session_id,messages,crdate,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
@@ -46,7 +47,7 @@ return [
                 'checkbox' => 0,
                 'default' => 0,
                 'range' => [
-                    'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y'))
+                    'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
             ],
         ],
@@ -59,7 +60,7 @@ return [
                 'checkbox' => 0,
                 'default' => 0,
                 'range' => [
-                    'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y'))
+                    'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
             ],
         ],
@@ -71,7 +72,7 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
-                'readOnly' => true
+                'readOnly' => true,
             ],
         ],
         'messages' => [
@@ -80,7 +81,7 @@ return [
             'config' => [
                 'type' => 'json',
                 'required' => true,
-                'readOnly' => true
+                'readOnly' => true,
             ],
         ],
         'crdate' => [
@@ -89,7 +90,7 @@ return [
             'config' => [
                 'type' => 'datetime',
                 'format' => 'datetime',
-                'readOnly' => true
+                'readOnly' => true,
             ],
         ],
     ],

@@ -5,7 +5,7 @@ use Undkonsorten\Easychat\Controller\SessionController;
 return [
     'easychat' => [
         'parent' => 'web',
-        #'position' => ['after' => 'scheduler'],
+        //'position' => ['after' => 'scheduler'],
         'workspaces' => 'scheduler',
         'path' => '/module/page/easychat',
         'access' => 'user',
@@ -17,5 +17,5 @@ return [
                 'list', 'show', 'delete', 'export', 'exportSettings',
             ],
         ],
-    ]
+    ],
 ];

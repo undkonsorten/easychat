@@ -93,7 +93,7 @@ class SessionCsvExportService
 
         $needsTurns = in_array(self::FIELD_QUESTIONS, $fields, true) || in_array(self::FIELD_ANSWERS, $fields, true);
         if (!$needsTurns) {
-            yield array_map(fn (string $field): string => $sessionValues[$field] ?? '', $fields);
+            yield array_map(fn(string $field): string => $sessionValues[$field] ?? '', $fields);
 
             return;
         }
@@ -105,7 +105,7 @@ class SessionCsvExportService
 
         foreach ($turns as $turn) {
             yield array_map(
-                fn (string $field): string => match ($field) {
+                fn(string $field): string => match ($field) {
                     self::FIELD_QUESTIONS => $turn['question'],
                     self::FIELD_ANSWERS => $turn['answer'],
                     default => $sessionValues[$field] ?? '',

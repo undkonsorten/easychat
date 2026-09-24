@@ -363,7 +363,7 @@ class IndexEventListener implements LoggerAwareInterface
 
         $target->store->add(...$target->vectorizer->vectorize($chunks));
 
-        return array_map(static fn (TextDocument $chunk): string => $chunk->getId()->toRfc4122(), $chunks);
+        return array_map(static fn(TextDocument $chunk): string => $chunk->getId()->toRfc4122(), $chunks);
     }
 
     /**
@@ -443,7 +443,8 @@ class IndexEventListener implements LoggerAwareInterface
                     // Every configured store takes part; one StoreFactory cannot build fails loudly
                     // there instead of being skipped here without notice.
                     $queryBuilder->expr()->notIn('vector_db', $queryBuilder->createNamedParameter(['none', ''], Connection::PARAM_STR_ARRAY)),
-                    $queryBuilder->expr()->inSet('index_configurations', $queryBuilder->createNamedParameter((string)$indexConfigurationRecordId)),
+                    // A quoted literal, not a named parameter: inSet() rejects placeholders on SQLite
+                    $queryBuilder->expr()->inSet('index_configurations', $queryBuilder->quote((string)$indexConfigurationRecordId)),
                 )
                 ->executeQuery()
                 ->fetchAllAssociative();

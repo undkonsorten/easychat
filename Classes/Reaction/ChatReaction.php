@@ -34,22 +34,21 @@ class ChatReaction implements ReactionInterface
 {
     public function __construct(
         private readonly ResponseFactoryInterface $responseFactory,
-        private readonly StreamFactoryInterface   $streamFactory,
-        private readonly ConnectionPool           $connectionPool,
-        private readonly SessionRepository        $sessionRepository,
-        private readonly PersistenceManager       $persistenceManager,
-        private readonly SerializerInterface      $serializer = new Serializer([
+        private readonly StreamFactoryInterface $streamFactory,
+        private readonly ConnectionPool $connectionPool,
+        private readonly SessionRepository $sessionRepository,
+        private readonly PersistenceManager $persistenceManager,
+        private readonly SerializerInterface $serializer = new Serializer([
             new ArrayDenormalizer(),
             new MessageNormalizer(),
         ], [new JsonEncoder()]),
     ) {}
 
+    public const TABLE_NAME = 'tx_easychat_messages';
 
-    const TABLE_NAME = 'tx_easychat_messages';
+    public const CONFIGURATION_TABLE_NAME = 'tx_easychat_configuration';
 
-    const CONFIGURATION_TABLE_NAME = 'tx_easychat_configuration';
-
-    const COOKIE_NAME = 'easychat_session_id';
+    public const COOKIE_NAME = 'easychat_session_id';
 
     /**
      * @inheritDoc
@@ -81,18 +80,17 @@ class ChatReaction implements ReactionInterface
      */
     public function react(ServerRequestInterface $request, array $payload, ReactionInstruction $reaction): ResponseInterface
     {
-        if(!$payload['messages'] && !count($payload['messages'])>0) {
-            $result = $this->jsonResponse(['error' => "No messages given."], 400);
+        if (!$payload['messages'] && !count($payload['messages']) > 0) {
+            $result = $this->jsonResponse(['error' => 'No messages given.'], 400);
             throw new PropagateResponseException($result, 1072213738);
         }
-        if(!$request->getCookieParams()[self::COOKIE_NAME]) {
-            $result = $this->jsonResponse(['error' => "No session id given. Make sure there is a cookie named ".self::COOKIE_NAME], 400);
+        if (!$request->getCookieParams()[self::COOKIE_NAME]) {
+            $result = $this->jsonResponse(['error' => 'No session id given. Make sure there is a cookie named ' . self::COOKIE_NAME], 400);
             throw new PropagateResponseException($result, 4131317075);
         }
 
-        if(!$reaction->toArray()['easychat_configuration'] && $reaction->toArray()['easychat_configuration'] <= 0)
-        {
-            $result = $this->jsonResponse(['error' => "No configuration given."], 400);
+        if (!$reaction->toArray()['easychat_configuration'] && $reaction->toArray()['easychat_configuration'] <= 0) {
+            $result = $this->jsonResponse(['error' => 'No configuration given.'], 400);
             throw new PropagateResponseException($result, 4236347612);
         }
         $configuration = $this->connectionPool
@@ -106,10 +104,10 @@ class ChatReaction implements ReactionInterface
 
         $platform = AiPlatformFactory::createCompletionsPlatform($configuration);
 
-        if($configuration['vector_db'] && $configuration['vector_db'] != 'none') {
+        if ($configuration['vector_db'] && $configuration['vector_db'] != 'none') {
             $store = StoreFactory::create(
                 $configuration['vector_db'],
-                $configuration['vector_db_host'].':'.$configuration['vector_db_port'],
+                $configuration['vector_db_host'] . ':' . $configuration['vector_db_port'],
                 $configuration['vector_db_api_key'],
                 $configuration['vector_db_name'],
                 (int)$configuration['vector_db_dimensions'],
@@ -125,30 +123,29 @@ class ChatReaction implements ReactionInterface
             $toolbox = new FaultTolerantToolbox(new Toolbox([$similaritySearch]));
             $processor = new AgentProcessor($toolbox);
             $agent = new Agent($platform, $configuration['model'], [$processor], [$processor]);
-        }else{
+        } else {
             $agent = new Agent($platform, $configuration['model']);
         }
-
-
 
         $this->sessionRepository->setup(['sessionId' => $request->getCookieParams()[self::COOKIE_NAME]]);
         $chat = new Chat($agent, $this->sessionRepository);
 
         $session = $this->sessionRepository->findBy(['session_id' => $request->getCookieParams()[self::COOKIE_NAME]])->getFirst();
 
-        if(is_null($session)){
+        if (is_null($session)) {
             $messageHistory = new MessageBag(Message::forSystem($configuration['system_message']));
             $chat->initiate($messageHistory);
         }
 
-        try{
+        try {
             $answer = $chat->submit(Message::ofUser(end($payload['messages'])['text']));
-        }catch (\Throwable $exception){
+        } catch (\Throwable $exception) {
             $result = $this->jsonResponse(['error' => $exception->getMessage()], 500);
             throw new PropagateResponseException($result, 4613340330);
         }
 
-        return $this->jsonResponse([
+        return $this->jsonResponse(
+            [
                 'text' => $answer->getContent(),
                 'role' => $answer->getRole(),
             ]

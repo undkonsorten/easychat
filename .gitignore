@@ -1,3 +1,9 @@
 Tests/build
 .phpunit.result.cache
 Tests/.phpunit.cache
+/.Build/
+/.cache/
+/composer.lock
+/composer.build.json
+/.php-cs-fixer.cache
+/var/

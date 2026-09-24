@@ -22,7 +22,7 @@ class StoreFactory
 
     protected static function createQdrant(string $url, string $apiKey, string $collection, int $dimensions, string $distance = 'Dot'): Store
     {
-        if(!class_exists('Symfony\AI\Store\Bridge\Qdrant\Store')){
+        if (!class_exists('Symfony\AI\Store\Bridge\Qdrant\Store')) {
             throw new \Exception('symfony/ai-qdrant-store is not installed');
         }
         return new Store(

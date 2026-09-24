@@ -2,15 +2,12 @@
 
 declare(strict_types=1);
 
-use TYPO3\CMS\IndexedSearch\Controller\SearchController;
 use TYPO3\CMS\Backend\Form\FormDataProvider\TcaInputPlaceholders;
+use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Log\Writer\FileWriter;
+use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
 use Undkonsorten\Easychat\Controller\EasychatController;
 use Undkonsorten\Easychat\FormDataProvider\ModelValuePickerDataProvider;
-use TYPO3\CMS\Core\Log\Writer\FileWriter;
-use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
-
-
 
 // Inject models available on the configured LLM server into the model valuepicker fields
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord']
@@ -38,9 +35,9 @@ if (getenv('TYPO3_MINIMUM_LOGLEVEL')) {
             getenv('TYPO3_MINIMUM_LOGLEVEL') => [
                 FileWriter::class => [
                     // configuration for the writer
-                    'logFile' => Environment::getVarPath() . '/log/easychat.log'
-                ]
-            ]
-        ]
+                    'logFile' => Environment::getVarPath() . '/log/easychat.log',
+                ],
+            ],
+        ],
     ];
 }

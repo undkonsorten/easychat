@@ -30,7 +30,6 @@ ExtensionManagementUtility::addTCAcolumns(
     ]
 );
 
-
 $GLOBALS['TCA']['sys_reaction']['ctrl']['typeicon_classes'][ChatReaction::getType()] = ChatReaction::getIconIdentifier();
 
 $GLOBALS['TCA']['sys_reaction']['palettes']['easychatConfiguration'] = [

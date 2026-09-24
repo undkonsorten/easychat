@@ -94,7 +94,7 @@ final class SessionRepositoryConversationHistoryTest extends FunctionalTestCase
         $messages = json_decode((string)$session->getMessages(), true);
         $systemMessages = array_values(array_filter(
             $messages,
-            static fn (array $message): bool => $message['type'] === 'Symfony\AI\Platform\Message\SystemMessage',
+            static fn(array $message): bool => $message['type'] === 'Symfony\AI\Platform\Message\SystemMessage',
         ));
 
         self::assertCount(1, $systemMessages, 'Still exactly one system message - the config change did not add a second one.');
@@ -107,7 +107,7 @@ final class SessionRepositoryConversationHistoryTest extends FunctionalTestCase
 
     private function fakeAgent(): AgentInterface
     {
-        return new class implements AgentInterface {
+        return new class () implements AgentInterface {
             private int $calls = 0;
 
             public function call(MessageBag $messages, array $options = []): ResultInterface

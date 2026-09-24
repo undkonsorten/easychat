@@ -59,7 +59,16 @@
 				<source>Configuration</source>
 			</trans-unit>
 			<trans-unit id="tx_easychat_session">
-				<source>Configuration</source>
+				<source>Session</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_session.session_id">
+				<source>Session id</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_session.messages">
+				<source>Messages</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_session.crdate">
+				<source>Created at</source>
 			</trans-unit>
 			<trans-unit id="tx_easychat_configuration.name">
 				<source>Name</source>

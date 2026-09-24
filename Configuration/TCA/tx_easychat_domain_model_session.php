@@ -21,7 +21,6 @@ return [
             'ignorePageTypeRestriction' => true,
         ],
         'searchFields' => 'session_id',
-        'hideTable' => true,
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg'
     ],
     'types' => [
@@ -66,29 +65,31 @@ return [
         ],
         'session_id' => [
             'exclude' => 1,
-            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.session_id',
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_session.session_id',
             'config' => [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
-                'required' => true
+                'required' => true,
+                'readOnly' => true
             ],
         ],
         'messages' => [
             'exclude' => 1,
-            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.messages',
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_session.messages',
             'config' => [
                 'type' => 'json',
-                'required' => true
+                'required' => true,
+                'readOnly' => true
             ],
         ],
         'crdate' => [
             'exclude' => 1,
-            'label' => 'LLL:EXT:taskqueue/Resources/Private/Language/locallang_db.xlf:tx_taskqueue_domain_model_task.created_at',
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_session.crdate',
             'config' => [
                 'type' => 'datetime',
                 'format' => 'datetime',
-                'readOnly' => 1
+                'readOnly' => true
             ],
         ],
     ],

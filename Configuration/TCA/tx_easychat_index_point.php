@@ -20,7 +20,6 @@ return [
         'tstamp' => 'tstamp',
         'default_sortby' => 'tstamp DESC',
         'rootLevel' => 1,
-        'readOnly' => true,
         'adminOnly' => true,
         'searchFields' => 'point_id,document_id,index_process',
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg',

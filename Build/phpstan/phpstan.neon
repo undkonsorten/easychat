@@ -1,0 +1,19 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    phpVersion: 80300
+
+    paths:
+        - ../../Classes
+        - ../../Configuration
+        - ../../Tests
+
+    excludePaths:
+        # Generated from Schema/openai.models.yml by generate-code.sh
+        - ../../Classes/Domain/Model/Gen
+        - ../../Tests/build
+        - ../../Tests/.phpunit.cache
+
+    tmpDir: ../../.Build/.cache/phpstan

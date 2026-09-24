@@ -99,6 +99,10 @@ The reaction serves as a connector (aka endpoint) between the chat frontend and 
 * Create a new reaction with the *Reaction Type* `Reaction for easychat`.
 * Be sure to *copy the generated secret* before saving
 * Chose one of the before created *EasyChat configuration record*
+  * This choice decides **everything the chatbot uses**: the LLM, and — if the configuration has a vector
+    database — which vector database/collection it searches and therefore which *Index configurations*
+    (EXT:index) it knows about. See
+    [How reactions, configurations and index configurations connect](#how-reactions-configurations-and-index-configurations-connect).
 
 After sucessfully creating the reaction you will see the following interface.
 
@@ -230,6 +234,28 @@ matching *Configuration* record.
 Because EasyChat only consumes those two events, **anything EXT:index can crawl becomes chat knowledge** —
 you are not limited to plain pages.
 
+### How reactions, configurations and index configurations connect
+
+Everything hangs off the **EasyChat configuration** record that a reaction points to:
+
+```
+Content element (chatbot) ──> Reaction ──> EasyChat configuration
+                                             ├─ LLM (model, API url/key, system message)
+                                             ├─ Vector DB (Qdrant host/port, collection, API key, embeddings model)
+                                             └─ Index configurations (EXT:index) ──> content written into that collection
+```
+
+* **At chat time** the reaction loads its EasyChat configuration, and the similarity search queries
+  exactly the vector database/collection configured there.
+* **At index time** EasyChat looks up, for every crawled page or file, all EasyChat configurations whose
+  *Index configurations* field contains the index configuration that is running, and writes the content
+  into each of their collections. Configurations with *Vector db* `none` are ignored.
+
+So the *Index configurations* field on the EasyChat configuration is **the one place that decides what a
+chatbot knows**, and the reaction decides **which** configuration (and thus which knowledge base) a
+chatbot uses. An index configuration that is not selected in any EasyChat configuration is still crawled
+by EXT:index, but its content never reaches a vector store.
+
 ### What can become knowledge
 
 | Source | How to enable it | Good to know |
@@ -276,17 +302,22 @@ looks like:
 
 ### One knowledge base or several
 
-The *Index configurations* field on an EasyChat configuration takes **any number of index
-configurations**, and each EasyChat configuration has its own collection, embeddings model and
-dimensions. That means you can:
+One chatbot is one reaction with one EasyChat configuration. The configuration's *Index configurations*
+field takes **any number of index configurations**, and each EasyChat configuration has its own vector
+database, collection, embeddings model and dimensions. That means you can:
 
 * feed several index configurations into **one** chatbot (site pages + a manual FAQ + a PDF archive), or
-* keep **separate knowledge bases** for separate chatbots — e.g. a public bot that only sees the website
-  and an internal bot that also sees the intranet export — simply by pointing them at different index
-  configurations and different Qdrant collections.
+* run **several chatbots with separate knowledge bases** (or even separate vector databases) on the same
+  site — e.g. a public bot that only sees the website and an internal bot that also sees the intranet
+  export: create one reaction per bot, give each its own EasyChat configuration, and select different
+  index configurations and a different collection in each.
 
-An index configuration that is not selected anywhere is still crawled by EXT:index, but its content never
-reaches a vector store.
+> **Give every EasyChat configuration its own collection.** If two configurations point to the same
+> collection, every page is embedded twice (once per configuration), and with *Sync removals* enabled one
+> configuration can delete points the other one still relies on. Two bots that should share one knowledge
+> base but differ in LLM or system message currently still need two configurations — then select the
+> index configurations and enable *Sync removals* on only one of them, and give the other one no index
+> configurations.
 
 ### Extending the indexer for your own records
 
@@ -326,6 +357,8 @@ Setup:
    * By default the embeddings model is called on the **same API url/key as the chat LLM** above (just a
      different model id). If your embeddings model lives on a different endpoint/provider, set the
      optional *Embeddings API url* / *Embeddings API key* fields to override it.
+   * Make sure the chatbot's **reaction** (setup step 3) uses exactly this EasyChat configuration —
+     otherwise the chatbot searches a different collection, or none at all.
 
 Once a scheduler run has indexed some pages, ask the chatbot a question whose answer only exists in your
 site content — the agent will call the similarity-search tool automatically when relevant.

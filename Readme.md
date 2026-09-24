@@ -62,7 +62,12 @@ Create a new database record "Configuration" in TYPO3.
 
 Then fill out the fields of the *Configuration record*.
 
-[![Click to enlarge: EasyChat backend Module](Documentation/Assets/Configuration_Thumb.png)](Documentation/Assets/Configuration.png)
+[![Click to enlarge: EasyChat Configuration record](Documentation/Assets/Configuration_Thumb.png)](Documentation/Assets/Configuration.png)
+
+The *LLM Settings* (URL, API key, model, system prompt) are always required. The *Vector DB* settings
+(shown here with Qdrant and EXT:index configurations) are only needed if the chatbot should answer from your own
+content (RAG); leave *Vector db* on `None` otherwise. See
+[How reactions, configurations and index configurations connect](#how-reactions-configurations-and-index-configurations-connect).
 
 #### Sample configurations for you LLM
 

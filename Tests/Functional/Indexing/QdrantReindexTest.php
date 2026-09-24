@@ -8,6 +8,7 @@ use Lochmueller\Index\Enums\IndexTechnology;
 use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Event\FinishIndexProcessEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use Symfony\AI\Store\Bridge\Qdrant\Store;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
@@ -145,7 +146,7 @@ final class QdrantReindexTest extends FunctionalTestCase
     {
         $this->indexConfiguration = $syncRemovals ? self::INDEX_CONFIGURATION_WITH_SYNC : self::INDEX_CONFIGURATION_WITHOUT_SYNC;
 
-        $factory = $this->createStub(VectorTargetFactory::class);
+        $factory = self::createStub(VectorTargetFactory::class);
         $factory->method('create')->willReturn(new VectorTarget(
             $this->store,
             new FakeVectorizer(self::DIMENSIONS),
@@ -159,7 +160,7 @@ final class QdrantReindexTest extends FunctionalTestCase
             $factory,
             new IndexPointRegistry($connectionPool),
             new RouteArgumentsResolver($this->get(SiteMatcher::class)),
-            $this->createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]),
+            self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]),
         );
     }
 
@@ -182,7 +183,7 @@ final class QdrantReindexTest extends FunctionalTestCase
 
     private function createSiteStub(): SiteInterface
     {
-        $site = $this->createStub(SiteInterface::class);
+        $site = self::createStub(SiteInterface::class);
         $site->method('getIdentifier')->willReturn('main');
 
         return $site;

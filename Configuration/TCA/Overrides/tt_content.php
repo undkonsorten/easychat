@@ -2,6 +2,7 @@
 
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
+
 call_user_func(static function () {
     $extensionKey = 'Easychat';
     $pluginName = 'EasychatFrontend';

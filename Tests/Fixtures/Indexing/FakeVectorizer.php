@@ -26,7 +26,7 @@ final class FakeVectorizer implements VectorizerInterface
         }
 
         return array_map(
-            fn (EmbeddableDocumentInterface $document): VectorDocument => new VectorDocument(
+            fn(EmbeddableDocumentInterface $document): VectorDocument => new VectorDocument(
                 $document->getId(),
                 new Vector(array_fill(0, $this->dimensions, 0.5)),
                 $document->getMetadata(),

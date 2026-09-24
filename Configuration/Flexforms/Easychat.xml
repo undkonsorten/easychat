@@ -37,16 +37,16 @@
                             <renderType>selectSingle</renderType>
                             <items type="array">
                                 <numIndex index="0" type="array">
-                                    <numIndex index="0">LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.enableDataProtectionConsent.withConsent</numIndex>
-                                    <numIndex index="1">consent</numIndex>
+                                    <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.enableDataProtectionConsent.withConsent</label>
+                                    <value>consent</value>
                                 </numIndex>
                                 <numIndex index="1" type="array">
-                                    <numIndex index="0">LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.enableDataProtectionConsent.withoutConsent</numIndex>
-                                    <numIndex index="1">without</numIndex>
+                                    <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.enableDataProtectionConsent.withoutConsent</label>
+                                    <value>without</value>
                                 </numIndex>
                                 <numIndex index="3" type="array">
-                                    <numIndex index="0">LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.enableDataProtectionConsent.withExternalConsent</numIndex>
-                                    <numIndex index="1">external</numIndex>
+                                    <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.enableDataProtectionConsent.withExternalConsent</label>
+                                    <value>external</value>
                                 </numIndex>
                             </items>
                         </config>

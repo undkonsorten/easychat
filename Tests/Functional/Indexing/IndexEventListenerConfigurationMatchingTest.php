@@ -41,7 +41,7 @@ final class IndexEventListenerConfigurationMatchingTest extends FunctionalTestCa
     public function testMultipleConfigurationsCanShareTheSameIndexConfiguration(): void
     {
         $uids = array_map(
-            static fn (array $row): int => (int)$row['uid'],
+            static fn(array $row): int => (int)$row['uid'],
             $this->getTargetConfigurations(9),
         );
         sort($uids);
@@ -53,7 +53,7 @@ final class IndexEventListenerConfigurationMatchingTest extends FunctionalTestCa
     {
         // uid 3 has index_configurations=5 but vector_db=none
         $uids = array_map(
-            static fn (array $row): int => (int)$row['uid'],
+            static fn(array $row): int => (int)$row['uid'],
             $this->getTargetConfigurations(5),
         );
 
@@ -64,7 +64,7 @@ final class IndexEventListenerConfigurationMatchingTest extends FunctionalTestCa
     {
         // uid 4 (hidden) and uid 5 (deleted) both have index_configurations=5
         $uids = array_map(
-            static fn (array $row): int => (int)$row['uid'],
+            static fn(array $row): int => (int)$row['uid'],
             $this->getTargetConfigurations(5),
         );
 
@@ -82,7 +82,7 @@ final class IndexEventListenerConfigurationMatchingTest extends FunctionalTestCa
      */
     private function getTargetConfigurations(int $indexConfigurationRecordId): array
     {
-        $listener = new IndexEventListener($this->get(ConnectionPool::class), new VectorTargetFactory(), new IndexPointRegistry($this->get(ConnectionPool::class)), new RouteArgumentsResolver($this->get(SiteMatcher::class)), $this->createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
+        $listener = new IndexEventListener($this->get(ConnectionPool::class), new VectorTargetFactory(), new IndexPointRegistry($this->get(ConnectionPool::class)), new RouteArgumentsResolver($this->get(SiteMatcher::class)), self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
 
         $method = new \ReflectionMethod($listener, 'getTargetConfigurations');
 

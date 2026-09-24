@@ -38,7 +38,7 @@ class Session extends AbstractEntity
     public function getCreatedAt(): \DateTime
     {
         $createdAt = new \DateTime('now');
-        $createdAt->setTimestamp($this->crdate);
+        $createdAt->setTimestamp((int)$this->crdate);
         return $createdAt;
     }
 }

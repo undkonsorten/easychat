@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 if (!defined('TYPO3')) {
     die('Access denied.');
@@ -21,7 +22,7 @@ return [
             'ignorePageTypeRestriction' => true,
         ],
         'searchFields' => 'name,model,url,',
-        'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg'
+        'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg',
     ],
     'types' => [
         '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,name,-div--;palette,
@@ -31,12 +32,12 @@ return [
         'llm' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.llm.label',
             'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.llm.description',
-            'showitem' => 'url,api_key,--linebreak--,model,--linebreak--,system_message'
+            'showitem' => 'url,api_key,--linebreak--,model,--linebreak--,system_message',
         ],
         'vector' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.label',
             'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.description',
-            'showitem' => 'vector_db_host,vector_db,vector_db_port,vector_db_name,--linebreak--,vector_db_api_key,vector_db_dimensions,--linebreak--,vector_db_embeddings_model,--linebreak--,vector_db_embeddings_url,vector_db_embeddings_api_key,--linebreak--,index_configurations,--linebreak--,vector_db_sync_removals,vector_db_sync_removals_threshold'
+            'showitem' => 'vector_db_host,vector_db,vector_db_port,vector_db_name,--linebreak--,vector_db_api_key,vector_db_dimensions,--linebreak--,vector_db_embeddings_model,--linebreak--,vector_db_embeddings_url,vector_db_embeddings_api_key,--linebreak--,index_configurations,--linebreak--,vector_db_sync_removals,vector_db_sync_removals_threshold',
         ],
     ],
     'columns' => [
@@ -56,7 +57,7 @@ return [
                 'checkbox' => 0,
                 'default' => 0,
                 'range' => [
-                    'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y'))
+                    'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
             ],
         ],
@@ -69,7 +70,7 @@ return [
                 'checkbox' => 0,
                 'default' => 0,
                 'range' => [
-                    'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y'))
+                    'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
             ],
         ],
@@ -80,7 +81,7 @@ return [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
-                'required' => true
+                'required' => true,
             ],
         ],
         'model' => [
@@ -103,7 +104,7 @@ return [
             'config' => [
                 'type' => 'text',
                 'cols' => 40,
-                'rows' => 6
+                'rows' => 6,
             ],
         ],
         'url' => [
@@ -114,7 +115,7 @@ return [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
-                'required' => true
+                'required' => true,
             ],
         ],
         'api_key' => [
@@ -125,8 +126,8 @@ return [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
-                'required' => true
-            ]
+                'required' => true,
+            ],
         ],
         'vector_db' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db',
@@ -156,13 +157,13 @@ return [
                 'AND' => [
                     'FIELD:vector_db:!=:none',
                     'REC:NEW:false',
-                ]
+                ],
             ],
             'config' => [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
-                'required' => true
+                'required' => true,
             ],
         ],
         'vector_db_port' => [
@@ -171,13 +172,13 @@ return [
                 'AND' => [
                     'FIELD:vector_db:!=:none',
                     'REC:NEW:false',
-                ]
+                ],
             ],
             'config' => [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
-                'required' => true
+                'required' => true,
             ],
         ],
         'vector_db_name' => [
@@ -186,13 +187,13 @@ return [
                 'AND' => [
                     'FIELD:vector_db:!=:none',
                     'REC:NEW:false',
-                ]
+                ],
             ],
             'config' => [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
-                'required' => true
+                'required' => true,
             ],
         ],
         'vector_db_api_key' => [
@@ -203,14 +204,14 @@ return [
                     'REC:NEW:false',
                     'OR' => [
                         'FIELD:vector_db:=:qdrant',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'config' => [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
-                'required' => true
+                'required' => true,
             ],
         ],
         'vector_db_embeddings_model' => [
@@ -222,8 +223,8 @@ return [
                     'REC:NEW:false',
                     'OR' => [
                         'FIELD:vector_db:=:qdrant',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'config' => [
                 'type' => 'input',
@@ -245,8 +246,8 @@ return [
                     'REC:NEW:false',
                     'OR' => [
                         'FIELD:vector_db:=:qdrant',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'config' => [
                 'type' => 'input',
@@ -264,8 +265,8 @@ return [
                     'REC:NEW:false',
                     'OR' => [
                         'FIELD:vector_db:=:qdrant',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'config' => [
                 'type' => 'input',
@@ -281,8 +282,8 @@ return [
                     'REC:NEW:false',
                     'OR' => [
                         'FIELD:vector_db:=:qdrant',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'config' => [
                 'type' => 'number',
@@ -299,8 +300,8 @@ return [
                     'REC:NEW:false',
                     'OR' => [
                         'FIELD:vector_db:=:qdrant',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'config' => [
                 'type' => 'group',
@@ -318,8 +319,8 @@ return [
                     'REC:NEW:false',
                     'OR' => [
                         'FIELD:vector_db:=:qdrant',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'config' => [
                 'type' => 'check',
@@ -341,15 +342,6 @@ return [
                     'upper' => 100,
                 ],
             ],
-        ],
-        'llm' => [
-            'label' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:palette.frames',
-            'showitem' => '
-                layout;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:layout_formlabel,
-                model;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:frame_class_formlabel,
-                url;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:space_before_class_formlabel,
-                apiKey;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:space_after_class_formlabel,
-            ',
         ],
     ],
 ];

@@ -2,7 +2,6 @@
 
 namespace Undkonsorten\Easychat\Controller;
 
-
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
@@ -33,7 +32,7 @@ class SessionController extends ActionController
         private readonly IconFactory $iconFactory,
         private readonly ExtensionConfiguration $extensionConfiguration,
         private readonly SessionCsvExportService $sessionCsvExportService,
-    ){}
+    ) {}
 
     public function initializeAction(): void
     {
@@ -55,7 +54,7 @@ class SessionController extends ActionController
             $propertyMappingConfiguration = $this->arguments['demand']->getPropertyMappingConfiguration();
             $propertyMappingConfiguration->allowCreationForSubProperty('status');
             $propertyMappingConfiguration->allowProperties('status');
-            $propertyMappingConfiguration->setTypeConverterOption(PersistentObjectConverter::class, PersistentObjectConverter::CONFIGURATION_CREATION_ALLOWED, TRUE);
+            $propertyMappingConfiguration->setTypeConverterOption(PersistentObjectConverter::class, PersistentObjectConverter::CONFIGURATION_CREATION_ALLOWED, true);
         }
 
     }
@@ -65,8 +64,8 @@ class SessionController extends ActionController
         $sessions = $this->sessionRepository->findAll();
 
         $currentPage = $this->request->hasArgument('currentPage') ? $this->request->getArgument('currentPage') : $currentPage;
-        $paginator = new QueryResultPaginator($sessions, (integer)$currentPage, (integer)$this->extensionConfiguration
-            ->get('easychat')['itemsPerPage'] ?? 50);
+        $paginator = new QueryResultPaginator($sessions, (int)$currentPage, (int)($this->extensionConfiguration
+            ->get('easychat')['itemsPerPage'] ?? 50));
         $simplePagination = new SimplePagination($paginator);
         $pagination = $this->buildSimplePagination($simplePagination, $paginator);
 
@@ -129,7 +128,7 @@ class SessionController extends ActionController
     {
         $this->moduleTemplate->assignMultiple([
             'session' => $session,
-            'messages' => json_decode((string) $session->getMessages(), true),
+            'messages' => json_decode((string)$session->getMessages(), true),
             'exportFields' => $this->sessionCsvExportService->getAvailableFields(),
         ]);
         return $this->moduleTemplate->renderResponse('Session/Show');
@@ -138,7 +137,7 @@ class SessionController extends ActionController
     public function deleteAction(Session $session): ResponseInterface
     {
         $this->sessionRepository->remove($session);
-        $this->addFlashMessage("Session deleted.", "Success", ContextualFeedbackSeverity::OK);
+        $this->addFlashMessage('Session deleted.', 'Success', ContextualFeedbackSeverity::OK);
         return $this->redirect('list');
     }
 
@@ -161,7 +160,7 @@ class SessionController extends ActionController
             'startRecordNumber' => $simplePagination->getStartRecordNumber(),
             'endRecordNumber' => $simplePagination->getEndRecordNumber(),
             'currentPageNumber' => $paginator->getCurrentPageNumber(),
-            'pages' => range($firstPage, $lastPage)
+            'pages' => range($firstPage, $lastPage),
         ];
     }
 
@@ -173,11 +172,11 @@ class SessionController extends ActionController
                 'table' => 'tx_easychat_domain_model_session',
                 'label' => 'module.list',
                 'action' => 'list',
-                'icon' => 'actions-list'
+                'icon' => 'actions-list',
             ],
         ];
         foreach ($buttons as $key => $tableConfiguration) {
-            $title = LocalizationUtility::translate($tableConfiguration['label'],'easychat');
+            $title = LocalizationUtility::translate($tableConfiguration['label'], 'easychat');
             $viewButton = $buttonBar->makeLinkButton()
                 ->setHref($this->uriBuilder->reset()->setRequest($this->request)->uriFor(
                     $tableConfiguration['action'],

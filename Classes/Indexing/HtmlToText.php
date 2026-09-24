@@ -37,7 +37,7 @@ final class HtmlToText
     {
         $text = str_replace(["\r\n", "\r", "\u{00A0}"], ["\n", "\n", ' '], $text);
         $lines = array_map(
-            static fn (string $line): string => trim(preg_replace('/[ \t]+/', ' ', $line) ?? $line),
+            static fn(string $line): string => trim(preg_replace('/[ \t]+/', ' ', $line) ?? $line),
             explode("\n", $text),
         );
         // Drop blank lines, except a single one between paragraphs.

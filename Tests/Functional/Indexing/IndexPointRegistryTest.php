@@ -238,6 +238,6 @@ final class IndexPointRegistryTest extends FunctionalTestCase
      */
     private function pointIds(int $count): array
     {
-        return array_map(static fn (int $i): string => sprintf('point-%04d', $i), range(1, $count));
+        return array_map(static fn(int $i): string => sprintf('point-%04d', $i), range(1, $count));
     }
 }

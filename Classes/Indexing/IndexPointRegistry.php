@@ -119,7 +119,7 @@ class IndexPointRegistry
             ->executeQuery()
             ->fetchAllAssociative();
 
-        return array_map(static fn (array $row): array => [(int)$row['page_uid'], (int)$row['language']], $rows);
+        return array_map(static fn(array $row): array => [(int)$row['page_uid'], (int)$row['language']], $rows);
     }
 
     /**

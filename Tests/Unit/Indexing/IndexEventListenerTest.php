@@ -9,6 +9,7 @@ use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Event\IndexFileEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\TestCase;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
@@ -26,7 +27,7 @@ final class IndexEventListenerTest extends TestCase
         $connectionPool = $this->createMock(ConnectionPool::class);
         $connectionPool->expects(self::never())->method('getQueryBuilderForTable');
 
-        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class), $this->createStub(RouteArgumentsResolver::class), $this->createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
+        $listener = new IndexEventListener($connectionPool, self::createStub(VectorTargetFactory::class), self::createStub(IndexPointRegistry::class), self::createStub(RouteArgumentsResolver::class), self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
 
         $listener->onIndexPage(new IndexPageEvent(
             site: $this->createSiteStub(),
@@ -47,7 +48,7 @@ final class IndexEventListenerTest extends TestCase
         $connectionPool = $this->createMock(ConnectionPool::class);
         $connectionPool->expects(self::never())->method('getQueryBuilderForTable');
 
-        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class), $this->createStub(RouteArgumentsResolver::class), $this->createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
+        $listener = new IndexEventListener($connectionPool, self::createStub(VectorTargetFactory::class), self::createStub(IndexPointRegistry::class), self::createStub(RouteArgumentsResolver::class), self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
 
         $listener->onIndexFile(new IndexFileEvent(
             site: $this->createSiteStub(),
@@ -79,7 +80,7 @@ final class IndexEventListenerTest extends TestCase
         $connectionPool = $this->createMock(ConnectionPool::class);
         $connectionPool->expects(self::never())->method('getQueryBuilderForTable');
 
-        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class), $this->createStub(RouteArgumentsResolver::class), $this->createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
+        $listener = new IndexEventListener($connectionPool, self::createStub(VectorTargetFactory::class), self::createStub(IndexPointRegistry::class), self::createStub(RouteArgumentsResolver::class), self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
 
         $listener->onIndexPage($this->createPageEvent($accessGroups));
     }
@@ -107,7 +108,7 @@ final class IndexEventListenerTest extends TestCase
         $connectionPool = $this->createMock(ConnectionPool::class);
         $connectionPool->expects(self::once())->method('getQueryBuilderForTable');
 
-        $listener = new IndexEventListener($connectionPool, $this->createStub(VectorTargetFactory::class), $this->createStub(IndexPointRegistry::class), $this->createStub(RouteArgumentsResolver::class), $this->createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
+        $listener = new IndexEventListener($connectionPool, self::createStub(VectorTargetFactory::class), self::createStub(IndexPointRegistry::class), self::createStub(RouteArgumentsResolver::class), self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
 
         $listener->onIndexPage($this->createPageEvent($accessGroups));
     }
@@ -133,7 +134,7 @@ final class IndexEventListenerTest extends TestCase
 
     private function createSiteStub(): SiteInterface
     {
-        $site = $this->createStub(SiteInterface::class);
+        $site = self::createStub(SiteInterface::class);
         $site->method('getIdentifier')->willReturn('main');
 
         return $site;

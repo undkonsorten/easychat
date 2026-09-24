@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Undkonsorten\Easychat\Tests\Functional\Indexing;
 
 use Lochmueller\Index\Indexing\Frontend\FrontendContextBuilder;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Undkonsorten\Easychat\Indexing\GuestFrontendContextBuilder;
 use Undkonsorten\Easychat\Indexing\IndexEventListener;

@@ -363,7 +363,7 @@ class IndexEventListener implements LoggerAwareInterface
 
         $target->store->add(...$target->vectorizer->vectorize($chunks));
 
-        return array_map(static fn (TextDocument $chunk): string => $chunk->getId()->toRfc4122(), $chunks);
+        return array_map(static fn(TextDocument $chunk): string => $chunk->getId()->toRfc4122(), $chunks);
     }
 
     /**

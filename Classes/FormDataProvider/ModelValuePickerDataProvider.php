@@ -52,6 +52,6 @@ final readonly class ModelValuePickerDataProvider implements FormDataProviderInt
      */
     private function buildItems(array $modelIds): array
     {
-        return array_map(static fn (string $modelId): array => [$modelId, $modelId], $modelIds);
+        return array_map(static fn(string $modelId): array => [$modelId, $modelId], $modelIds);
     }
 }

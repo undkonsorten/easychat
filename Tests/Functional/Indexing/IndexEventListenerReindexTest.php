@@ -10,7 +10,9 @@ use Lochmueller\Index\Event\DeIndexDocumentEvent;
 use Lochmueller\Index\Event\FinishIndexProcessEvent;
 use Lochmueller\Index\Event\IndexFileEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use Symfony\AI\Store\Document\VectorizerInterface;
+use TYPO3\CMS\Core\Configuration\SiteConfiguration;
 use TYPO3\CMS\Core\Configuration\SiteWriter;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Routing\SiteMatcher;
@@ -317,7 +319,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
      */
     public function testAFailedWriteNeitherEscapesNorLeadsToRemovals(): void
     {
-        $failingVectorizer = $this->createStub(VectorizerInterface::class);
+        $failingVectorizer = self::createStub(VectorizerInterface::class);
         $failingVectorizer->method('vectorize')->willThrowException(new \TypeError('RateLimitExceededException::__construct(): Argument #1 must be of type ?int, string given'));
 
         $this->indexTwoElements($this->createListener(), self::WITH_SYNC, 'run-1');
@@ -354,7 +356,9 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
 
     private function writeSiteConfiguration(): void
     {
-        $this->get(SiteWriter::class)->write('main', [
+        // SiteWriter is TYPO3 v13+, v12 writes through SiteConfiguration
+        $siteWriter = class_exists(SiteWriter::class) ? $this->get(SiteWriter::class) : $this->get(SiteConfiguration::class);
+        $siteWriter->write('main', [
             'rootPageId' => 1,
             'base' => 'https://example.org/',
             'languages' => [
@@ -371,7 +375,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
 
     private function createListener(?VectorizerInterface $vectorizer = null, ?AnonymousPageVisibility $pageVisibility = null): IndexEventListener
     {
-        $factory = $this->createStub(VectorTargetFactory::class);
+        $factory = self::createStub(VectorTargetFactory::class);
         $factory->method('create')->willReturn(new VectorTarget($this->store, $vectorizer ?? new FakeVectorizer(), $this->store));
 
         $connectionPool = $this->get(ConnectionPool::class);
@@ -381,7 +385,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
             $factory,
             new IndexPointRegistry($connectionPool),
             new RouteArgumentsResolver($this->get(SiteMatcher::class)),
-            $pageVisibility ?? $this->createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]),
+            $pageVisibility ?? self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]),
         );
     }
 
@@ -448,7 +452,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
 
     private function createSiteStub(): SiteInterface
     {
-        $site = $this->createStub(SiteInterface::class);
+        $site = self::createStub(SiteInterface::class);
         $site->method('getIdentifier')->willReturn('main');
 
         return $site;

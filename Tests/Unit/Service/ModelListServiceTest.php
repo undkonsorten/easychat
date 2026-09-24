@@ -57,7 +57,7 @@ final class ModelListServiceTest extends TestCase
 
     public function testReturnsEmptyArrayOnNetworkFailure(): void
     {
-        $httpClient = new MockHttpClient(static fn (): never => throw new \Symfony\Component\HttpClient\Exception\TransportException('connection refused'));
+        $httpClient = new MockHttpClient(static fn(): never => throw new \Symfony\Component\HttpClient\Exception\TransportException('connection refused'));
 
         $service = new ModelListService($httpClient);
 

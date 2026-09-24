@@ -9,10 +9,10 @@
                 <source>Session id</source>
             </trans-unit>
             <trans-unit id="tx_easychat_domain_model_session.created_at">
-                <source>created at</source>
+                <source>Created at</source>
             </trans-unit>
             <trans-unit id="tx_easychat_domain_model_session.actions">
-                <source>actions</source>
+                <source>Actions</source>
             </trans-unit>
             <trans-unit id="actions.deleteFinished">
                 <source>Delete finished</source>

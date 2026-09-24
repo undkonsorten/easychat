@@ -408,7 +408,7 @@ PHPUNIT_RANDOM=""
 CGLCHECK_DRY_RUN=""
 DATABASE_DRIVER=""
 CONTAINER_BIN=""
-COMPOSER_ROOT_VERSION="0.1.x-dev"
+COMPOSER_ROOT_VERSION="0.2.x-dev"
 # "composer config" and "composer require" rewrite the manifest they operate on. The install
 # suites therefore run on a throwaway copy of "composer.json", selected with the "COMPOSER"
 # environment variable, so that the tracked "composer.json" is never touched and the added

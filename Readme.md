@@ -484,6 +484,16 @@ Safeguards and caveats:
 ----
 
 
+## Upgrading
+
+### From 0.1.x to 0.2.0
+
+- **Database compare required**: new columns on `tx_easychat_configuration` and the new table `tx_easychat_index_point`.
+- **Vector dimensions are configurable**: Qdrant collections used to be created with a hardcoded size of 4096. The new field *Embedding dimensions* (`vector_db_dimensions`) defaults to 1536. If you already use a vector store, set it to the size of your existing collection (4096 for collections created by 0.1.x), or drop the collection and re-index.
+- **New dependency**: `typo3/cms-install` is now required.
+- **API change**: `StoreFactory::create()` takes a new required `int $dimensions` argument and throws an exception for unsupported store types.
+- **Sessions**: new sessions are stored on the configured storage PID. The session table is now visible in the list module, and its fields are read-only.
+
 ## Theming & Templates
 
 ### Chat Fronend: Deep Chat

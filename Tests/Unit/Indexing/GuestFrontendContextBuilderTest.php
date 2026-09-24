@@ -12,6 +12,7 @@ use TYPO3\CMS\Core\Context\VisibilityAspect;
 use TYPO3\CMS\Core\Context\WorkspaceAspect;
 use Undkonsorten\Easychat\Indexing\GuestFrontendContextBuilder;
 
+#[RequiresMethod(FrontendContextBuilder::class, 'executeInFrontendContext')]
 final class GuestFrontendContextBuilderTest extends TestCase
 {
     public function testRendersWithAGuestContextAndRestoresTheCliContextAfterwards(): void

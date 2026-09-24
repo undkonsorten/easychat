@@ -40,6 +40,7 @@ require_once __DIR__ . '/../../Fixtures/Indexing/InMemoryPointStore.php';
  * 7 → uid 1, removal sync off · 8 → uid 2, sync on, no threshold · 9 and 10 → uid 3, sync on,
  * no threshold (one store fed by two index configurations) · 11 → uid 4, sync on, threshold 25%.
  */
+#[RequiresMethod(IndexPageEvent::class, '__construct')]
 final class IndexEventListenerReindexTest extends FunctionalTestCase
 {
     private const WITHOUT_SYNC = 7;

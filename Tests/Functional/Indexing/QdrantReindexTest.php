@@ -32,6 +32,7 @@ require_once __DIR__ . '/../../Fixtures/Indexing/FakeVectorizer.php';
  * are faked, so no LLM API key is needed. Skipped when Qdrant is not reachable; set
  * EASYCHAT_TEST_QDRANT_URL to point it somewhere other than the DDEV service.
  */
+#[RequiresMethod(IndexPageEvent::class, '__construct')]
 final class QdrantReindexTest extends FunctionalTestCase
 {
     private const DIMENSIONS = 4;

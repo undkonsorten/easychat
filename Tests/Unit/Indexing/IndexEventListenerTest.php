@@ -18,6 +18,7 @@ use Undkonsorten\Easychat\Indexing\IndexPointRegistry;
 use Undkonsorten\Easychat\Indexing\RouteArgumentsResolver;
 use Undkonsorten\Easychat\Indexing\VectorTargetFactory;
 
+#[RequiresMethod(IndexPageEvent::class, '__construct')]
 final class IndexEventListenerTest extends TestCase
 {
     public function testOnIndexPageSkipsBlankContentWithoutQueryingConfigurations(): void

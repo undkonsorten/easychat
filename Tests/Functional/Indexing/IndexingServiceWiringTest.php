@@ -14,6 +14,7 @@ use Undkonsorten\Easychat\Indexing\IndexEventListener;
  * without any error once EXT:index renames or moves FrontendContextBuilder — and hidden and
  * scheduled content would reach the vector store again. This makes that loud.
  */
+#[RequiresMethod(FrontendContextBuilder::class, 'executeInFrontendContext')]
 final class IndexingServiceWiringTest extends FunctionalTestCase
 {
     protected array $coreExtensionsToLoad = ['reactions', 'webhooks'];

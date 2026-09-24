@@ -19,7 +19,7 @@ use TYPO3\CMS\Core\Context\WorkspaceAspect;
  * Context (default visibility, no backend user, live workspace) for the duration of the
  * subrequest and restores the previous one afterwards.
  *
- * Registered in Services.yaml as a decorator of FrontendContextBuilder; without EXT:index it is
+ * Registered in Services.php as a decorator of FrontendContextBuilder; without EXT:index it is
  * not used.
  */
 class GuestFrontendContextBuilder extends FrontendContextBuilder

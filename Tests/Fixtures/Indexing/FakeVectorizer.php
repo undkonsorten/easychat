@@ -22,7 +22,7 @@ final readonly class FakeVectorizer implements VectorizerInterface
 
     public function vectorize(string|\Stringable|EmbeddableDocumentInterface|array $values, array $options = []): Vector|VectorDocumentInterface|array
     {
-        if (!\is_array($values)) {
+        if (!is_array($values)) {
             throw new \LogicException('FakeVectorizer only supports lists of documents.', 7713459136);
         }
 

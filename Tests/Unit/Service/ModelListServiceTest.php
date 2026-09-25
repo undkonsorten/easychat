@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Undkonsorten\Easychat\Tests\Unit\Service;
 
-use Symfony\Component\HttpClient\Exception\TransportException;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Undkonsorten\Easychat\Service\ModelListService;

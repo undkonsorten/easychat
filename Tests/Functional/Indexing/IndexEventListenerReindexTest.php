@@ -83,7 +83,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
         $listener = $this->createListener();
 
         $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-1', 10, str_repeat('Long original text. ', 150)));
-        self::assertGreaterThan(1, \count($this->store->textsOf('#c10')), 'precondition: long content is split into several chunks');
+        self::assertGreaterThan(1, count($this->store->textsOf('#c10')), 'precondition: long content is split into several chunks');
 
         $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-2', 10, 'Short replacement.'));
 

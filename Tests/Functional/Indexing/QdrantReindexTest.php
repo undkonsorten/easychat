@@ -99,7 +99,7 @@ final class QdrantReindexTest extends FunctionalTestCase
         $listener = $this->createListener();
 
         $listener->onIndexPage($this->createPageEvent('run-1', 10, str_repeat('Long original text. ', 150)));
-        self::assertGreaterThan(1, \count($this->scroll()), 'precondition: long content is split into several chunks');
+        self::assertGreaterThan(1, count($this->scroll()), 'precondition: long content is split into several chunks');
 
         $listener->onIndexPage($this->createPageEvent('run-2', 10, 'Short replacement.'));
 

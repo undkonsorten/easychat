@@ -174,7 +174,7 @@ final class SessionRepositoryConversationHistoryTest extends FunctionalTestCase
 
     private function fakeAgent(): AgentInterface
     {
-        return new class () implements AgentInterface {
+        return new class implements AgentInterface {
             private int $calls = 0;
 
             public function call(string|MessageBag|UserMessage $input, array $options = []): Execution

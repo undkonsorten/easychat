@@ -50,7 +50,7 @@ final class InMemoryPointStore implements StoreInterface
 
     public function count(): int
     {
-        return \count($this->points);
+        return count($this->points);
     }
 
     /**

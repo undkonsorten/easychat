@@ -114,7 +114,7 @@ class IndexEventListener implements LoggerAwareInterface
      */
     private static function isVisibleToAnonymousVisitor(array $accessGroups): bool
     {
-        return $accessGroups === [] || \in_array(-1, $accessGroups, true);
+        return $accessGroups === [] || in_array(-1, $accessGroups, true);
     }
 
     #[AsEventListener(identifier: 'easychat/index-file')]
@@ -367,10 +367,10 @@ class IndexEventListener implements LoggerAwareInterface
     private function sweepUnlessExcessive(array $configuration, int $indexConfiguration, array $pointIds, int $tracked): void
     {
         $threshold = (int)($configuration['vector_db_sync_removals_threshold'] ?? 25);
-        if ($tracked > 0 && \count($pointIds) * 100 > $threshold * $tracked) {
+        if ($tracked > 0 && count($pointIds) * 100 > $threshold * $tracked) {
             $this->logger?->warning(
                 'Index run would remove {remove} of {tracked} tracked vectors, more than the threshold of {threshold}%. Nothing was removed; if the removal is intended, raise the threshold or purge and re-index.',
-                ['remove' => \count($pointIds), 'tracked' => $tracked, 'threshold' => $threshold, 'configuration' => (int)$configuration['uid'], 'indexConfiguration' => $indexConfiguration],
+                ['remove' => count($pointIds), 'tracked' => $tracked, 'threshold' => $threshold, 'configuration' => (int)$configuration['uid'], 'indexConfiguration' => $indexConfiguration],
             );
             return;
         }

@@ -13,7 +13,7 @@ final class ModelValuePickerDataProviderTest extends TestCase
     public function testAddDataIsNoopForOtherTables(): void
     {
         $modelListService = $this->createMock(ModelListService::class);
-        $modelListService->expects(self::never())->method('getAvailableModels');
+        $modelListService->expects($this->never())->method('getAvailableModels');
 
         $provider = new ModelValuePickerDataProvider($modelListService);
 
@@ -25,7 +25,7 @@ final class ModelValuePickerDataProviderTest extends TestCase
     public function testPopulatesModelValuePickerItemsFromUrlAndApiKey(): void
     {
         $modelListService = $this->createMock(ModelListService::class);
-        $modelListService->expects(self::once())
+        $modelListService->expects($this->once())
             ->method('getAvailableModels')
             ->with('https://llm.example.com', 'chat-key')
             ->willReturn(['gpt-4o', 'gpt-4o-mini']);
@@ -47,7 +47,7 @@ final class ModelValuePickerDataProviderTest extends TestCase
     public function testPopulatesEmbeddingsValuePickerUsingEmbeddingsUrlWhenSet(): void
     {
         $modelListService = $this->createMock(ModelListService::class);
-        $modelListService->expects(self::once())
+        $modelListService->expects($this->once())
             ->method('getAvailableModels')
             ->with('https://embeddings.example.com', 'embeddings-key')
             ->willReturn(['text-embedding-3-small']);
@@ -74,7 +74,7 @@ final class ModelValuePickerDataProviderTest extends TestCase
     public function testPopulatesEmbeddingsValuePickerFallingBackToChatUrlAndApiKeyWhenEmbeddingsOverrideEmpty(): void
     {
         $modelListService = $this->createMock(ModelListService::class);
-        $modelListService->expects(self::once())
+        $modelListService->expects($this->once())
             ->method('getAvailableModels')
             ->with('https://llm.example.com', 'chat-key')
             ->willReturn([]);
@@ -96,7 +96,7 @@ final class ModelValuePickerDataProviderTest extends TestCase
     public function testSkipsColumnsNotPresentInProcessedTca(): void
     {
         $modelListService = $this->createMock(ModelListService::class);
-        $modelListService->expects(self::never())->method('getAvailableModels');
+        $modelListService->expects($this->never())->method('getAvailableModels');
 
         $provider = new ModelValuePickerDataProvider($modelListService);
 

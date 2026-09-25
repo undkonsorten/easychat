@@ -25,7 +25,7 @@ final class IndexEventListenerTest extends TestCase
     public function testOnIndexPageSkipsBlankContentWithoutQueryingConfigurations(): void
     {
         $connectionPool = $this->createMock(ConnectionPool::class);
-        $connectionPool->expects(self::never())->method('getQueryBuilderForTable');
+        $connectionPool->expects($this->never())->method('getQueryBuilderForTable');
 
         $listener = new IndexEventListener($connectionPool, self::createStub(VectorTargetFactory::class), self::createStub(IndexPointRegistry::class), self::createStub(RouteArgumentsResolver::class), self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
 
@@ -46,7 +46,7 @@ final class IndexEventListenerTest extends TestCase
     public function testOnIndexFileSkipsBlankContentWithoutQueryingConfigurations(): void
     {
         $connectionPool = $this->createMock(ConnectionPool::class);
-        $connectionPool->expects(self::never())->method('getQueryBuilderForTable');
+        $connectionPool->expects($this->never())->method('getQueryBuilderForTable');
 
         $listener = new IndexEventListener($connectionPool, self::createStub(VectorTargetFactory::class), self::createStub(IndexPointRegistry::class), self::createStub(RouteArgumentsResolver::class), self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
 
@@ -78,7 +78,7 @@ final class IndexEventListenerTest extends TestCase
     public function testOnIndexPageSkipsAccessRestrictedContent(array $accessGroups): void
     {
         $connectionPool = $this->createMock(ConnectionPool::class);
-        $connectionPool->expects(self::never())->method('getQueryBuilderForTable');
+        $connectionPool->expects($this->never())->method('getQueryBuilderForTable');
 
         $listener = new IndexEventListener($connectionPool, self::createStub(VectorTargetFactory::class), self::createStub(IndexPointRegistry::class), self::createStub(RouteArgumentsResolver::class), self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
 
@@ -106,7 +106,7 @@ final class IndexEventListenerTest extends TestCase
     public function testOnIndexPageHandlesPubliclyVisibleContent(array $accessGroups): void
     {
         $connectionPool = $this->createMock(ConnectionPool::class);
-        $connectionPool->expects(self::once())->method('getQueryBuilderForTable');
+        $connectionPool->expects($this->once())->method('getQueryBuilderForTable');
 
         $listener = new IndexEventListener($connectionPool, self::createStub(VectorTargetFactory::class), self::createStub(IndexPointRegistry::class), self::createStub(RouteArgumentsResolver::class), self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]));
 

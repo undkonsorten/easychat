@@ -4,8 +4,8 @@ namespace Undkonsorten\Easychat\Factories;
 
 use Symfony\AI\Platform\Bridge\Generic\CompletionsModel;
 use Symfony\AI\Platform\Bridge\Generic\EmbeddingsModel;
-use Symfony\AI\Platform\Bridge\Generic\ModelCatalog;
 use Symfony\AI\Platform\Bridge\Generic\Factory as GenericPlatformFactory;
+use Symfony\AI\Platform\Bridge\Generic\ModelCatalog;
 use Symfony\AI\Platform\Capability;
 use Symfony\AI\Platform\PlatformInterface;
 use Symfony\Component\HttpClient\HttpClient;

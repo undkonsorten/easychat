@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Undkonsorten\Easychat\Service;
 
-use Symfony\AI\Platform\Message\SystemMessage;
-use Symfony\AI\Platform\Message\UserMessage;
 use Symfony\AI\Platform\Message\AssistantMessage;
 use Symfony\AI\Platform\Message\Content\Text;
+use Symfony\AI\Platform\Message\SystemMessage;
+use Symfony\AI\Platform\Message\UserMessage;
 use Undkonsorten\Easychat\Domain\Model\Session;
 
 /**

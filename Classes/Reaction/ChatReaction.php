@@ -32,6 +32,11 @@ use Undkonsorten\Easychat\Factories\VectorizerFactory;
 
 class ChatReaction implements ReactionInterface
 {
+    public const TABLE_NAME = 'tx_easychat_messages';
+
+    public const CONFIGURATION_TABLE_NAME = 'tx_easychat_configuration';
+
+    public const COOKIE_NAME = 'easychat_session_id';
     public function __construct(
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly StreamFactoryInterface $streamFactory,
@@ -43,12 +48,6 @@ class ChatReaction implements ReactionInterface
             new MessageNormalizer(),
         ], [new JsonEncoder()]),
     ) {}
-
-    public const TABLE_NAME = 'tx_easychat_messages';
-
-    public const CONFIGURATION_TABLE_NAME = 'tx_easychat_configuration';
-
-    public const COOKIE_NAME = 'easychat_session_id';
 
     /**
      * @inheritDoc

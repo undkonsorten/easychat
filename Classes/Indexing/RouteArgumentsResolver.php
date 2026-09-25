@@ -72,7 +72,7 @@ class RouteArgumentsResolver
     {
         ksort($array);
         foreach ($array as &$value) {
-            if (\is_array($value)) {
+            if (is_array($value)) {
                 self::sortRecursive($value);
             }
         }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Undkonsorten\Easychat\Tests\Functional\Controller;
 
-use Symfony\AI\Platform\Message\UserMessage;
-use Symfony\AI\Platform\Message\Content\Text;
 use Symfony\AI\Platform\Message\AssistantMessage;
+use Symfony\AI\Platform\Message\Content\Text;
+use Symfony\AI\Platform\Message\UserMessage;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Undkonsorten\Easychat\Controller\SessionController;

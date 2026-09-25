@@ -6,9 +6,9 @@ use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
 class Session extends AbstractEntity
 {
-    protected string|null $sessionId = null;
+    protected ?string $sessionId = null;
 
-    protected string|null $messages = null;
+    protected ?string $messages = null;
 
     /**
      * @var int

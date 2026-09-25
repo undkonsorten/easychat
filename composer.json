@@ -95,7 +95,8 @@
 		"check:static": [
 			"@check:composer:normalize",
 			"@check:php:lint",
-			"@check:php:cs-fixer"
+			"@check:php:cs-fixer",
+			"@check:php:rector"
 		],
 		"check:tests:unit": "phpunit -c Build/phpunit/UnitTests.xml",
 		"fix": [

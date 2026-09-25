@@ -579,9 +579,10 @@ Build/Scripts/runTests.sh -s functional -d mariadb
 Build/Scripts/runTests.sh -t 14.3 -p 8.4 -s composerUpdateMax
 Build/Scripts/runTests.sh -t 14.3 -p 8.4 -s unit
 
-# code style (dry-run), static analysis, PHP lint
+# code style (dry-run), static analysis, Rector (dry-run), PHP lint
 Build/Scripts/runTests.sh -s cgl -n
 Build/Scripts/runTests.sh -s phpstan
+Build/Scripts/runTests.sh -s rector -n
 Build/Scripts/runTests.sh -s lintPhp
 
 # all options

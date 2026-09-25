@@ -2,22 +2,18 @@
 
 ----
 
-![TYPO3 Version 12](Documentation/Badges/TYPO3-12.png) ![TYPO3 Version 13](Documentation/Badges/TYPO3-13.png)
-
-----
-
 ![EasyChat Logo](Documentation/Assets/EasyChat-Logo.png)
 
 ----
-
 
 **EasyChat** is a lightweight open source chatbot for [TYPO3](https://typo3.org) websites without third party chat tools.
 
 All you need is TYPO3 and an LLM endpoint.
 
-EasyChat is **focused on privacy** and data protection, since all chat conversions are only stored in your TYPO3 database.
+EasyChat is **focused on privacy** and data protection, since all chat conversations are only stored in your TYPO3 database.
 
-----
+
+![EasyChat Frames](Documentation/Assets/EasyChat-Frames.png)
 
 ## 🚀 Features
 
@@ -26,8 +22,8 @@ EasyChat is **focused on privacy** and data protection, since all chat conversio
 
 
 * 🤖 **LLM Endpoints** for
-  * (self hosted) open source LLM's (e.g. gpt‑oss) and
-  * standard LLMs (ChatGPT, Cloude Opus, Mistral etc.)
+  * (self-hosted) open source LLMs (e.g. gpt‑oss) and
+  * standard LLMs (ChatGPT, Claude Opus, Mistral etc.)
   * Chat memory (Chatbot can remember old questions)
 
 
@@ -36,11 +32,14 @@ EasyChat is **focused on privacy** and data protection, since all chat conversio
   * Optional **privacy consent** before the chat starts
   * Automated **cleaning of user data** (scheduler task)
 
-* ⛁ **Knoledge base** connector (to vector database)
+
+* ⛁ **TYPO3 content as knowledge base (RAG, Vector Database)**
+  * TYPO3 Content to RAG via [ext:index](https://extensions.typo3.org/extension/index)
+  * Connector (to Qdrant vector database)
 
 ---
 
-## 🛠️ Setup guide (5 Steps)
+## 🛠️ Setup guide (4 Steps)
 
 ### 1. Install the TYPO3 Extension
 
@@ -54,7 +53,7 @@ After installation a **database compare** is necessary (via [Install Tool](https
 
 ### 2. Configure the LLM provider
 
-Now you need to connect TYPO3 to your LLM's provider via API.
+Now you need to connect TYPO3 to your LLM provider via API.
 Create a new database record "Configuration" in TYPO3.
 
 ![Click to enlarge: Add new Configuration record](Documentation/Assets/Configuration-New-Database-Record.png)
@@ -69,30 +68,16 @@ The *LLM Settings* (URL, API key, model, system prompt) are always required. The
 content (RAG); leave *Vector db* on `None` otherwise. See
 [How reactions, configurations and index configurations connect](#how-reactions-configurations-and-index-configurations-connect).
 
-#### Sample configurations for you LLM
+#### Sample configurations for your LLM
 
 * **Mistral** (Free plan available | [How to get an API key?](Documentation/How-to-get-API-Keys.md))
     * Name:  `Mistral (mistral-tiny)`
     * Model (of the LLM): `mistral-tiny`
     * URL (of the API endpoint): `https://api.mistral.ai`
     * API Key: `your-api-key-abc123xyz-...`
-    * System Message (Promt): `You are a support chatbot ...`
+    * System Message (Prompt): `You are a support chatbot ...`
 
-
-* **OpenAI / ChatGPT** (Payed plan only | [How to get an API key?](Documentation/How-to-get-API-Keys.md))
-    * Name:  `Chatbot via OpenAI (gpt-4o-mini)`
-    * Model (of the LLM): `gpt-4o-mini`
-    * URL (of the API endpoint): `https://api.openai.com`
-    * API Key: `your-api-key-abc123xyz-...`
-    * System Message (Promt): `You are a support chatbot ...`
-
-
-* **mittwald** (Payed plan | [How to get an API key?](Documentation/How-to-get-API-Keys.md))
-    * Name:  `Support Chatbot via Mittwald (gpt-oss)`
-    * URL (of the API endpoint): `https://llm.aihosting.mittwald.de`
-    * Model (of the LLM): `gpt-oss-120b`
-    * API Key: `abc123xyz...`
-    * System Message (Promt): `You are a support chatbot ...`
+More samples (OpenAI, mittwald, Groq, Ollama …) → [Sample configurations](Documentation/Sample-LLM-Configurations.md)
 
 ### 3. Setup the TYPO3 Reaction
 
@@ -103,13 +88,13 @@ The reaction serves as a connector (aka endpoint) between the chat frontend and 
 
 * Create a new reaction with the *Reaction Type* `Reaction for easychat`.
 * Be sure to *copy the generated secret* before saving
-* Chose one of the before created *EasyChat configuration record*
+* Choose one of the previously created *EasyChat configuration records*
   * This choice decides **everything the chatbot uses**: the LLM, and — if the configuration has a vector
     database — which vector database/collection it searches and therefore which *Index configurations*
     (EXT:index) it knows about. See
     [How reactions, configurations and index configurations connect](#how-reactions-configurations-and-index-configurations-connect).
 
-After sucessfully creating the reaction you will see the following interface.
+After successfully creating the reaction you will see the following interface.
 
 [![Click to enlarge: Reaction List](Documentation/Assets/Reactions_Thumb.png)](Documentation/Assets/Reactions.png)
 
@@ -119,13 +104,13 @@ You will need it in step 4.
 ### 4. Setup the Content Element
 
 Last but not least you need to setup a *content element for the chatbot*.
-* Be sure to have you *Reaction URL and secret* available.
+* Be sure to have your *Reaction URL and secret* available.
 
 * Open a TYPO3 page
 * Add/create a new content element "Chatbot".
 * Connect the content Element to the reaction.
 
-> Hint: Use /typo3/reaction/XXXXXXXX-XXXXX instead of https://mydomain.dev/XXXXXXXX-XXXXX in order to be domain independent
+> Hint: Use /typo3/reaction/XXXXXXXX-XXXXX instead of https://mydomain.dev/XXXXXXXX-XXXXX in order to be domain independent (on Local, Staging, Live)
 
 [![Click to enlarge: Content Element EasyChat](Documentation/Assets/Content-Element_Thumb.png)](Documentation/Assets/Content-Element.png)
 
@@ -133,37 +118,32 @@ Last but not least you need to setup a *content element for the chatbot*.
 
 ----
 
+## Session storage in TYPO3
 
-## Backend module for chat session logs
+### How are chat sessions stored?
 
-With the **EasyChat backend module** you can watch, review, delete and export chat sessions.
+Each browser session (the `easychat_session_id` cookie) maps to **exactly one row** in `tx_easychat_domain_model_session`. The whole conversation — the system prompt plus every
+question and answer — is stored in that row.
 
 [![Click to enlarge: EasyChat backend Module](Documentation/Assets/Backend-Module_Thumb.png)](Documentation/Assets/Backend-Module.png)
 
-### Exporting sessions as CSV
+With the **EasyChat backend module** you can
+* Watch, review, delete and export chat sessions
+* Export as CSV: Click *Export as CSV* on the session list or *Export this session as CSV* on a single session's detail view
 
-Click *Export as CSV* on the session list (or *Export this session as CSV* on a single session's
-detail view, to only export that one) to open a settings dialog and download conversations as
-CSV. Pick which columns to include: *Session id*, *Created at*, *System prompt*, *Questions*,
-*Answers*.
 
-When *Questions* and/or *Answers* are selected, each question/answer turn of a conversation
-becomes its own CSV row (with the other selected columns repeated), instead of concatenating an
-entire multi-turn conversation into one cell.
+## Cleaner task: Delete old chat sessions
 
-### How chat sessions are stored
+For data protection we recommend setting up the 🗑 *cleaner task* in order to delete old chat sessions.
 
-Each browser session (the `easychat_session_id` cookie) maps to **exactly one row** in
-`tx_easychat_domain_model_session`. The whole conversation — the system prompt plus every
-question and answer — lives as one JSON blob in that row's `messages` column and is updated in
-place after every turn; a new row is only ever created the very first time a given session is
-seen.
+[![Click to enlarge: EasyChat backend Module](Documentation/Assets/Scheduler-Task_Thumb.png)](Documentation/Assets/Scheduler-Task.png)
 
-*Known limitation:* the system prompt is only ever read from the *Configuration* record's
-*System Message* field when a session is first created (see `ChatReaction::react()`). Editing
-that field later has **no effect on sessions that are already running** — they keep using
-whichever prompt was configured when they started. The new value only applies to sessions
-created after the change.
+Steps:
+* Choose the task `Execute console commands (scheduler)`
+* Schedulable command: `easychat:delete-sessions: Deletes sessions older than given date interval.`
+* Set the scheduler interval
+* Save!
+* Then define the `keepDateInterval` in the [ISO 8601 durations format](https://en.wikipedia.org/wiki/ISO_8601#Durations): 1 Day = `P1D`, 2 Weeks = `P2W`, 3 Months = `P3M`, 1 Year = `P1Y`, 1 Year and 2 Months = `P1Y2M`
 
 ----
 
@@ -172,7 +152,7 @@ created after the change.
 
 EasyChat has a small set of global options in the **Extension Configuration**
 (*Admin Tools → Settings → Extension Configuration → `easychat`*, or in
-`config/system/settings.php` under `EXTENSIONS.easychat`):
+`config/system/settings.php`):
 
 | Key | Default | Meaning |
 |:----|:--------|:--------|
@@ -189,65 +169,50 @@ EasyChat has a small set of global options in the **Extension Configuration**
 ],
 ```
 
-> **Note:** `storagePid` is set here, **not** via TypoScript. A
-> `plugin.tx_easychat.persistence.storagePid` in TypoScript has **no effect**,
-> because sessions are persisted from a TYPO3 *Reaction* (outside the Extbase
-> plugin request), which reads this value directly from the extension
-> configuration. We recommend pointing `storagePid` at a dedicated **sysfolder**
-> rather than the root page.
+We recommend pointing `storagePid` at a dedicated **SysFolder** rather than the root page.
 
 ----
 
 
-## Automated cleaner task for deleting old chat session
+## Knowledge base (RAG)
 
-For data protection we recommend to setup the 🗑 *cleaner task* in order to delete old chat sessions.
+EasyChat can answer questions **using your own TYPO3 content and files as a knowledge base** instead of (or in addition to) the LLM's general knowledge, by embedding your pages/files into a **vector store** (like Qdrant).
 
-[![Click to enlarge: EasyChat backend Module](Documentation/Assets/Scheduler-Task_Thumb.png)](Documentation/Assets/Scheduler-Task.png)
+The **knowledge indexing** itself is delegated to and configured via the [TYPO3 Extension _Index_](https://github.com/lochmueller/index), a generic
+TYPO3 content-crawling framework. EasyChat listens to the indexer and pushes the crawled content into the vector store(s) of any matching *EasyChat Configuration* record.
 
-Steps:
-* Choose the task `Execute console commands (scheduler)`
-* Schedulable Commend: `easychat:delete-sessions: Deletes sessions older than given date interval.`
-* Set the scheduler interval
-* Save !
-* Then define the `keepDateInterval` in the [ISO 8601 durations format](https://en.wikipedia.org/wiki/ISO_8601#Durations).
+_Index_ can be configured to read
+* content elements,
+* plugin content (e.g. FAQs, News) but also
+* Files (manuals, documentation in PDF, XLS etc.)
 
+### Quick setup
 
-| Duration             | ISO 8601 Format |
-|:---------------------|:----------------|
-| 1 Day                | P1D             |
-| 2 Weeks              | P2W             |
-| 3 Months             | P3M             |
-| 1 Year               | P1Y             |
-| 1 Year and 2 Months  | P1Y2M           |
+1. `composer require symfony/ai-qdrant-store`
+2. Create an *EXT:index* configuration on your root page and the two scheduler tasks `index:queue` and `messenger:consume`.
+3. On your *EasyChat configuration* set *Vector db* to `Qdrant`, fill in the connection fields and select the index configuration(s).
+4. Make sure the *reaction* uses exactly this EasyChat configuration.
 
-
-----
-
-## Knowledge base (RAG) via EXT:index
-
-EasyChat can answer questions using your own site content instead of (or in addition to) the LLM's
-general knowledge, by embedding your pages/files into a **Qdrant** vector store and retrieving relevant
-chunks at chat time (`Symfony\AI\Agent\Bridge\SimilaritySearch\SimilaritySearch`, already wired into
-`ChatReaction`).
-
-Indexing itself is delegated to [`lochmueller/index`](https://github.com/lochmueller/index), a generic
-TYPO3 content-crawling framework. EasyChat listens to its `IndexPageEvent`/`IndexFileEvent` (see
-`Classes/Indexing/IndexEventListener.php`) and pushes the crawled content into the vector store(s) of any
-matching *Configuration* record.
-
-Because EasyChat only consumes those two events, **anything EXT:index can crawl becomes chat knowledge** —
-you are not limited to plain pages.
+[More indexer setup hints here →](Documentation/Indexer.md)
 
 ### How reactions, configurations and index configurations connect
 
 Everything hangs off the **EasyChat configuration** record that a reaction points to:
 
 ```
-Content element (chatbot) ──> Reaction ──> EasyChat configuration
-                                             ├─ LLM (model, API url/key, system message)
-                                             ├─ Vector DB (Qdrant host/port, collection, API key, embeddings model)
-                                             └─ Index configurations (EXT:index) ──> content written into that collection
+  Content element (chatbot / User)
+  │
+  ▼
+  Reaction
+  │
+  ▼
+  EasyChat configuration
+  ├─ LLM (model, API url/key, system message)
+  ├─ Vector DB (Qdrant host/port, collection, API key, embeddings model)
+  └─ Index configurations (EXT:index)
+     │
+     ▼
+     content written into that collection
 ```
 
 * **At chat time** the reaction loads its EasyChat configuration, and the similarity search queries
@@ -258,254 +223,29 @@ Content element (chatbot) ──> Reaction ──> EasyChat configuration
 
 So the *Index configurations* field on the EasyChat configuration is **the one place that decides what a
 chatbot knows**, and the reaction decides **which** configuration (and thus which knowledge base) a
-chatbot uses. An index configuration that is not selected in any EasyChat configuration is still crawled
-by EXT:index, but its content never reaches a vector store.
+chatbot uses.
 
-### What can become knowledge
+## Multiple Chatbots
 
-| Source | How to enable it | Good to know |
-|---|---|---|
-| **Pages** | Any index configuration covering the page | One document per page, or one per content element with *content indexing* enabled — smaller, more precise chunks |
-| **Content elements** | *Content indexing* checkbox | Rendered through `index.content_type` handlers. Ships with support for EXT:bootstrap_package, EXT:container, EXT:content_blocks, EXT:news, EXT:tt_address and EXT:calendarize |
-| **Files** | *File mounts* + *File types* on the configuration | PDF (`smalot/pdfparser`), Word (`phpoffice/phpword`), Excel (`phpoffice/phpspreadsheet`), PowerPoint (`phpoffice/phppresentation`) and plain text. Install the package for each format you need — they are Composer `suggest`, not hard requirements |
-| **Records** (news, addresses, events, FAQs, your own) | A `ContentTypeInterface` or `ExtenderInterface` implementation | Gives you **one document per record** instead of one blob per listing page — see *Extending the indexer* below |
-| **Content from other systems** | EXT:index's `IndexExternalPageReaction` / `IndexExternalFileReaction` | Lets a second TYPO3 instance, an intranet or any script POST content into the same pipeline via TYPO3 Reactions, so knowledge does not have to live in this site at all |
+You can run **multiple chatbots** with different system prompts, LLMs or knowledge bases simultaneously in one TYPO3 installation.
 
-### Choosing an indexing technology
+This is especially useful for testing.
 
-Each configuration picks one *technology*, and the choice decides both speed and what the embedded text
-looks like:
-
-| Technology | What it does | When to pick it for RAG |
-|---|---|---|
-| **Database** | Builds content directly from records, no HTTP request | Default choice. Fastest by far and produces clean, light markup — ideal chunks. Custom content elements need a handler (see below) |
-| **Frontend** | Renders the real page through an internal subrequest | When you need the actual rendered output, e.g. content assembled by plugins you cannot easily map to a handler |
-| **Http** | Real network requests against the site | Only as a fallback when *Frontend* breaks. Slow and puts real load on the server |
-| **Cache** | Piggybacks the regular cache-warming process | Knowledge refreshes as pages get cached — no full index run, no scheduler pressure |
-| **None** | Indexes nothing | Use it on a subpage to **exclude that subtree** from a parent configuration |
-
-### Controlling what gets indexed
-
-* **Crawl root and depth** — a configuration's *storage page* (its `pid`) is where the crawl starts, and
-  *levels* is how deep it goes. Traversal only ever walks **downwards**, so a configuration can never pick
-  up pages above or beside itself.
-* **Subtree overrides** — as soon as a page owns its own configuration, the parent configuration stops
-  traversing there and hands that subtree over. That is how you give one part of the site different
-  settings, or exclude it entirely with technology *None*.
-* **Languages** — restrict a configuration to specific site languages, or leave it empty for all of them.
-* **Search-excluded pages** — enable *Skip no_search pages* to honour a page's "no search" flag; EXT:index
-  then also removes previously indexed documents for it.
-* **Plain text** — EasyChat converts the HTML of pages to readable text (tags and attributes dropped, block
-  boundaries kept as line breaks) before it is embedded, so markup never reaches the vectors or the model.
-* **Content processors** — trim the markup before it is embedded. `TYPO3SEARCH markers` respects the
-  classic `<!--TYPO3SEARCH_begin/end-->` comments (bootstrap_package templates already ship them), which
-  keeps navigation and footers out of your vectors. An event-based processor lets you strip anything else.
-* **Automatic re-indexing** — *Partial indexing* triggers (`datamap`, `cmdmap`, `clearcache`) re-index just
-  the affected page when an editor saves, so knowledge does not go stale between scheduler runs.
-* **Targeted runs** — `index:queue --limitConfigurationIdentifiers=<uid>` re-indexes a single
-  configuration instead of the whole site, which is handy while tuning one knowledge source.
-
-### One knowledge base or several
-
-One chatbot is one reaction with one EasyChat configuration. The configuration's *Index configurations*
-field takes **any number of index configurations**, and each EasyChat configuration has its own vector
-database, collection, embeddings model and dimensions. That means you can:
-
-* feed several index configurations into **one** chatbot (site pages + a manual FAQ + a PDF archive), or
-* run **several chatbots with separate knowledge bases** (or even separate vector databases) on the same
-  site — e.g. a public bot that only sees the website and an internal bot that also sees the intranet
-  export: create one reaction per bot, give each its own EasyChat configuration, and select different
-  index configurations and a different collection in each.
-
-> **Give every EasyChat configuration its own collection.** If two configurations point to the same
-> collection, every page is embedded twice (once per configuration), and with *Sync removals* enabled one
-> configuration can delete points the other one still relies on. Two bots that should share one knowledge
-> base but differ in LLM or system message currently still need two configurations — then select the
-> index configurations and enable *Sync removals* on only one of them, and give the other one no index
-> configurations.
-
-### Extending the indexer for your own records
-
-EXT:index exposes four Symfony DI tags, all auto-configured by implementing the matching interface:
-
-| Tag / interface | Use it to |
-|---|---|
-| `index.content_type` — `ContentTypeInterface` | Teach *Database* indexing how to render your content element. `addVariants()` is the interesting one: return one item per record and you get one document per record |
-| `index.extender` — `ExtenderInterface` | Add extra URLs to a *Frontend*/*Http* crawl, e.g. one detail-view URL per record |
-| `index.file_extractor` — `FileExtractionInterface` | Support a file format that is not covered yet |
-| `index.content_processor` — `ContentProcessorInterface` | Rewrite the content before it is embedded; becomes a checkbox on every index configuration |
-
-A worked example: this distribution's `jpfaq_index_extender` package adds a `ContentTypeInterface` for the
-EXT:jpfaq plugin, so every FAQ question in a chosen storage folder becomes its own vector document with
-its own question as the title — instead of the whole FAQ accordion collapsing into a single chunk. It
-reads the storage folder and category filter from the plugin's own flexform, which keeps the indexed set
-identical to what a visitor actually sees on the page.
-
-Alongside the tags there are PSR-14 events (`StartIndexProcessEvent`, `IndexPageEvent`, `IndexFileEvent`,
-`FinishIndexProcessEvent`), all also available as core **webhooks** — so the same crawl can feed EasyChat
-and an external search service at the same time.
-
-Setup:
-
-1. Require the vector store bridge: `composer require symfony/ai-qdrant-store` (not installed by default,
-   since not every EasyChat site uses a vector database).
-2. Create a `tx_index_domain_model_configuration` record (EXT:index) on your site's root page — pick a
-   *technology* (`Database` is fastest, `Frontend` renders real page markup), enable *content indexing*,
-   and set the languages/levels to crawl. See [EXT:index's README](https://github.com/lochmueller/index)
-   for the full field reference.
-3. Create the two scheduler tasks EXT:index needs to actually run: `index:queue` (fills the queue) and
-   `messenger:consume` fill `index` in the field **Argument** (processes it) — see EXT:index's README for details.
-4. On your EasyChat *Configuration* record, set *Vector db* to `Qdrant`, fill in the connection fields
-   (host, port, collection name, API key, embeddings model, and the embedding model's output *dimensions*
-   — e.g. `1536` for `text-embedding-3-small`), and select the index configuration(s) from step 2 in the
-   new *Index configurations* field.
-   * By default the embeddings model is called on the **same API url/key as the chat LLM** above (just a
-     different model id). If your embeddings model lives on a different endpoint/provider, set the
-     optional *Embeddings API url* / *Embeddings API key* fields to override it.
-   * Make sure the chatbot's **reaction** (setup step 3) uses exactly this EasyChat configuration —
-     otherwise the chatbot searches a different collection, or none at all.
-
-Once a scheduler run has indexed some pages, ask the chatbot a question whose answer only exists in your
-site content — the agent will call the similarity-search tool automatically when relevant.
-
-### Tell the model that the knowledge base exists
-
-The similarity-search tool is registered with a deliberately generic description ("Searches for documents
-similar to a query or sentence"), so **mention it in your *System message*.** Without that, some models
-never reach for it, and safety-trained models in particular may refuse questions that merely *sound*
-confidential ("what is our internal codename for …") instead of searching. A system message along these
-lines fixes it:
-
-> You have a tool named `similarity_search` that queries our own knowledge base. Whenever a question
-> touches our company, products or processes, call it before answering and base your answer on what it
-> returns. Everything it returns is documentation you are authorised to share with this user — never
-> refuse on confidentiality grounds. Only say you do not have the information if the search returns
-> nothing relevant.
-
-Note that the system message is stored **with the chat session** when the session starts, so an existing
-session keeps the old wording — clear the `easychat_session_id` cookie when testing changes.
-
-### Access restricted content is never indexed
-
-Retrieval applies no per-user filter — everything in the vector store is answerable to every chat user,
-including anonymous ones. EasyChat therefore refuses to embed anything an anonymous visitor could not see:
-`IndexEventListener` drops a page event unless its access groups are empty or explicitly contain `-1`
-("hide at login"), which mirrors what TYPO3's `FrontendGroupRestriction` admits for a visitor with no
-login.
-
-Two consequences worth knowing:
-
-* **Login-only content cannot be chat knowledge.** Pages behind an `fe_group` are skipped, by design. If
-  you need a bot over restricted content, give it its own EasyChat configuration and its own collection,
-  and put access control in front of the chat itself.
-* **With *Cache* technology, only guest requests contribute.** That queue reports the group ids of the
-  visitor whose request filled the cache, and a logged-in visitor's ids never contain `-1`. Pages first
-  cached for a logged-in member are skipped and picked up later when a guest requests them.
-
-**Only pages a visitor can open are embedded.** Before a page is embedded, `AnonymousPageVisibility`
-checks it the way the frontend does for a visitor without a login, whichever process runs the indexing
-(backend, scheduler, `index:queue`, queue worker). It skips a page if the page itself is hidden, outside
-its start/stop time or access restricted, or if a page above it restricts or hides its subpages
-(*Extend to subpages*). Where *Remove unpublished content from the vector store* is enabled, a page skipped
-this way is also removed, so hiding a page and saving it takes it out of the chatbot. Pages of the Frontend
-technology are also rendered as an anonymous visitor (`GuestFrontendContextBuilder`), so hidden and
-scheduled content elements stay out of them.
-
-File events carry no access information at all (`IndexFileEvent` has no access groups), so files are
-embedded purely on the basis of the *File mounts* you configure — keep restricted documents out of those
-mounts.
-
-### Keeping the knowledge base in sync
-
-**Changed content is updated in place.** Every chunk has a deterministic id derived from *what* is indexed —
-site, language, page, the route arguments of a record (e.g. which news article) and the content element's
-`#c<uid>` — not from the URL. Re-indexing an edited content element therefore overwrites its vectors rather
-than adding new ones, and that still holds after its page's slug changed. If the element got shorter and
-now splits into fewer chunks, the chunks left over from the longer version are deleted right away.
-
-**Removed content is only deleted with *Sync removals*.** A content element or page that is deleted,
-hidden, expired, put behind an `fe_group`, or flagged *no_search* is simply no longer emitted by EXT:index,
-so by default its vectors stay answerable. Enable *Remove unpublished content from the vector store*
-(`vector_db_sync_removals`) on the EasyChat configuration to delete, at the end of every index run,
-everything of that index configuration the run did not write again:
-
-* after a **full** run (`index:queue`), across the whole index configuration, files included;
-* after a **partial** run, only on the pages — in the languages — that run re-indexed, plus the files if
-  the run re-indexed files;
-* a page flagged *no_search* (with *Skip no_search pages* on the index configuration) is removed as soon
-  as it is saved.
-
-Which vector store point belongs to which document, index configuration, index run, page and language is
-tracked in the table `tx_easychat_index_point`. Deleting then only needs a delete-by-id, which every vector
-store supports, so none of this is tied to Qdrant (see
-[Documentation/Symfony-AI-Upgrade-Notes.md](Documentation/Symfony-AI-Upgrade-Notes.md) for how that
-becomes plain `StoreInterface::remove()` after upgrading symfony/ai). Two index configurations that index
-the same file (overlapping file mounts) each keep their own claim on it; the file only leaves the store
-once neither indexes it any more.
-
-How this plays out per EXT:index technology:
-
-| Technology | Updates in place | Removals (with *Sync removals*) |
-|---|---|---|
-| **Database** | on `index:queue`, and on save with *Partial indexing* | full run: everything no longer emitted · on save: removed content elements of that page |
-| **Frontend** / **Http** | same, one document per page URL (no per-element split) | same as Database |
-| **Cache** | whenever a guest's request fills the page cache — one document per page and language | only what is re-cached: the page itself and the configuration's files. Pages that are deleted or hidden are never cached again and stay until a purge. All variants of a page (e.g. news detail views) share one document, because this technology reports no URL — prefer *Database* for record-heavy pages |
-| **External** (webhooks) | — | — (see below) |
-
-**External content is not supported.** EXT:index's *index external page/file* reactions deliver content
-without an index configuration (`-1`), and EasyChat assigns content to a chatbot by index configuration,
-so it never reaches a vector store. EXT:index also has no way to announce that an external document is gone.
-
-Safeguards and caveats:
-
-* A run in which writing to the store failed (e.g. the embeddings API was down) or that wrote nothing at
-  all is not swept, so an outage cannot wipe the knowledge base.
-* EXT:index skips pages that fail to render or fetch (an HTTP 500 or timeout, a rendering exception)
-  without telling anyone, which looks exactly like a deleted page. A full run that would therefore remove
-  more than *Maximum share removed per run* (`vector_db_sync_removals_threshold`, default 25%) of the
-  configuration's vectors removes nothing and logs a warning instead. Raise the value, or purge and
-  re-index, if a large removal is intended.
-* The sweep relies on a run's page messages being handled before its finish message — true for the
-  synchronous transport and a single `messenger:consume` worker, not for several parallel workers.
-* Removing the *last* content element of a page emits nothing for that page on save, so it is only
-  cleaned by the next full run.
-* Vectors written before this feature, or before ids became independent of the URL, are not in
-  `tx_easychat_index_point` and are never deleted. Purge and re-index once (see below) after upgrading.
-
-### Known limitations
-
-* **Purging everything.** To start over, drop the collection, forget its points and re-index:
-  `curl -X DELETE -H "api-key: <key>" <qdrant>/collections/<collection>`, then
-  `DELETE FROM tx_easychat_index_point WHERE configuration = <EasyChat configuration uid>`, followed by a
-  full `index:queue` run. The next `add()` recreates the collection.
-* **Record-level documents need *content indexing*.** Content types that emit one document per record rely
-  on each content element getting its own queue, which only happens with *content indexing* enabled.
 
 ----
 
-
-## Upgrading
-
-### From 0.1.x to 0.2.0
-
-- **Database compare required**: new columns on `tx_easychat_configuration` and the new table `tx_easychat_index_point`.
-- **Vector dimensions are configurable**: Qdrant collections used to be created with a hardcoded size of 4096. The new field *Embedding dimensions* (`vector_db_dimensions`) defaults to 1536. If you already use a vector store, set it to the size of your existing collection (4096 for collections created by 0.1.x), or drop the collection and re-index.
-- **New dependency**: `typo3/cms-install` is now required.
-- **API change**: `StoreFactory::create()` takes a new required `int $dimensions` argument and throws an exception for unsupported store types.
-- **Sessions**: new sessions are stored on the configured storage PID. The session table is now visible in the list module, and its fields are read-only.
-
 ## Theming & Templates
 
-### Chat Fronend: Deep Chat
+### Chat Frontend: Deep Chat
 
 EasyChat comes along with *Deep Chat* - an **open source chat web component** in the frontend.
 
 [![Click to enlarge: Deep-Chat Styles](Documentation/Assets/DeepChat_Thumb.png)](Documentation/Assets/DeepChat.png)
 
-For simplicity we integrated *Deep Chat* as a plain **Vanilla JS** web component, but [it can be used with many other frameworks](https://deepchat.dev/examples/frameworks) (e.g. React, Vue, Svele, Angular).
+For simplicity we integrated *Deep Chat* as a plain **Vanilla JS** web component, but [it can be used with many other frameworks](https://deepchat.dev/examples/frameworks) (e.g. React, Vue, Svelte, Angular).
 EasyChat is able to communicate with popular AI providers, but can also connect to your own servers - in our example with TYPO3.
 
-DeepChat is an example implemention. Feel free to use another chatbot frontend.
+DeepChat is an example implementation. Feel free to use another chatbot frontend.
 The default dummy template is located at
 * `/Resources/Private/Templates/ChatFrontend.html`.
 
@@ -528,14 +268,14 @@ plugin.tx_easychat.view {
 ```
 
 Be aware,
-* there a many ways to inject styles to a web component like `<deep-chat>`
+* there are many ways to inject styles into a web component like `<deep-chat>`
 * keep also in mind the styles for the chatbot trigger button and the consent module
 
 ### How to Change the texts
 
-Your edit some of the content directly in the Frontend.
+You can edit some of the content directly in the frontend.
 
-You can ovverride texts used in the template via locallang.xml oder via TypoScript.
+You can override texts used in the template via locallang.xml or via TypoScript.
 
 ```typoscript
 plugin.tx_easychat {
@@ -549,45 +289,15 @@ plugin.tx_easychat {
 
 ## Development & testing
 
-Tests and code checks run in containers via `Build/Scripts/runTests.sh` (docker or podman, based on
-the [TYPO3 Best Practices tea extension](https://github.com/TYPO3BestPractices/tea)). No local PHP needed.
+Tests and code checks run in containers via `Build/Scripts/runTests.sh` (docker or podman), no local PHP needed.
 
-```console
-# install dependencies into .Build/ (once, and after switching PHP version)
-Build/Scripts/runTests.sh -s composerUpdateMax
+→ See [Documentation/Development-and-Testing.md](Documentation/Development-and-Testing.md) for all commands, Composer scripts and CI details.
 
-# unit tests / functional tests (sqlite default; mariadb, mysql, postgres via -d)
-Build/Scripts/runTests.sh -s unit
-Build/Scripts/runTests.sh -s functional -d mariadb
-
-# the same against TYPO3 12.4 on PHP 8.2
-Build/Scripts/runTests.sh -t 12.4 -p 8.2 -s composerUpdateMax
-Build/Scripts/runTests.sh -t 12.4 -p 8.2 -s unit
-
-# code style (dry-run), static analysis, PHP lint
-Build/Scripts/runTests.sh -s cgl -n
-Build/Scripts/runTests.sh -s phpstan
-Build/Scripts/runTests.sh -s lintPhp
-
-# all options
-Build/Scripts/runTests.sh -h
-```
-
-The static checks and unit tests also run natively via Composer scripts (`composer check:static`,
-`composer check:tests:unit`, `composer fix`), as in tea. `lintPhp` in runTests.sh calls
-`composer check:php:lint` itself.
-
-The functional suite starts a throwaway Qdrant container, so the re-indexing tests run against a real
-vector store with faked embeddings (no LLM API key needed). GitHub Actions (`.github/workflows/ci.yml`)
-runs the same commands for TYPO3 12.4 (PHP 8.2–8.4) and TYPO3 13.4 (PHP 8.2–8.5).
-
-EXT:index (`lochmueller/index`) is optional and needs TYPO3 13.4 and PHP 8.3+. The composer suites
-install it where it fits (`-t 13.4` with PHP 8.3+), and its tests are skipped everywhere else.
-PHPStan therefore runs on that full install (`-t 13.4 -p 8.3`).
+----
 
 ## Credits
 
-🙏 This TYPO3 Extension was build by the Berlin based digtal agency [undkonsorten](https://undkonsorten.com).
+🙏 This TYPO3 Extension was built by the Berlin-based digital agency [undkonsorten](https://undkonsorten.com).
 * Eike Starkmann (Product Owner & Inspirator, TYPO3 Development)
 * Lars Hayer (Frontend, Theming)
 * Thomas Alboth (Product Owner & Documentation)
@@ -596,20 +306,45 @@ PHPStan therefore runs on that full install (`-t 13.4 -p 8.3`).
 
 ---
 
-## Contact
-
-Questions? Suggestions? Support needed? Feel free to 📧 [contact us](https://undkonsorten.com/kontakt).
-
----
-
 ## License
 
 [GNU General Public License, version 2](http://www.gnu.org/licenses/gpl-2.0.html)
 
 
----
+----
 
-## Planned Featues
 
-* ~~Website scraping/indexing via TYPO3 for the knowledge base (via vector database)~~ — done, see
-  [Knowledge base (RAG) via EXT:index](#knowledge-base-rag-via-extindex)
+## Upgrading
+
+### From 0.1.x to 0.2.0
+
+- **Database compare required**: new columns on `tx_easychat_configuration` and the new table `tx_easychat_index_point`.
+- **Vector dimensions are configurable**: Qdrant collections used to be created with a hardcoded size of 4096. The new field *Embedding dimensions* (`vector_db_dimensions`) defaults to 1536. If you already use a vector store, set it to the size of your existing collection (4096 for collections created by 0.1.x), or drop the collection and re-index.
+- **New dependency**: `typo3/cms-install` is now required.
+- **API change**: `StoreFactory::create()` takes a new required `int $dimensions` argument and throws an exception for unsupported store types.
+- **Sessions**: new sessions are stored on the configured storage PID. The session table is now visible in the list module, and its fields are read-only.
+
+----
+
+## Planned Features
+
+### To Do
+
+* Add Redis as a vector store
+* Connect EasyChat configuration and reaction URL directly
+* More LLM settings (like temperature)
+* Voting for good/bad answers
+* Pre suggested questions
+
+### Implemented
+
+* ✅ Version 0.2.0 ~~Website scraping/indexing via TYPO3 for the knowledge base (via vector database)~~ — done, see
+  [Knowledge base (RAG)](#knowledge-base-rag)
+
+----
+
+## Contact
+
+Any more ideas, questions, suggestions? Feel free to 📧 [contact us](https://undkonsorten.com/kontakt).
+
+**Contact** us via [our website](https://www.undkonsorten.com/kontakt), [GitHub](https://github.com/undkonsorten/easychat) or [TYPO3 Slack](https://typo3.slack.com/archives/C0C3U5GABFZ).

@@ -5,6 +5,7 @@ namespace Undkonsorten\Easychat\Domain\Repository;
 use Symfony\AI\Chat\ManagedStoreInterface;
 use Symfony\AI\Chat\MessageNormalizer;
 use Symfony\AI\Chat\MessageStoreInterface;
+use Symfony\AI\Platform\Contract\Normalizer\Result\ToolCallNormalizer;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\Message\MessageInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -32,6 +33,8 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
         private readonly SerializerInterface $serializer = new Serializer([
             new ArrayDenormalizer(),
             new MessageNormalizer(),
+            // MessageNormalizer delegates the tool calls of assistant and tool call messages
+            new ToolCallNormalizer(),
         ], [new JsonEncoder()]),
     ) {
         $this->pid = $this->extensionConfiguration

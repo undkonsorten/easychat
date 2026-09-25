@@ -13,8 +13,10 @@ use Symfony\AI\Platform\Message\Content\Text;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\Message\SystemMessage;
+use Symfony\AI\Platform\Message\ToolCallMessage;
 use Symfony\AI\Platform\Message\UserMessage;
 use Symfony\AI\Platform\Result\TextResult;
+use Symfony\AI\Platform\Result\ToolCall;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Undkonsorten\Easychat\Domain\Model\Session;
@@ -170,6 +172,36 @@ final class SessionRepositoryConversationHistoryTest extends FunctionalTestCase
             ['be nice', '', 'old answer', '', 'answer-1'],
             array_column($messages, 'content'),
         );
+    }
+
+    /**
+     * With a knowledge base the agent adds the similarity search round to the history: an assistant
+     * message with the tool call and the tool's answer. Both carry a ToolCall, which the serializer
+     * must be able to write and read back.
+     */
+    public function testHistoryWithToolCallsCanBeSavedAndLoaded(): void
+    {
+        $toolCall = new ToolCall('call-1', 'similarity_search', ['searchTerm' => 'test hedgehog']);
+        $repository = $this->get(SessionRepository::class);
+        $repository->setup(['sessionId' => 'tool-conversation']);
+        $repository->save(new MessageBag(
+            Message::forSystem('be nice'),
+            Message::ofUser('What is the name of the test hedgehog?'),
+            Message::ofAssistant($toolCall),
+            Message::ofToolCall($toolCall, 'Found documents with the following information: Tabula'),
+            Message::ofAssistant('The test hedgehog is called Tabula.'),
+        ));
+
+        $history = $repository->load()->getMessages();
+
+        self::assertCount(5, $history);
+        self::assertInstanceOf(AssistantMessage::class, $history[2]);
+        self::assertTrue($history[2]->hasToolCalls());
+        self::assertSame(['searchTerm' => 'test hedgehog'], $history[2]->getToolCalls()[0]->getArguments());
+        self::assertInstanceOf(ToolCallMessage::class, $history[3]);
+        self::assertSame('call-1', $history[3]->getToolCall()->getId());
+        self::assertInstanceOf(AssistantMessage::class, $history[4]);
+        self::assertSame('The test hedgehog is called Tabula.', $history[4]->asText());
     }
 
     private function fakeAgent(): AgentInterface

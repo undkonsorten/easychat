@@ -575,9 +575,9 @@ Build/Scripts/runTests.sh -s composerUpdateMax
 Build/Scripts/runTests.sh -s unit
 Build/Scripts/runTests.sh -s functional -d mariadb
 
-# the same against TYPO3 12.4 on PHP 8.2
-Build/Scripts/runTests.sh -t 12.4 -p 8.2 -s composerUpdateMax
-Build/Scripts/runTests.sh -t 12.4 -p 8.2 -s unit
+# the same against TYPO3 14.3 on PHP 8.4
+Build/Scripts/runTests.sh -t 14.3 -p 8.4 -s composerUpdateMax
+Build/Scripts/runTests.sh -t 14.3 -p 8.4 -s unit
 
 # code style (dry-run), static analysis, PHP lint
 Build/Scripts/runTests.sh -s cgl -n
@@ -594,11 +594,13 @@ The static checks and unit tests also run natively via Composer scripts (`compos
 
 The functional suite starts a throwaway Qdrant container, so the re-indexing tests run against a real
 vector store with faked embeddings (no LLM API key needed). GitHub Actions (`.github/workflows/ci.yml`)
-runs the same commands for TYPO3 12.4 (PHP 8.2–8.4) and TYPO3 13.4 (PHP 8.2–8.5).
+runs the same commands for TYPO3 13.4 and TYPO3 14.3 (PHP 8.2–8.5 each).
 
-EXT:index (`lochmueller/index`) is optional and needs TYPO3 13.4 and PHP 8.3+. The composer suites
-install it where it fits (`-t 13.4` with PHP 8.3+), and its tests are skipped everywhere else.
-PHPStan therefore runs on that full install (`-t 13.4 -p 8.3`).
+EXT:index (`lochmueller/index`) is optional and needs PHP 8.3+. The composer suites install it where
+it fits (PHP 8.3+), and its tests are skipped everywhere else. PHPStan therefore runs on a full install,
+once per TYPO3 version (`-t 13.4 -p 8.3` and `-t 14.3 -p 8.4`): the code calls some TYPO3 v14 APIs
+behind version checks, and `Build/phpstan/typo3-version.php` ignores exactly those when analysing
+against v13.
 
 ## Credits
 

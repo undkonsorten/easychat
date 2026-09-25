@@ -41,7 +41,7 @@
 		"symfony/ai-qdrant-store": "^0.14",
 		"symfony/ai-similarity-search-tool": "^0.14",
 		"typo3/coding-standards": "^0.9",
-		"typo3/testing-framework": "^9.5"
+		"typo3/testing-framework": "^9.7"
 	},
 	"suggest": {
 		"lochmueller/index": "^2.3",
@@ -75,10 +75,10 @@
 			"dev-main": "0.3.x-dev"
 		},
 		"typo3/cms": {
-			"extension-key": "easychat",
 			"Package": {
 				"providesPackages": {}
 			},
+			"extension-key": "easychat",
 			"version": "0.3.0",
 			"web-dir": ".Build/public"
 		}

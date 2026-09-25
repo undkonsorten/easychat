@@ -30,28 +30,41 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install dependencies
-        run: Build/Scripts/runTests.sh -b docker -p ${{ matrix.php-version }} -t 13.4 -s composerUpdateMax
+        run: Build/Scripts/runTests.sh -b docker -p ${{ matrix.php-version }} -t 14.3 -s composerUpdateMax
       - name: Lint PHP
         run: Build/Scripts/runTests.sh -b docker -p ${{ matrix.php-version }} -s lintPhp
 
-  # Runs on the one combination that installs everything, EXT:index included: static analysis needs
-  # the optional classes that the code only uses when present. TYPO3 12.4 and PHP 8.2 compatibility
-  # is covered by the unit and functional tests.
+  # Runs on installs with EXT:index (PHP 8.3+): static analysis needs the optional classes that the
+  # code only uses when present. PHPStan runs against both TYPO3 versions, because the code calls
+  # v14 APIs behind version checks (see Build/phpstan/typo3-version.php). PHP 8.2 compatibility is
+  # covered by the unit and functional tests.
   code-quality:
-    name: "Code quality: ${{ matrix.command }}"
+    name: "Code quality: ${{ matrix.command }}, TYPO3 ${{ matrix.typo3-version }}"
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        command: ['cgl', 'composerNormalize', 'phpstan']
+        include:
+          - command: 'cgl'
+            typo3-version: '14.3'
+            php-version: '8.4'
+          - command: 'composerNormalize'
+            typo3-version: '14.3'
+            php-version: '8.4'
+          - command: 'phpstan'
+            typo3-version: '13.4'
+            php-version: '8.3'
+          - command: 'phpstan'
+            typo3-version: '14.3'
+            php-version: '8.4'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install dependencies
-        run: Build/Scripts/runTests.sh -b docker -p 8.3 -t 13.4 -s composerUpdateMax
+        run: Build/Scripts/runTests.sh -b docker -p ${{ matrix.php-version }} -t ${{ matrix.typo3-version }} -s composerUpdateMax
       - name: Run ${{ matrix.command }}
-        run: Build/Scripts/runTests.sh -b docker -p 8.3 -t 13.4 -n -s ${{ matrix.command }}
+        run: Build/Scripts/runTests.sh -b docker -p ${{ matrix.php-version }} -t ${{ matrix.typo3-version }} -n -s ${{ matrix.command }}
 
   shellcheck:
     name: Shellcheck
@@ -70,13 +83,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        typo3-version: ['12.4', '13.4']
+        typo3-version: ['13.4', '14.3']
         php-version: ['8.2', '8.3', '8.4', '8.5']
         composer-dependencies: ['Min', 'Max']
-        exclude:
-          # PHP 8.5 is not officially supported by TYPO3 12.4
-          - typo3-version: '12.4'
-            php-version: '8.5'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -85,6 +94,7 @@ jobs:
       - name: Run unit tests
         run: Build/Scripts/runTests.sh -b docker -p ${{ matrix.php-version }} -t ${{ matrix.typo3-version }} -s unit
 
+  # Each TYPO3 version on its lowest PHP version (without EXT:index) and its highest (with EXT:index).
   functional-tests:
     name: "Functional tests: PHP ${{ matrix.php-version }}, TYPO3 ${{ matrix.typo3-version }}, ${{ matrix.dbms }}"
     runs-on: ubuntu-24.04
@@ -92,16 +102,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        typo3-version: ['12.4', '13.4']
-        php-version: ['8.2', '8.3', '8.4', '8.5']
+        typo3-version: ['13.4', '14.3']
+        php-version: ['8.2', '8.5']
         dbms: ['sqlite', 'mariadb', 'mysql', 'postgres']
-        exclude:
-          - typo3-version: '12.4'
-            php-version: '8.3'
-          - typo3-version: '12.4'
-            php-version: '8.5'
-          - typo3-version: '13.4'
-            php-version: '8.4'
     steps:
       - name: Checkout
         uses: actions/checkout@v4

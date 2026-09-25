@@ -33,15 +33,15 @@ ExtensionManagementUtility::addTCAcolumns(
 $GLOBALS['TCA']['sys_reaction']['ctrl']['typeicon_classes'][ChatReaction::getType()] = ChatReaction::getIconIdentifier();
 
 $GLOBALS['TCA']['sys_reaction']['palettes']['easychatConfiguration'] = [
-    'label' => 'reactions.db:palette.additional',
+    'label' => 'LLL:EXT:reactions/Resources/Private/Language/locallang_db.xlf:palette.additional',
     'showitem' => 'easychat_configuration',
 ];
 
 $GLOBALS['TCA']['sys_reaction']['types'][ChatReaction::getType()] = [
     'showitem' => '
-        --div--;core.form.tabs:general,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
         --palette--;;config,
         --palette--;;easychatConfiguration,
-        --div--;core.form.tabs:access,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
         --palette--;;access',
 ];

@@ -26,6 +26,8 @@ ExtensionUtility::configurePlugin(
     [
         EasychatController::class => 'chatFrontend',
     ],
+    // Default in TYPO3 v14, still needed for v13
+    ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT,
 );
 
 if (getenv('TYPO3_MINIMUM_LOGLEVEL')) {

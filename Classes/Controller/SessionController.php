@@ -2,22 +2,23 @@
 
 namespace Undkonsorten\Easychat\Controller;
 
-use TYPO3\CMS\Backend\Template\Components\ComponentFactory;
-use TYPO3\CMS\Core\Imaging\IconSize;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
+use TYPO3\CMS\Backend\Template\Components\Buttons\LinkButton;
+use TYPO3\CMS\Backend\Template\Components\ComponentFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Http\Response;
+use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\IconFactory;
+use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Pagination\QueryResultPaginator;
-use TYPO3\CMS\Extbase\Property\TypeConverter\PersistentObjectConverter;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use Undkonsorten\Easychat\Domain\Model\Session;
 use Undkonsorten\Easychat\Domain\Repository\SessionRepository;
@@ -33,32 +34,13 @@ class SessionController extends ActionController
         private readonly IconFactory $iconFactory,
         private readonly ExtensionConfiguration $extensionConfiguration,
         private readonly SessionCsvExportService $sessionCsvExportService,
-        private readonly ComponentFactory $componentFactory,
     ) {}
 
     public function initializeAction(): void
     {
         parent::initializeAction();
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
-        $menu = $this->componentFactory->createMenu();
-        $menu->setIdentifier('EasychatMenu');
-        $menuItem = $this->componentFactory
-            ->createMenuItem()
-            ->setHref(
-                $this->uriBuilder->buildBackendUri()
-            )
-            ->setTitle('Session');
-        $menu->addMenuItem($menuItem);
-        $this->moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
         $this->buildButtons();
-
-        if ($this->arguments->hasArgument('demand')) {
-            $propertyMappingConfiguration = $this->arguments['demand']->getPropertyMappingConfiguration();
-            $propertyMappingConfiguration->allowCreationForSubProperty('status');
-            $propertyMappingConfiguration->allowProperties('status');
-            $propertyMappingConfiguration->setTypeConverterOption(PersistentObjectConverter::class, PersistentObjectConverter::CONFIGURATION_CREATION_ALLOWED, true);
-        }
-
     }
 
     public function listAction(int $currentPage = 1): ResponseInterface
@@ -166,7 +148,7 @@ class SessionController extends ActionController
         ];
     }
 
-    protected function buildButtons()
+    protected function buildButtons(): void
     {
         $buttonBar = $this->moduleTemplate->getDocHeaderComponent()->getButtonBar();
         $buttons = [
@@ -177,9 +159,9 @@ class SessionController extends ActionController
                 'icon' => 'actions-list',
             ],
         ];
-        foreach ($buttons as $key => $tableConfiguration) {
+        foreach ($buttons as $tableConfiguration) {
             $title = LocalizationUtility::translate($tableConfiguration['label'], 'easychat');
-            $viewButton = $this->componentFactory->createLinkButton()
+            $viewButton = $this->createLinkButton()
                 ->setHref($this->uriBuilder->reset()->setRequest($this->request)->uriFor(
                     $tableConfiguration['action'],
                     [],
@@ -194,12 +176,33 @@ class SessionController extends ActionController
             $buttonBar->addButton($viewButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
         }
 
-        // Refresh
-        $refreshButton = $this->componentFactory->createLinkButton()
-            ->setHref(GeneralUtility::getIndpEnv('REQUEST_URI'))
-            ->setTitle($this->getLanguageService()->sL('core.core:labels.reload'))
+        // TYPO3 v14 adds the reload and shortcut buttons to every module on its own
+        if (class_exists(ComponentFactory::class)) {
+            $this->moduleTemplate->getDocHeaderComponent()->setShortcutContext(
+                routeIdentifier: 'easychat',
+                displayName: (string)LocalizationUtility::translate('module.list', 'easychat'),
+            );
+            return;
+        }
+
+        /** @var NormalizedParams $normalizedParams */
+        $normalizedParams = $this->request->getAttribute('normalizedParams');
+        $refreshButton = $this->createLinkButton()
+            ->setHref($normalizedParams->getRequestUri())
+            ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload'))
             ->setIcon($this->iconFactory->getIcon('actions-refresh', IconSize::SMALL));
         $buttonBar->addButton($refreshButton, ButtonBar::BUTTON_POSITION_RIGHT);
+    }
+
+    /**
+     * ButtonBar::makeLinkButton() is deprecated in TYPO3 v14, its replacement ComponentFactory does not exist in v13.
+     */
+    private function createLinkButton(): LinkButton
+    {
+        if (class_exists(ComponentFactory::class)) {
+            return GeneralUtility::makeInstance(ComponentFactory::class)->createLinkButton();
+        }
+        return $this->moduleTemplate->getDocHeaderComponent()->getButtonBar()->makeLinkButton();
     }
 
     protected function getLanguageService(): LanguageService

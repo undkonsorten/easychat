@@ -1,12 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Parameter \#2 \$optionKey of method TYPO3\\CMS\\Extbase\\Property\\PropertyMappingConfiguration\:\:setTypeConverterOption\(\) expects string, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../../Classes/Controller/SessionController.php
-
-		-
 			message: '#^Property Undkonsorten\\Easychat\\Reaction\\ChatReaction\:\:\$persistenceManager is never read, only written\.$#'
 			identifier: property.onlyWritten
 			count: 1

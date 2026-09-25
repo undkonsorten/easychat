@@ -1,11 +1,14 @@
 <?php
 
 declare(strict_types=1);
+
+use TYPO3\CMS\Core\Information\Typo3Version;
+
 if (!defined('TYPO3')) {
     die('Access denied.');
 }
 
-return [
+$tca = [
     'ctrl' => [
         'title'	=> 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_session',
         'label' => 'session_id',
@@ -98,3 +101,11 @@ return [
         ],
     ],
 ];
+
+// TYPO3 v14 searches all suitable fields unless a column sets 'searchable' => false, and removed
+// ctrl.searchFields. TYPO3 v13 still needs the explicit list.
+if ((new Typo3Version())->getMajorVersion() < 14) {
+    $tca['ctrl']['searchFields'] = 'session_id';
+}
+
+return $tca;

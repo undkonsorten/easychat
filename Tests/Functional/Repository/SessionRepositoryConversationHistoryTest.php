@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Undkonsorten\Easychat\Tests\Functional\Repository;
 
+use Symfony\AI\Platform\Message\SystemMessage;
+use Symfony\AI\Platform\Message\UserMessage;
+use Symfony\AI\Platform\Message\AssistantMessage;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Chat\Chat;
 use Symfony\AI\Platform\Message\Message;
@@ -58,9 +61,9 @@ final class SessionRepositoryConversationHistoryTest extends FunctionalTestCase
         $messages = json_decode((string)$matches->getFirst()->getMessages(), true);
         $typeCounts = array_count_values(array_column($messages, 'type'));
 
-        self::assertSame(1, $typeCounts['Symfony\AI\Platform\Message\SystemMessage'] ?? 0, 'Exactly one system message is expected, no matter how many turns happened.');
-        self::assertSame(3, $typeCounts['Symfony\AI\Platform\Message\UserMessage'] ?? 0);
-        self::assertSame(3, $typeCounts['Symfony\AI\Platform\Message\AssistantMessage'] ?? 0);
+        self::assertSame(1, $typeCounts[SystemMessage::class] ?? 0, 'Exactly one system message is expected, no matter how many turns happened.');
+        self::assertSame(3, $typeCounts[UserMessage::class] ?? 0);
+        self::assertSame(3, $typeCounts[AssistantMessage::class] ?? 0);
     }
 
     public function testChangingTheConfiguredSystemMessageDoesNotUpdateAnAlreadyActiveSession(): void
@@ -94,7 +97,7 @@ final class SessionRepositoryConversationHistoryTest extends FunctionalTestCase
         $messages = json_decode((string)$session->getMessages(), true);
         $systemMessages = array_values(array_filter(
             $messages,
-            static fn(array $message): bool => $message['type'] === 'Symfony\AI\Platform\Message\SystemMessage',
+            static fn(array $message): bool => $message['type'] === SystemMessage::class,
         ));
 
         self::assertCount(1, $systemMessages, 'Still exactly one system message - the config change did not add a second one.');

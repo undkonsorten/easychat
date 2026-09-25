@@ -45,7 +45,7 @@ class VectorTargetFactory
                 $configuration['vector_db_api_key'],
                 $configuration['vector_db_name'],
             ),
-            default => throw new \Exception(sprintf('Vector store "%s" is not supported.', $configuration['vector_db'])),
+            default => throw new \Exception(sprintf('Vector store "%s" is not supported.', $configuration['vector_db']), 3639428386),
         };
     }
 }

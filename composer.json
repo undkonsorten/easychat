@@ -1,6 +1,6 @@
 {
 	"name": "undkonsorten/easychat",
-	"description": "A TYPO3 chatbot/assistant without third party tools. Only TYPO3 + LLM endpoint needed (ChatGpt, Mistral...). Privacy focused (GDPR). Chats stored in TYPO3 only.",
+	"description": "EasyChat – TYPO3 standalone AI Chatbot - A TYPO3 chatbot/assistant without third party tools. Only TYPO3 + LLM endpoint needed (ChatGpt, Mistral...). Privacy focused (GDPR). Chats stored in TYPO3 only.",
 	"license": "GPL-3.0-or-later",
 	"type": "typo3-cms-extension",
 	"keywords": [
@@ -18,32 +18,35 @@
 	],
 	"require": {
 		"php": "^8.2",
-		"symfony/ai-chat": "^0.1",
-		"symfony/ai-generic-platform": "^0.1",
-		"symfony/ai-store": "^0.1",
-		"typo3/cms-backend": "^12.4 || ^13.4",
-		"typo3/cms-core": "^12.4 || ^13.4",
-		"typo3/cms-extbase": "^12.4 || ^13.4",
-		"typo3/cms-install": "^12.4 || ^13.4",
-		"typo3/cms-reactions": "^12.4 || ^13.4"
+		"symfony/ai-agent": "^0.14",
+		"symfony/ai-chat": "^0.14",
+		"symfony/ai-generic-platform": "^0.14",
+		"symfony/ai-platform": "^0.14",
+		"symfony/ai-store": "^0.14",
+		"typo3/cms-backend": "^13.4 || ^14.3",
+		"typo3/cms-core": "^13.4 || ^14.3",
+		"typo3/cms-extbase": "^13.4 || ^14.3",
+		"typo3/cms-install": "^13.4 || ^14.3",
+		"typo3/cms-reactions": "^13.4 || ^14.3"
 	},
 	"require-dev": {
 		"ergebnis/composer-normalize": "^2.45",
 		"friendsofphp/php-cs-fixer": "^3.64",
 		"php-parallel-lint/php-parallel-lint": "^1.4",
 		"phpstan/extension-installer": "^1.4",
-		"phpstan/phpstan": "^1.12 || ^2.1",
-		"phpunit/phpunit": "^10.5 || ^11.5",
-		"saschaegerer/phpstan-typo3": "^1.10 || ^2.1",
-		"symfony/ai-qdrant-store": "^0.1",
-		"symfony/ai-similarity-search-tool": "^0.1",
-		"typo3/coding-standards": "^0.8",
-		"typo3/testing-framework": "^8.2"
+		"phpstan/phpstan": "^2.1",
+		"phpunit/phpunit": "^11.5 || ^12.0",
+		"saschaegerer/phpstan-typo3": "^2.2 || ^3.1",
+		"ssch/typo3-rector": "^3.16",
+		"symfony/ai-qdrant-store": "^0.14",
+		"symfony/ai-similarity-search-tool": "^0.14",
+		"typo3/coding-standards": "^0.9",
+		"typo3/testing-framework": "^9.5"
 	},
 	"suggest": {
-		"lochmueller/index": "^2.2",
-		"symfony/ai-qdrant-store": "^0.1",
-		"symfony/ai-similarity-search-tool": "^0.1"
+		"lochmueller/index": "^2.3",
+		"symfony/ai-qdrant-store": "^0.14",
+		"symfony/ai-similarity-search-tool": "^0.14"
 	},
 	"autoload": {
 		"psr-4": {
@@ -69,10 +72,13 @@
 	},
 	"extra": {
 		"branch-alias": {
-			"dev-main": "0.2.x-dev"
+			"dev-main": "0.3.x-dev"
 		},
 		"typo3/cms": {
 			"extension-key": "easychat",
+			"Package": {
+				"providesPackages": {}
+			},
 			"web-dir": ".Build/public"
 		}
 	},
@@ -84,6 +90,7 @@
 		],
 		"check:php:cs-fixer": "php-cs-fixer fix --config ./Build/php-cs-fixer/config.php -v --dry-run --diff",
 		"check:php:lint": "parallel-lint *.php Build Classes Configuration Tests",
+		"check:php:rector": "rector process --config ./Build/rector/rector.php --dry-run",
 		"check:static": [
 			"@check:composer:normalize",
 			"@check:php:lint",
@@ -98,6 +105,7 @@
 		"fix:php": [
 			"@fix:php:cs-fixer"
 		],
-		"fix:php:cs-fixer": "php-cs-fixer fix --config ./Build/php-cs-fixer/config.php"
+		"fix:php:cs-fixer": "php-cs-fixer fix --config ./Build/php-cs-fixer/config.php",
+		"fix:php:rector": "rector process --config ./Build/rector/rector.php"
 	}
 }

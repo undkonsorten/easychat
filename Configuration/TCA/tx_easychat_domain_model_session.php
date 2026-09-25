@@ -21,7 +21,6 @@ return [
         'security' => [
             'ignorePageTypeRestriction' => true,
         ],
-        'searchFields' => 'session_id',
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg',
     ],
     'types' => [
@@ -49,6 +48,7 @@ return [
                 'range' => [
                     'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
+                'searchable' => false,
             ],
         ],
         'endtime' => [
@@ -62,6 +62,7 @@ return [
                 'range' => [
                     'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
+                'searchable' => false,
             ],
         ],
         'session_id' => [
@@ -82,6 +83,7 @@ return [
                 'type' => 'json',
                 'required' => true,
                 'readOnly' => true,
+                'searchable' => false,
             ],
         ],
         'crdate' => [
@@ -91,6 +93,7 @@ return [
                 'type' => 'datetime',
                 'format' => 'datetime',
                 'readOnly' => true,
+                'searchable' => false,
             ],
         ],
     ],

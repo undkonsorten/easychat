@@ -13,16 +13,16 @@ use Symfony\AI\Store\Document\VectorizerInterface;
  * Stands in for the embeddings API: every document gets the same fixed vector,
  * with id and metadata passed through exactly like the real Vectorizer does.
  */
-final class FakeVectorizer implements VectorizerInterface
+final readonly class FakeVectorizer implements VectorizerInterface
 {
     public function __construct(
-        private readonly int $dimensions = 4,
+        private int $dimensions = 4,
     ) {}
 
     public function vectorize(string|\Stringable|EmbeddableDocumentInterface|array $values, array $options = []): Vector|VectorDocument|array
     {
         if (!\is_array($values)) {
-            throw new \LogicException('FakeVectorizer only supports lists of documents.');
+            throw new \LogicException('FakeVectorizer only supports lists of documents.', 7713459136);
         }
 
         return array_map(

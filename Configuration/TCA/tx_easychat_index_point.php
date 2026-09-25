@@ -22,7 +22,6 @@ return [
         'default_sortby' => 'tstamp DESC',
         'rootLevel' => 1,
         'adminOnly' => true,
-        'searchFields' => 'point_id,document_id,index_process',
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg',
     ],
     'types' => [
@@ -39,7 +38,7 @@ return [
         ],
         'kind' => [
             'label' => $lll . '.kind',
-            'config' => ['type' => 'input', 'readOnly' => true],
+            'config' => ['type' => 'input', 'readOnly' => true, 'searchable' => false],
         ],
         'page_uid' => [
             'label' => $lll . '.page_uid',
@@ -63,7 +62,7 @@ return [
         ],
         'tstamp' => [
             'label' => $lll . '.tstamp',
-            'config' => ['type' => 'datetime', 'readOnly' => true],
+            'config' => ['type' => 'datetime', 'readOnly' => true, 'searchable' => false],
         ],
     ],
 ];

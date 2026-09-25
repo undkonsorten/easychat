@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Undkonsorten\Easychat\Tests\Unit\Service;
 
+use Symfony\Component\HttpClient\Exception\TransportException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -57,7 +58,7 @@ final class ModelListServiceTest extends TestCase
 
     public function testReturnsEmptyArrayOnNetworkFailure(): void
     {
-        $httpClient = new MockHttpClient(static fn(): never => throw new \Symfony\Component\HttpClient\Exception\TransportException('connection refused'));
+        $httpClient = new MockHttpClient(static fn(): never => throw new TransportException('connection refused', 3835973884));
 
         $service = new ModelListService($httpClient);
 

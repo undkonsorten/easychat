@@ -11,7 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
-use Undkonsorten\Easychat\Domain\Model\Session;
 use Undkonsorten\Easychat\Domain\Repository\SessionRepository;
 
 class DeleteSessionsCommand extends Command

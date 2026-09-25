@@ -2,13 +2,14 @@
 
 namespace Undkonsorten\Easychat\Controller;
 
+use TYPO3\CMS\Backend\Template\Components\ComponentFactory;
+use TYPO3\CMS\Core\Imaging\IconSize;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Http\Response;
-use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Pagination\SimplePagination;
@@ -32,16 +33,17 @@ class SessionController extends ActionController
         private readonly IconFactory $iconFactory,
         private readonly ExtensionConfiguration $extensionConfiguration,
         private readonly SessionCsvExportService $sessionCsvExportService,
+        private readonly ComponentFactory $componentFactory,
     ) {}
 
     public function initializeAction(): void
     {
         parent::initializeAction();
         $this->moduleTemplate = $this->moduleTemplateFactory->create($this->request);
-        $menu = $this->moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
+        $menu = $this->componentFactory->createMenu();
         $menu->setIdentifier('EasychatMenu');
-        $menuItem = $menu
-            ->makeMenuItem()
+        $menuItem = $this->componentFactory
+            ->createMenuItem()
             ->setHref(
                 $this->uriBuilder->buildBackendUri()
             )
@@ -177,7 +179,7 @@ class SessionController extends ActionController
         ];
         foreach ($buttons as $key => $tableConfiguration) {
             $title = LocalizationUtility::translate($tableConfiguration['label'], 'easychat');
-            $viewButton = $buttonBar->makeLinkButton()
+            $viewButton = $this->componentFactory->createLinkButton()
                 ->setHref($this->uriBuilder->reset()->setRequest($this->request)->uriFor(
                     $tableConfiguration['action'],
                     [],
@@ -188,15 +190,15 @@ class SessionController extends ActionController
                     'placement' => 'bottom',
                     'title' => $title])
                 ->setTitle($title)
-                ->setIcon($this->iconFactory->getIcon($tableConfiguration['icon'], Icon::SIZE_SMALL));
+                ->setIcon($this->iconFactory->getIcon($tableConfiguration['icon'], IconSize::SMALL));
             $buttonBar->addButton($viewButton, ButtonBar::BUTTON_POSITION_LEFT, 2);
         }
 
         // Refresh
-        $refreshButton = $buttonBar->makeLinkButton()
+        $refreshButton = $this->componentFactory->createLinkButton()
             ->setHref(GeneralUtility::getIndpEnv('REQUEST_URI'))
-            ->setTitle($this->getLanguageService()->sL('LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.reload'))
-            ->setIcon($this->iconFactory->getIcon('actions-refresh', Icon::SIZE_SMALL));
+            ->setTitle($this->getLanguageService()->sL('core.core:labels.reload'))
+            ->setIcon($this->iconFactory->getIcon('actions-refresh', IconSize::SMALL));
         $buttonBar->addButton($refreshButton, ButtonBar::BUTTON_POSITION_RIGHT);
     }
 

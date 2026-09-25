@@ -29,7 +29,7 @@ final class InMemoryPointStore implements StoreInterface, PointRemoverInterface
         return array_values($this->points);
     }
 
-    public function remove(array $ids): void
+    public function remove(array $ids, array $options = []): void
     {
         foreach ($ids as $id) {
             unset($this->points[$id]);

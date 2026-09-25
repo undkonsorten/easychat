@@ -194,12 +194,13 @@ Options:
             - composerUpdateMin: "composer update --prefer-lowest", with platform.php set to PHP version x.x.0.
               "composer.json" stays untouched, see composerUpdateMax.
               Both also add the optional "lochmueller/index" (EXT:index) where it installs, i.e. on
-              TYPO3 13.4 with PHP 8.3+. Elsewhere the EXT:index tests are skipped.
+              PHP 8.3+. Elsewhere the EXT:index tests are skipped.
             - fix: Runs all automatic code style fixes (composerNormalize, cgl).
             - functional: PHP functional tests. Starts a Qdrant sidecar for the re-indexing tests.
             - lintPhp: PHP linting
-            - phpstan: PHPStan tests. Needs the full install of -t 13.4 with PHP 8.3+, which includes EXT:index.
+            - phpstan: PHPStan tests. Needs a full install with PHP 8.3+, which includes EXT:index.
             - phpstanGenerateBaseline: regenerate PHPStan baseline, handy after PHPStan updates
+            - rector: Applies the Rector (typo3-rector) refactorings. Set -n for dry-run.
             - shellcheck: check runTests.sh for shell issues
             - unit (default): PHP unit tests
             - unitRandom: PHP unit tests in random order, add -o <number> to use specific seed
@@ -265,11 +266,11 @@ Options:
             - 17    maintained until 2029-11-08
             - 18    maintained until 2030-11-14
 
-    -t <12.4|13.4>
+    -t <13.4|14.3>
         Only with -s composerUpdateMin|composerUpdateMax|phpstan|phpstanGenerateBaseline|unit|unitRandom|functional
         Specifies the TYPO3 CORE Version to be used
-            - 12.4: use TYPO3 v12
             - 13.4: (default) use TYPO3 v13
+            - 14.3: use TYPO3 v14
         For the test suites, this selects the tests which only apply to one TYPO3 version.
         Use the version the dependencies have been installed for. A different one lets the
         tests fail with a hint about the mismatch.
@@ -298,7 +299,7 @@ Options:
         replay the unit tests in that order.
 
     -n
-        Only with -s cgl|composerNormalize
+        Only with -s cgl|composerNormalize|rector
         Activate dry-run in checks so they do not actively change files and only print broken ones.
 
     -u
@@ -368,6 +369,16 @@ lintPhp() {
 
 
 
+rector() {
+    # Active dry-run for rector needs not "-n" but "--dry-run"
+    RECTOR_DRY_RUN=""
+    if [ -n "${CGLCHECK_DRY_RUN}" ]; then
+        RECTOR_DRY_RUN="--dry-run"
+    fi
+    COMMAND=(php -dxdebug.mode=off .Build/bin/rector process --config Build/rector/rector.php --no-progress-bar ${RECTOR_DRY_RUN} "$@")
+    ${CONTAINER_BIN} run ${CONTAINER_COMMON_PARAMS} --name rector-${SUFFIX} ${IMAGE_PHP} "${COMMAND[@]}"
+}
+
 phpstan() {
     PHPSTAN_CONFIG_FILE="Build/phpstan/phpstan.neon"
     COMMAND=(php -dxdebug.mode=off .Build/bin/phpstan analyse -c ${PHPSTAN_CONFIG_FILE} --no-progress --no-interaction --memory-limit 4G "$@")
@@ -408,7 +419,7 @@ PHPUNIT_RANDOM=""
 CGLCHECK_DRY_RUN=""
 DATABASE_DRIVER=""
 CONTAINER_BIN=""
-COMPOSER_ROOT_VERSION="0.2.x-dev"
+COMPOSER_ROOT_VERSION="0.3.x-dev"
 # "composer config" and "composer require" rewrite the manifest they operate on. The install
 # suites therefore run on a throwaway copy of "composer.json", selected with the "COMPOSER"
 # environment variable, so that the tracked "composer.json" is never touched and the added
@@ -457,7 +468,7 @@ while getopts "a:b:s:d:i:p:t:xy:o:nhu" OPT; do
             ;;
         t)
             CORE_VERSION=${OPTARG}
-            if ! [[ ${CORE_VERSION} =~ ^(12.4|13.4)$ ]]; then
+            if ! [[ ${CORE_VERSION} =~ ^(13.4|14.3)$ ]]; then
                 INVALID_OPTIONS+=("-t ${OPTARG}")
             fi
             ;;
@@ -544,18 +555,11 @@ IMAGE_MARIADB="docker.io/mariadb:${DBMS_VERSION}"
 IMAGE_MYSQL="docker.io/mysql:${DBMS_VERSION}"
 IMAGE_POSTGRES="docker.io/postgres:${DBMS_VERSION}-alpine"
 
-# EXT:index is an optional integration and needs TYPO3 13.4+ and PHP 8.3+. The update suites add it
-# to the throwaway manifest where it installs, so the EXT:index tests run there and are skipped elsewhere.
+# EXT:index is an optional integration and needs PHP 8.3+. The update suites add it to the throwaway
+# manifest where it installs, so the EXT:index tests run there and are skipped elsewhere.
 REQUIRE_OPTIONAL_PACKAGES="typo3/minimal:^${CORE_VERSION}"
-if [ "${CORE_VERSION}" != "12.4" ] && [ "${PHP_VERSION}" != "8.2" ]; then
-    REQUIRE_OPTIONAL_PACKAGES="${REQUIRE_OPTIONAL_PACKAGES} lochmueller/index:^2.2"
-fi
-# Every public TYPO3 12.4 release has open security advisories: the fixes ship as ELTS releases
-# only, which keep the same API. Composer would refuse to install any of them, so the throwaway
-# test manifest (never the tracked composer.json) allows them for 12.4 test runs.
-COMPOSER_CONFIG_AUDIT="true"
-if [ "${CORE_VERSION}" == "12.4" ]; then
-    COMPOSER_CONFIG_AUDIT="composer config audit.block-insecure false"
+if [ "${PHP_VERSION}" != "8.2" ]; then
+    REQUIRE_OPTIONAL_PACKAGES="${REQUIRE_OPTIONAL_PACKAGES} lochmueller/index:^2.3"
 fi
 
 # Remove handled options and leaving the rest in the line, so it can be passed raw to commands
@@ -630,13 +634,13 @@ case ${TEST_SUITE} in
         # .Build/vendor is wiped first: updating in place, e.g. switching between Min and Max, lets
         # phpstan/extension-installer load a phpstan.phar that composer is replacing at that moment.
         # `dumpautoload` removed due to error with missing `composer.lock` file on publishing public assets.
-        COMMAND="rm -rf .Build/vendor .Build/bin && cp composer.json ${COMPOSER_BUILD_FILE} && (${COMPOSER_CONFIG_AUDIT} && composer config --unset platform.php && composer require --no-ansi --no-interaction --no-progress --no-install ${REQUIRE_OPTIONAL_PACKAGES} && composer update --no-progress --no-interaction && composer show); COMPOSER_EXIT_CODE=\$?; rm -f ${COMPOSER_BUILD_FILE}; exit \$COMPOSER_EXIT_CODE"
+        COMMAND="rm -rf .Build/vendor .Build/bin && cp composer.json ${COMPOSER_BUILD_FILE} && (composer config --unset platform.php && composer require --no-ansi --no-interaction --no-progress --no-install ${REQUIRE_OPTIONAL_PACKAGES} && composer update --no-progress --no-interaction && composer show); COMPOSER_EXIT_CODE=\$?; rm -f ${COMPOSER_BUILD_FILE}; exit \$COMPOSER_EXIT_CODE"
         ${CONTAINER_BIN} run ${CONTAINER_COMMON_PARAMS} --name composer-install-max-${SUFFIX} -e COMPOSER=${COMPOSER_BUILD_FILE} -e COMPOSER_CACHE_DIR=.cache/composer -e COMPOSER_HOME=${ROOT_DIR}/.cache/composer-home -e COMPOSER_ROOT_VERSION=${COMPOSER_ROOT_VERSION} ${IMAGE_PHP} /bin/sh -c "${COMMAND[@]}"
         SUITE_EXIT_CODE=$?
         ;;
     composerUpdateMin)
         # `dumpautoload` removed due to error with missing `composer.lock` file on publishing public assets.
-        COMMAND="rm -rf .Build/vendor .Build/bin && cp composer.json ${COMPOSER_BUILD_FILE} && (${COMPOSER_CONFIG_AUDIT} && composer config platform.php ${PHP_VERSION}.0 && composer require --no-ansi --no-interaction --no-progress --no-install ${REQUIRE_OPTIONAL_PACKAGES} && composer update --prefer-lowest --no-progress --no-interaction && composer show); COMPOSER_EXIT_CODE=\$?; rm -f ${COMPOSER_BUILD_FILE}; exit \$COMPOSER_EXIT_CODE"
+        COMMAND="rm -rf .Build/vendor .Build/bin && cp composer.json ${COMPOSER_BUILD_FILE} && (composer config platform.php ${PHP_VERSION}.0 && composer require --no-ansi --no-interaction --no-progress --no-install ${REQUIRE_OPTIONAL_PACKAGES} && composer update --prefer-lowest --no-progress --no-interaction && composer show); COMPOSER_EXIT_CODE=\$?; rm -f ${COMPOSER_BUILD_FILE}; exit \$COMPOSER_EXIT_CODE"
         ${CONTAINER_BIN} run ${CONTAINER_COMMON_PARAMS} --name composer-install-min-${SUFFIX} -e COMPOSER=${COMPOSER_BUILD_FILE} -e COMPOSER_CACHE_DIR=.cache/composer -e COMPOSER_HOME=${ROOT_DIR}/.cache/composer-home -e COMPOSER_ROOT_VERSION=${COMPOSER_ROOT_VERSION} ${IMAGE_PHP} /bin/sh -c "${COMMAND[@]}"
         SUITE_EXIT_CODE=$?
         ;;
@@ -647,13 +651,7 @@ case ${TEST_SUITE} in
         SUITE_EXIT_CODE=$((SUITE_EXIT_CODE + $?))
         ;;
     functional)
-        # TYPO3 12.4 installs PHPUnit 10 (its cms-install needs nikic/php-parser 4), which accepts
-        # --exclude-group only once. PHPUnit 11 deprecates the comma-separated form instead.
-        if [ "${CORE_VERSION}" == "12.4" ]; then
-            EXCLUDE_GROUPS=(--exclude-group "not-${DBMS},not-core-${CORE_VERSION}")
-        else
-            EXCLUDE_GROUPS=(--exclude-group "not-${DBMS}" --exclude-group "not-core-${CORE_VERSION}")
-        fi
+        EXCLUDE_GROUPS=(--exclude-group "not-${DBMS}" --exclude-group "not-core-${CORE_VERSION}")
         COMMAND=(.Build/bin/phpunit -c Build/phpunit/FunctionalTests.xml "${EXCLUDE_GROUPS[@]}" "$@")
         # Qdrant sidecar for the re-indexing tests (Tests/Functional/Indexing/QdrantReindexTest.php).
         # Every test uses its own throwaway collection, so one in-memory instance serves the whole run.
@@ -705,6 +703,10 @@ case ${TEST_SUITE} in
         ;;
     phpstanGenerateBaseline)
         phpstanGenerateBaseline "$@"
+        SUITE_EXIT_CODE=$?
+        ;;
+    rector)
+        rector "$@"
         SUITE_EXIT_CODE=$?
         ;;
     shellcheck)

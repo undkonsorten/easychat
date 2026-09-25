@@ -26,7 +26,6 @@ ExtensionUtility::configurePlugin(
     [
         EasychatController::class => 'chatFrontend',
     ],
-    ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT,
 );
 
 if (getenv('TYPO3_MINIMUM_LOGLEVEL')) {

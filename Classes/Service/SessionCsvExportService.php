@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Undkonsorten\Easychat\Service;
 
+use Symfony\AI\Platform\Message\SystemMessage;
+use Symfony\AI\Platform\Message\UserMessage;
+use Symfony\AI\Platform\Message\AssistantMessage;
+use Symfony\AI\Platform\Message\Content\Text;
 use Undkonsorten\Easychat\Domain\Model\Session;
 
 /**
@@ -30,10 +34,10 @@ class SessionCsvExportService
     public const FIELD_QUESTIONS = 'questions';
     public const FIELD_ANSWERS = 'answers';
 
-    private const SYSTEM_MESSAGE_TYPE = 'Symfony\AI\Platform\Message\SystemMessage';
-    private const USER_MESSAGE_TYPE = 'Symfony\AI\Platform\Message\UserMessage';
-    private const ASSISTANT_MESSAGE_TYPE = 'Symfony\AI\Platform\Message\AssistantMessage';
-    private const TEXT_CONTENT_TYPE = 'Symfony\AI\Platform\Message\Content\Text';
+    private const SYSTEM_MESSAGE_TYPE = SystemMessage::class;
+    private const USER_MESSAGE_TYPE = UserMessage::class;
+    private const ASSISTANT_MESSAGE_TYPE = AssistantMessage::class;
+    private const TEXT_CONTENT_TYPE = Text::class;
 
     /**
      * @return array<string, string> field key => human-readable label, in export column order

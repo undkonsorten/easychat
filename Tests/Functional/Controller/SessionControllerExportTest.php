@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Undkonsorten\Easychat\Tests\Functional\Controller;
 
+use Symfony\AI\Platform\Message\UserMessage;
+use Symfony\AI\Platform\Message\Content\Text;
+use Symfony\AI\Platform\Message\AssistantMessage;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Undkonsorten\Easychat\Controller\SessionController;
@@ -87,15 +90,15 @@ final class SessionControllerExportTest extends FunctionalTestCase
         return [
             [
                 'id' => 'u-' . $question,
-                'type' => 'Symfony\AI\Platform\Message\UserMessage',
+                'type' => UserMessage::class,
                 'content' => '',
                 'contentAsBase64' => [
-                    ['type' => 'Symfony\AI\Platform\Message\Content\Text', 'content' => $question],
+                    ['type' => Text::class, 'content' => $question],
                 ],
             ],
             [
                 'id' => 'a-' . $question,
-                'type' => 'Symfony\AI\Platform\Message\AssistantMessage',
+                'type' => AssistantMessage::class,
                 'content' => $answer,
                 'contentAsBase64' => [],
             ],

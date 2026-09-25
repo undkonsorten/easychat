@@ -21,7 +21,6 @@ return [
         'security' => [
             'ignorePageTypeRestriction' => true,
         ],
-        'searchFields' => 'name,model,url,',
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg',
     ],
     'types' => [
@@ -59,6 +58,7 @@ return [
                 'range' => [
                     'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
+                'searchable' => false,
             ],
         ],
         'endtime' => [
@@ -72,6 +72,7 @@ return [
                 'range' => [
                     'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
+                'searchable' => false,
             ],
         ],
         'name' => [
@@ -105,6 +106,7 @@ return [
                 'type' => 'text',
                 'cols' => 40,
                 'rows' => 6,
+                'searchable' => false,
             ],
         ],
         'url' => [
@@ -127,6 +129,7 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
+                'searchable' => false,
             ],
         ],
         'vector_db' => [
@@ -164,6 +167,7 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
+                'searchable' => false,
             ],
         ],
         'vector_db_port' => [
@@ -179,6 +183,7 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
+                'searchable' => false,
             ],
         ],
         'vector_db_name' => [
@@ -194,6 +199,7 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
+                'searchable' => false,
             ],
         ],
         'vector_db_api_key' => [
@@ -212,6 +218,7 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
+                'searchable' => false,
             ],
         ],
         'vector_db_embeddings_model' => [
@@ -234,6 +241,7 @@ return [
                 'valuePicker' => [
                     'items' => [],
                 ],
+                'searchable' => false,
             ],
         ],
         'vector_db_embeddings_url' => [
@@ -253,6 +261,7 @@ return [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
+                'searchable' => false,
             ],
         ],
         'vector_db_embeddings_api_key' => [
@@ -272,6 +281,7 @@ return [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
+                'searchable' => false,
             ],
         ],
         'vector_db_dimensions' => [

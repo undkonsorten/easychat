@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Undkonsorten\Easychat\Tests\Unit\Service;
 
+use Symfony\AI\Platform\Message\SystemMessage;
+use Symfony\AI\Platform\Message\UserMessage;
+use Symfony\AI\Platform\Message\Content\Text;
+use Symfony\AI\Platform\Message\AssistantMessage;
 use PHPUnit\Framework\TestCase;
 use Undkonsorten\Easychat\Domain\Model\Session;
 use Undkonsorten\Easychat\Service\SessionCsvExportService;
@@ -17,7 +21,6 @@ final class SessionCsvExportServiceTest extends TestCase
         $session->setMessages(json_encode($messages, JSON_THROW_ON_ERROR));
 
         $crdateProperty = new \ReflectionProperty(Session::class, 'crdate');
-        $crdateProperty->setAccessible(true);
         $crdateProperty->setValue($session, $crdate);
 
         return $session;
@@ -27,7 +30,7 @@ final class SessionCsvExportServiceTest extends TestCase
     {
         return [
             'id' => 's-' . $text,
-            'type' => 'Symfony\AI\Platform\Message\SystemMessage',
+            'type' => SystemMessage::class,
             'content' => $text,
             'contentAsBase64' => [],
         ];
@@ -37,10 +40,10 @@ final class SessionCsvExportServiceTest extends TestCase
     {
         return [
             'id' => 'u-' . $text,
-            'type' => 'Symfony\AI\Platform\Message\UserMessage',
+            'type' => UserMessage::class,
             'content' => '',
             'contentAsBase64' => [
-                ['type' => 'Symfony\AI\Platform\Message\Content\Text', 'content' => $text],
+                ['type' => Text::class, 'content' => $text],
             ],
         ];
     }
@@ -49,7 +52,7 @@ final class SessionCsvExportServiceTest extends TestCase
     {
         return [
             'id' => 'a-' . $text,
-            'type' => 'Symfony\AI\Platform\Message\AssistantMessage',
+            'type' => AssistantMessage::class,
             'content' => $text,
             'contentAsBase64' => [],
         ];
@@ -91,21 +94,21 @@ final class SessionCsvExportServiceTest extends TestCase
         $session = $this->buildSession('session-1', 1735689600, [
             [
                 'id' => 'a',
-                'type' => 'Symfony\AI\Platform\Message\SystemMessage',
+                'type' => SystemMessage::class,
                 'content' => 'You are a helpful assistant.',
                 'contentAsBase64' => [],
             ],
             [
                 'id' => 'b',
-                'type' => 'Symfony\AI\Platform\Message\UserMessage',
+                'type' => UserMessage::class,
                 'content' => '',
                 'contentAsBase64' => [
-                    ['type' => 'Symfony\AI\Platform\Message\Content\Text', 'content' => 'What is TYPO3?'],
+                    ['type' => Text::class, 'content' => 'What is TYPO3?'],
                 ],
             ],
             [
                 'id' => 'c',
-                'type' => 'Symfony\AI\Platform\Message\AssistantMessage',
+                'type' => AssistantMessage::class,
                 'content' => 'TYPO3 is an open source CMS.',
                 'contentAsBase64' => [],
             ],

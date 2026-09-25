@@ -9,7 +9,9 @@ use Lochmueller\Index\Enums\IndexType;
 use Lochmueller\Index\Event\FinishIndexProcessEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
 use PHPUnit\Framework\Attributes\RequiresMethod;
-use Symfony\AI\Store\Bridge\Qdrant\Store;
+use Symfony\AI\Store\Bridge\Qdrant\StoreFactory;
+use Symfony\AI\Store\ManagedStoreInterface;
+use Symfony\AI\Store\StoreInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -20,7 +22,6 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Undkonsorten\Easychat\Indexing\AnonymousPageVisibility;
 use Undkonsorten\Easychat\Indexing\IndexEventListener;
 use Undkonsorten\Easychat\Indexing\IndexPointRegistry;
-use Undkonsorten\Easychat\Indexing\QdrantPointRemover;
 use Undkonsorten\Easychat\Indexing\RouteArgumentsResolver;
 use Undkonsorten\Easychat\Indexing\VectorTarget;
 use Undkonsorten\Easychat\Indexing\VectorTargetFactory;
@@ -42,7 +43,7 @@ final class QdrantReindexTest extends FunctionalTestCase
     /** Linked to configuration uid 2 (removal sync on) */
     private const INDEX_CONFIGURATION_WITH_SYNC = 8;
 
-    protected array $coreExtensionsToLoad = ['reactions'];
+    protected array $coreExtensionsToLoad = ['install', 'reactions'];
 
     protected array $testExtensionsToLoad = ['undkonsorten/easychat'];
 
@@ -51,7 +52,7 @@ final class QdrantReindexTest extends FunctionalTestCase
     private HttpClientInterface $httpClient;
     private string $url;
     private string $collection;
-    private Store $store;
+    private StoreInterface&ManagedStoreInterface $store;
 
     protected function setUp(): void
     {
@@ -67,7 +68,7 @@ final class QdrantReindexTest extends FunctionalTestCase
             self::markTestSkipped('Qdrant not reachable at ' . $this->url . ': ' . $exception->getMessage());
         }
 
-        $this->store = new Store($this->httpClient, $this->url, '', $this->collection, self::DIMENSIONS, 'Dot');
+        $this->store = StoreFactory::create($this->collection, $this->url, null, $this->httpClient, self::DIMENSIONS, 'Dot');
         $this->store->setup();
     }
 
@@ -150,7 +151,6 @@ final class QdrantReindexTest extends FunctionalTestCase
         $factory->method('create')->willReturn(new VectorTarget(
             $this->store,
             new FakeVectorizer(self::DIMENSIONS),
-            new QdrantPointRemover($this->httpClient, $this->url, '', $this->collection),
         ));
 
         $connectionPool = $this->get(ConnectionPool::class);

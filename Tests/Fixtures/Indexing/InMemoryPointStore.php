@@ -4,40 +4,57 @@ declare(strict_types=1);
 
 namespace Undkonsorten\Easychat\Tests\Fixtures\Indexing;
 
-use Symfony\AI\Platform\Vector\Vector;
-use Symfony\AI\Store\Document\VectorDocument;
+use Symfony\AI\Store\Document\VectorDocumentInterface;
+use Symfony\AI\Store\Query\QueryInterface;
 use Symfony\AI\Store\StoreInterface;
-use Undkonsorten\Easychat\Indexing\PointRemoverInterface;
 
 /**
- * Store and point remover over one array; add() upserts by id, like every real store.
+ * Store over one array; add() upserts by id, like every real store.
  */
-final class InMemoryPointStore implements StoreInterface, PointRemoverInterface
+final class InMemoryPointStore implements StoreInterface
 {
-    /** @var array<string, VectorDocument> */
+    /** @var array<string, VectorDocumentInterface> */
     private array $points = [];
 
-    public function add(VectorDocument ...$documents): void
+    public function add(VectorDocumentInterface|array $documents): void
     {
+        if ($documents instanceof VectorDocumentInterface) {
+            $documents = [$documents];
+        }
         foreach ($documents as $document) {
-            $this->points[$document->id->toRfc4122()] = $document;
+            $this->points[(string)$document->getId()] = $document;
         }
     }
 
-    public function query(Vector $vector, array $options = []): iterable
+    public function remove(string|array $ids, array $options = []): void
     {
-        return array_values($this->points);
-    }
-
-    public function remove(array $ids, array $options = []): void
-    {
-        foreach ($ids as $id) {
+        foreach ((array)$ids as $id) {
             unset($this->points[$id]);
         }
     }
 
+    public function clear(array $options = []): void
+    {
+        $this->points = [];
+    }
+
+    public function query(QueryInterface $query, array $options = []): iterable
+    {
+        return array_values($this->points);
+    }
+
+    public function supports(string $queryClass): bool
+    {
+        return true;
+    }
+
+    public function count(): int
+    {
+        return \count($this->points);
+    }
+
     /**
-     * @return array<string, VectorDocument> keyed by point id
+     * @return array<string, VectorDocumentInterface> keyed by point id
      */
     public function points(): array
     {
@@ -52,8 +69,8 @@ final class InMemoryPointStore implements StoreInterface, PointRemoverInterface
     {
         $texts = [];
         foreach ($this->points as $point) {
-            if (array_intersect_key($point->metadata->getArrayCopy(), $metadata) == $metadata) {
-                $texts[] = $point->metadata->getText();
+            if (array_intersect_key($point->getMetadata()->getArrayCopy(), $metadata) == $metadata) {
+                $texts[] = $point->getMetadata()->getText();
             }
         }
 
@@ -67,8 +84,8 @@ final class InMemoryPointStore implements StoreInterface, PointRemoverInterface
     {
         $texts = [];
         foreach ($this->points as $point) {
-            if (str_ends_with((string)$point->metadata['uri'], $uriSuffix)) {
-                $texts[] = $point->metadata->getText();
+            if (str_ends_with((string)$point->getMetadata()['uri'], $uriSuffix)) {
+                $texts[] = $point->getMetadata()->getText();
             }
         }
 

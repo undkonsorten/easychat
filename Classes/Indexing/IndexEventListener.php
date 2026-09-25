@@ -49,7 +49,7 @@ class IndexEventListener implements LoggerAwareInterface
     /** @var array<int, array<int, array<string, mixed>>> indexConfigurationRecordId => matching tx_easychat_configuration rows */
     private array $targetsByIndexConfiguration = [];
 
-    /** @var array<int, VectorTarget> configuration uid => resolved store/vectorizer/remover */
+    /** @var array<int, VectorTarget> configuration uid => resolved store/vectorizer */
     private array $resolved = [];
 
     /** @var array<string, true> index process ids in which writing to a store failed */
@@ -333,7 +333,7 @@ class IndexEventListener implements LoggerAwareInterface
         $target = $this->resolveTarget($configuration);
 
         $document = new TextDocument(
-            id: DeterministicUuid::generate($idSeed),
+            id: DeterministicUuid::generate($idSeed)->toRfc4122(),
             content: $content,
             metadata: new Metadata([
                 'title' => $title,
@@ -346,24 +346,18 @@ class IndexEventListener implements LoggerAwareInterface
         foreach ((new TextSplitTransformer())->transform([$document]) as $index => $chunk) {
             // The transformer assigns a random id per chunk; replace it with a
             // deterministic one so re-indexing overwrites instead of duplicating.
-            $metadata = $chunk->getMetadata();
-            // SimilaritySearch returns metadata (not content) to the LLM, so the
-            // actual chunk text must be in the payload, not just title/uri/etc.
-            // Set explicitly (rather than trusting the transformer) because when it
-            // does split, it merges the parent document's metadata in after setting
-            // _text, which would otherwise overwrite each chunk's text with the
-            // full, unsplit original content.
-            $metadata->setText($chunk->getContent());
+            // Qdrant accepts only UUIDs or unsigned integers as point ids.
+            // The chunk text is in the _text metadata, which SimilaritySearch hands to the LLM.
             $chunks[] = new TextDocument(
-                id: DeterministicUuid::generate($idSeed . '#' . $index),
+                id: DeterministicUuid::generate($idSeed . '#' . $index)->toRfc4122(),
                 content: $chunk->getContent(),
-                metadata: $metadata,
+                metadata: $chunk->getMetadata(),
             );
         }
 
-        $target->store->add(...$target->vectorizer->vectorize($chunks));
+        $target->store->add($target->vectorizer->vectorize($chunks));
 
-        return array_map(static fn(TextDocument $chunk): string => $chunk->getId()->toRfc4122(), $chunks);
+        return array_map(static fn(TextDocument $chunk): string => (string)$chunk->getId(), $chunks);
     }
 
     /**
@@ -402,7 +396,7 @@ class IndexEventListener implements LoggerAwareInterface
         $uid = (int)$configuration['uid'];
         $orphans = array_values(array_diff($pointIds, $this->registry->referencedElsewhere($uid, $indexConfiguration, $pointIds)));
         if ($orphans !== []) {
-            $this->resolveTarget($configuration)->remover->remove($orphans);
+            $this->resolveTarget($configuration)->store->remove($orphans);
         }
         $this->registry->forget($uid, $indexConfiguration, $pointIds);
     }

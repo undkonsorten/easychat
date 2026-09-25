@@ -1,5 +1,6 @@
 includes:
     - phpstan-baseline.neon
+    - typo3-version.php
 
 parameters:
     level: 5

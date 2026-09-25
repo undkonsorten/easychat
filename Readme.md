@@ -2,7 +2,7 @@
 
 ----
 
-![TYPO3 Version 12](Documentation/Badges/TYPO3-12.png) ![TYPO3 Version 13](Documentation/Badges/TYPO3-13.png)
+![TYPO3 Version 13](Documentation/Badges/TYPO3-13.png) ![TYPO3 Version 14](Documentation/Badges/TYPO3-14.png)
 
 ----
 
@@ -436,10 +436,9 @@ everything of that index configuration the run did not write again:
   as it is saved.
 
 Which vector store point belongs to which document, index configuration, index run, page and language is
-tracked in the table `tx_easychat_index_point`. Deleting then only needs a delete-by-id, which every vector
-store supports, so none of this is tied to Qdrant (see
-[Documentation/Symfony-AI-Upgrade-Notes.md](Documentation/Symfony-AI-Upgrade-Notes.md) for how that
-becomes plain `StoreInterface::remove()` after upgrading symfony/ai). Two index configurations that index
+tracked in the table `tx_easychat_index_point`. Deleting then only needs a delete-by-id
+(`StoreInterface::remove()`), which every symfony/ai store bridge implements, so none of this is tied to
+Qdrant. Two index configurations that index
 the same file (overlapping file mounts) each keep their own claim on it; the file only leaves the store
 once neither indexes it any more.
 
@@ -485,6 +484,22 @@ Safeguards and caveats:
 
 
 ## Upgrading
+
+### From 0.2.x to 0.3.0
+
+- **TYPO3 13.4 and 14.3**: TYPO3 12.4 is no longer supported, stay on EasyChat 0.2.x there.
+- **symfony/ai 0.14**: EasyChat now requires symfony/ai 0.14 (was 0.1). If your project requires
+  `symfony/ai-qdrant-store` or `symfony/ai-similarity-search-tool` itself, raise them to `^0.14`
+  (`composer require symfony/ai-qdrant-store:^0.14 symfony/ai-similarity-search-tool:^0.14 -W`).
+  Own code using symfony/ai directly has to follow its
+  [UPGRADE.md](https://github.com/symfony/ai/blob/main/UPGRADE.md).
+- **No re-index needed**: point ids and payloads in the vector store stay the same.
+- **Chat sessions**: sessions saved by 0.2.x still load and can be continued. New assistant messages
+  are stored with an additional `parts` field.
+- **Backend module**: on TYPO3 14 the session module is found under *Content* (formerly *Web*).
+- **API changes**: `PointRemoverInterface` and `QdrantPointRemover` are removed, points are deleted
+  through the store's `remove()`. `VectorTarget` has no `$remover` any more, and `StoreFactory::create()`
+  returns `StoreInterface&ManagedStoreInterface` instead of the Qdrant `Store` class.
 
 ### From 0.1.x to 0.2.0
 

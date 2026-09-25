@@ -7,6 +7,7 @@ namespace Undkonsorten\Easychat\Tests\Fixtures\Indexing;
 use Symfony\AI\Platform\Vector\Vector;
 use Symfony\AI\Store\Document\EmbeddableDocumentInterface;
 use Symfony\AI\Store\Document\VectorDocument;
+use Symfony\AI\Store\Document\VectorDocumentInterface;
 use Symfony\AI\Store\Document\VectorizerInterface;
 
 /**
@@ -19,7 +20,7 @@ final readonly class FakeVectorizer implements VectorizerInterface
         private int $dimensions = 4,
     ) {}
 
-    public function vectorize(string|\Stringable|EmbeddableDocumentInterface|array $values, array $options = []): Vector|VectorDocument|array
+    public function vectorize(string|\Stringable|EmbeddableDocumentInterface|array $values, array $options = []): Vector|VectorDocumentInterface|array
     {
         if (!\is_array($values)) {
             throw new \LogicException('FakeVectorizer only supports lists of documents.', 7713459136);

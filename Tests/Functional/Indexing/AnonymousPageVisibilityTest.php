@@ -17,7 +17,7 @@ use Undkonsorten\Easychat\Indexing\AnonymousPageVisibility;
  */
 final class AnonymousPageVisibilityTest extends FunctionalTestCase
 {
-    protected array $coreExtensionsToLoad = ['reactions'];
+    protected array $coreExtensionsToLoad = ['install', 'reactions'];
 
     protected array $testExtensionsToLoad = ['undkonsorten/easychat'];
 

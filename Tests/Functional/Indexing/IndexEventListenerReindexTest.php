@@ -51,7 +51,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
     private const SHARED_B = 10;
     private const WITH_THRESHOLD = 11;
 
-    protected array $coreExtensionsToLoad = ['reactions'];
+    protected array $coreExtensionsToLoad = ['install', 'reactions'];
 
     protected array $testExtensionsToLoad = ['undkonsorten/easychat'];
 
@@ -376,7 +376,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
     private function createListener(?VectorizerInterface $vectorizer = null, ?AnonymousPageVisibility $pageVisibility = null): IndexEventListener
     {
         $factory = self::createStub(VectorTargetFactory::class);
-        $factory->method('create')->willReturn(new VectorTarget($this->store, $vectorizer ?? new FakeVectorizer(), $this->store));
+        $factory->method('create')->willReturn(new VectorTarget($this->store, $vectorizer ?? new FakeVectorizer()));
 
         $connectionPool = $this->get(ConnectionPool::class);
 

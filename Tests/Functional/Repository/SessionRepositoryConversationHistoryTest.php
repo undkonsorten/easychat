@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace Undkonsorten\Easychat\Tests\Functional\Repository;
 
-use Symfony\AI\Platform\Message\SystemMessage;
-use Symfony\AI\Platform\Message\UserMessage;
-use Symfony\AI\Platform\Message\AssistantMessage;
 use Symfony\AI\Agent\AgentInterface;
+use Symfony\AI\Agent\Execution\Execution;
+use Symfony\AI\Agent\Execution\Update\Result;
 use Symfony\AI\Chat\Chat;
+use Symfony\AI\Platform\Message\AssistantMessage;
+use Symfony\AI\Platform\Message\Content\Text;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
-use Symfony\AI\Platform\Result\ResultInterface;
+use Symfony\AI\Platform\Message\SystemMessage;
+use Symfony\AI\Platform\Message\UserMessage;
 use Symfony\AI\Platform\Result\TextResult;
+use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
+use Undkonsorten\Easychat\Domain\Model\Session;
 use Undkonsorten\Easychat\Domain\Repository\SessionRepository;
 
 /**
@@ -29,7 +33,7 @@ use Undkonsorten\Easychat\Domain\Repository\SessionRepository;
  */
 final class SessionRepositoryConversationHistoryTest extends FunctionalTestCase
 {
-    protected array $coreExtensionsToLoad = ['reactions'];
+    protected array $coreExtensionsToLoad = ['install', 'reactions'];
 
     protected array $testExtensionsToLoad = ['undkonsorten/easychat'];
 
@@ -108,16 +112,79 @@ final class SessionRepositoryConversationHistoryTest extends FunctionalTestCase
         );
     }
 
+    /**
+     * Sessions written by EasyChat 0.2 (symfony/ai 0.1) store assistant messages without the
+     * "parts" field that symfony/ai 0.13+ writes. They must still load, and a new turn must be
+     * appended without losing the old ones.
+     */
+    public function testSessionStoredWithSymfonyAi01CanBeContinued(): void
+    {
+        $legacyMessages = [
+            [
+                'id' => '019a0000-0000-7000-8000-000000000001',
+                'type' => SystemMessage::class,
+                'content' => 'be nice',
+                'contentAsBase64' => [],
+                'toolsCalls' => [],
+                'metadata' => [],
+                'addedAt' => 1767225600,
+            ],
+            [
+                'id' => '019a0000-0000-7000-8000-000000000002',
+                'type' => UserMessage::class,
+                'content' => '',
+                'contentAsBase64' => [['type' => Text::class, 'content' => 'old question']],
+                'toolsCalls' => [],
+                'metadata' => [],
+                'addedAt' => 1767225601,
+            ],
+            [
+                'id' => '019a0000-0000-7000-8000-000000000003',
+                'type' => AssistantMessage::class,
+                'content' => 'old answer',
+                'contentAsBase64' => [],
+                'toolsCalls' => [],
+                'metadata' => [],
+                'addedAt' => 1767225602,
+            ],
+        ];
+        $session = new Session();
+        $session->setPid(1);
+        $session->setSessionId('legacy-conversation');
+        $session->setMessages(json_encode($legacyMessages, JSON_THROW_ON_ERROR));
+        $repository = $this->get(SessionRepository::class);
+        $repository->add($session);
+        $this->get(PersistenceManagerInterface::class)->persistAll();
+
+        $repository->setup(['sessionId' => 'legacy-conversation']);
+        $history = $repository->load()->getMessages();
+
+        self::assertCount(3, $history);
+        self::assertInstanceOf(AssistantMessage::class, $history[2]);
+        self::assertSame('old answer', $history[2]->asText());
+
+        (new Chat($this->fakeAgent(), $repository))->submit(Message::ofUser('new question'));
+
+        $messages = json_decode((string)$repository->findBy(['session_id' => 'legacy-conversation'])->getFirst()->getMessages(), true);
+        self::assertSame(
+            ['be nice', '', 'old answer', '', 'answer-1'],
+            array_column($messages, 'content'),
+        );
+    }
+
     private function fakeAgent(): AgentInterface
     {
         return new class () implements AgentInterface {
             private int $calls = 0;
 
-            public function call(MessageBag $messages, array $options = []): ResultInterface
+            public function call(string|MessageBag|UserMessage $input, array $options = []): Execution
             {
                 $this->calls++;
+                $answer = 'answer-' . $this->calls;
 
-                return new TextResult('answer-' . $this->calls);
+                return new Execution(static function () use ($answer): \Generator {
+                    yield new Result(new TextResult($answer));
+                });
             }
 
             public function getName(): string

@@ -8,13 +8,13 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\AI\Agent\Agent;
 use Symfony\AI\Agent\Bridge\SimilaritySearch\SimilaritySearch;
-use Symfony\AI\Agent\Toolbox\AgentProcessor;
 use Symfony\AI\Agent\Toolbox\FaultTolerantToolbox;
 use Symfony\AI\Agent\Toolbox\Toolbox;
 use Symfony\AI\Chat\Chat;
 use Symfony\AI\Chat\MessageNormalizer;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
+use Symfony\AI\Store\Retriever;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -115,14 +115,13 @@ class ChatReaction implements ReactionInterface
             $store->setup();
             $vectorizer = VectorizerFactory::create($configuration);
 
-            $similaritySearch = new SimilaritySearch($vectorizer, $store);
+            $similaritySearch = new SimilaritySearch(new Retriever($store, $vectorizer));
             // Some models (e.g. gpt-oss) call tools beyond what we register (like a
             // trained-in "open_file" follow-up to a search call). FaultTolerantToolbox
             // turns that into a normal tool-result message the model can recover from,
             // instead of the whole request failing with ToolNotFoundException.
             $toolbox = new FaultTolerantToolbox(new Toolbox([$similaritySearch]));
-            $processor = new AgentProcessor($toolbox);
-            $agent = new Agent($platform, $configuration['model'], [$processor], [$processor]);
+            $agent = new Agent($platform, $configuration['model'], toolbox: $toolbox);
         } else {
             $agent = new Agent($platform, $configuration['model']);
         }
@@ -146,7 +145,7 @@ class ChatReaction implements ReactionInterface
 
         return $this->jsonResponse(
             [
-                'text' => $answer->getContent(),
+                'text' => $answer->asText() ?? '',
                 'role' => $answer->getRole(),
             ]
         );

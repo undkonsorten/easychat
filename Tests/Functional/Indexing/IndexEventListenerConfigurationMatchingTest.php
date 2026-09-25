@@ -20,7 +20,7 @@ use Undkonsorten\Easychat\Indexing\VectorTargetFactory;
  */
 final class IndexEventListenerConfigurationMatchingTest extends FunctionalTestCase
 {
-    protected array $coreExtensionsToLoad = ['reactions'];
+    protected array $coreExtensionsToLoad = ['install', 'reactions'];
 
     protected array $testExtensionsToLoad = ['undkonsorten/easychat'];
 

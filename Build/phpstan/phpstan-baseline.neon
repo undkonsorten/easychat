@@ -19,7 +19,7 @@ parameters:
 			path: ../../Tests/Fixtures/Indexing/FakeVectorizer.php
 
 		-
-			message: '#^Method Undkonsorten\\Easychat\\Tests\\Fixtures\\Indexing\\FakeVectorizer\:\:vectorize\(\) never returns Symfony\\AI\\Store\\Document\\VectorDocument so it can be removed from the return type\.$#'
+			message: '#^Method Undkonsorten\\Easychat\\Tests\\Fixtures\\Indexing\\FakeVectorizer\:\:vectorize\(\) never returns Symfony\\AI\\Store\\Document\\VectorDocumentInterface so it can be removed from the return type\.$#'
 			identifier: return.unusedType
 			count: 1
 			path: ../../Tests/Fixtures/Indexing/FakeVectorizer.php

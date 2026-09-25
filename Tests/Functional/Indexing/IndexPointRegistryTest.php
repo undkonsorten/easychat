@@ -20,7 +20,7 @@ final class IndexPointRegistryTest extends FunctionalTestCase
     private const INDEX_CONFIGURATION = 10;
     private const OTHER_INDEX_CONFIGURATION = 20;
 
-    protected array $coreExtensionsToLoad = ['reactions'];
+    protected array $coreExtensionsToLoad = ['install', 'reactions'];
 
     protected array $testExtensionsToLoad = ['undkonsorten/easychat'];
 

@@ -5,7 +5,7 @@ namespace Undkonsorten\Easychat\Factories;
 use Symfony\AI\Platform\Bridge\Generic\CompletionsModel;
 use Symfony\AI\Platform\Bridge\Generic\EmbeddingsModel;
 use Symfony\AI\Platform\Bridge\Generic\ModelCatalog;
-use Symfony\AI\Platform\Bridge\Generic\PlatformFactory as GenericPlatformFactory;
+use Symfony\AI\Platform\Bridge\Generic\Factory as GenericPlatformFactory;
 use Symfony\AI\Platform\Capability;
 use Symfony\AI\Platform\PlatformInterface;
 use Symfony\Component\HttpClient\HttpClient;
@@ -30,7 +30,7 @@ class AiPlatformFactory
             ],
         ]);
 
-        return GenericPlatformFactory::create($configuration['url'], $configuration['api_key'], HttpClient::create(), $modelCatalog);
+        return GenericPlatformFactory::createPlatform($configuration['url'], $configuration['api_key'], HttpClient::create(), $modelCatalog);
     }
 
     public static function createEmbeddingsPlatform(array $configuration): PlatformInterface
@@ -42,7 +42,7 @@ class AiPlatformFactory
             ],
         ]);
 
-        return GenericPlatformFactory::create(
+        return GenericPlatformFactory::createPlatform(
             self::resolveEmbeddingsUrl($configuration),
             self::resolveEmbeddingsApiKey($configuration),
             HttpClient::create(),

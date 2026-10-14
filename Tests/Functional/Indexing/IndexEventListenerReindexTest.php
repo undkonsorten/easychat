@@ -51,7 +51,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
     private const SHARED_B = 10;
     private const WITH_THRESHOLD = 11;
 
-    protected array $coreExtensionsToLoad = ['reactions'];
+    protected array $coreExtensionsToLoad = ['install'];
 
     protected array $testExtensionsToLoad = ['undkonsorten/easychat'];
 

@@ -7,6 +7,8 @@ use Symfony\Component\HttpClient\HttpClient;
 
 class StoreFactory
 {
+    public const HTTP_CLIENT_OPTIONS = ['timeout' => 5, 'max_duration' => 15];
+
     /**
      * @throws \Exception
      */
@@ -26,7 +28,7 @@ class StoreFactory
             throw new \Exception('symfony/ai-qdrant-store is not installed');
         }
         return new Store(
-            HttpClient::create(),
+            HttpClient::create(self::HTTP_CLIENT_OPTIONS),
             $url,
             $apiKey,
             $collection,

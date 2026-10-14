@@ -18,7 +18,8 @@ use Undkonsorten\Easychat\Indexing\IndexEventListener;
 #[RequiresMethod(FrontendContextBuilder::class, 'executeInFrontendContext')]
 final class IndexingServiceWiringTest extends FunctionalTestCase
 {
-    protected array $coreExtensionsToLoad = ['reactions', 'webhooks'];
+    // EXT:index itself depends on EXT:reactions and EXT:webhooks; EasyChat no longer needs reactions.
+    protected array $coreExtensionsToLoad = ['install', 'reactions', 'webhooks'];
 
     protected array $testExtensionsToLoad = ['lochmueller/index', 'undkonsorten/easychat'];
 

@@ -11,11 +11,17 @@ use Symfony\AI\Platform\PlatformInterface;
 use Symfony\Component\HttpClient\HttpClient;
 
 /**
- * Builds Symfony AI platforms from a tx_easychat_configuration row, so retrieval
- * (ChatReaction) and indexing (Indexing\IndexEventListener) construct them identically.
+ * Builds Symfony AI platforms from a tx_easychat_configuration row, so the chat (AgentFactory)
+ * and indexing (Indexing\IndexEventListener) construct them identically.
  */
 class AiPlatformFactory
 {
+    /**
+     * Seconds to wait for the provider to start answering, and for the whole response. A chat
+     * request must never hang on an unreachable or stalled provider.
+     */
+    public const HTTP_CLIENT_OPTIONS = ['timeout' => 15, 'max_duration' => 90];
+
     public static function createCompletionsPlatform(array $configuration): PlatformInterface
     {
         $modelCatalog = new ModelCatalog([
@@ -30,7 +36,7 @@ class AiPlatformFactory
             ],
         ]);
 
-        return GenericPlatformFactory::create($configuration['url'], $configuration['api_key'], HttpClient::create(), $modelCatalog);
+        return GenericPlatformFactory::create($configuration['url'], $configuration['api_key'], HttpClient::create(self::HTTP_CLIENT_OPTIONS), $modelCatalog);
     }
 
     public static function createEmbeddingsPlatform(array $configuration): PlatformInterface
@@ -45,7 +51,7 @@ class AiPlatformFactory
         return GenericPlatformFactory::create(
             self::resolveEmbeddingsUrl($configuration),
             self::resolveEmbeddingsApiKey($configuration),
-            HttpClient::create(),
+            HttpClient::create(self::HTTP_CLIENT_OPTIONS),
             $modelCatalog,
         );
     }

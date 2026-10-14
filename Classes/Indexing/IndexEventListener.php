@@ -19,7 +19,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 /**
  * Bridges EXT:index's page/file crawl events into the vector store(s) configured
  * on tx_easychat_configuration records, so the SimilaritySearch tool used in
- * ChatReaction has content to retrieve.
+ * the chatbot (Chat\ChatService) has content to retrieve.
  *
  * Chunk ids are deterministic per document (see pageSeed()), so re-indexing
  * overwrites existing chunks in place; chunks left over from a larger previous

@@ -30,7 +30,13 @@ EasyChat is **focused on privacy** and data protection, since all chat conversat
 * 🔒 **Data protection**:
   * Chat session **data is saved only within TYPO3** (on your own server)
   * Optional **privacy consent** before the chat starts
+  * Conversations are tracked by a **server-issued HttpOnly cookie**; IP addresses are never stored
   * Automated **cleaning of user data** (scheduler task)
+
+* 🛡 **Cost control & abuse protection**:
+  * Chat endpoint built into TYPO3 — **no API keys or secrets in the page**
+  * **Rate limits** per visitor, per session and for new sessions
+  * Caps on **message length**, **answer length** (`max_tokens`) and the **history** sent to the model
 
 
 * ⛁ **TYPO3 content as knowledge base (RAG, Vector Database)**
@@ -66,7 +72,7 @@ Then fill out the fields of the *Configuration record*.
 The *LLM Settings* (URL, API key, model, system prompt) are always required. The *Vector DB* settings
 (shown here with Qdrant and EXT:index configurations) are only needed if the chatbot should answer from your own
 content (RAG); leave *Vector db* on `None` otherwise. See
-[How reactions, configurations and index configurations connect](#how-reactions-configurations-and-index-configurations-connect).
+[How content elements, configurations and index configurations connect](#how-content-elements-configurations-and-index-configurations-connect).
 
 #### Sample configurations for your LLM
 
@@ -79,40 +85,46 @@ content (RAG); leave *Vector db* on `None` otherwise. See
 
 More samples (OpenAI, mittwald, Groq, Ollama …) → [Sample configurations](Documentation/Sample-LLM-Configurations.md)
 
-### 3. Setup the TYPO3 Reaction
+### 3. Setup the Content Element
 
-A **TYPO3 Reaction** needs to be created.
-The reaction serves as a connector (aka endpoint) between the chat frontend and TYPO3.
-
-[![Click to enlarge: Reaction for EasyChat](Documentation/Assets/Reaction_Thumb.png)](Documentation/Assets/Reaction.png)
-
-* Create a new reaction with the *Reaction Type* `Reaction for easychat`.
-* Be sure to *copy the generated secret* before saving
-* Choose one of the previously created *EasyChat configuration records*
-  * This choice decides **everything the chatbot uses**: the LLM, and — if the configuration has a vector
-    database — which vector database/collection it searches and therefore which *Index configurations*
-    (EXT:index) it knows about. See
-    [How reactions, configurations and index configurations connect](#how-reactions-configurations-and-index-configurations-connect).
-
-After successfully creating the reaction you will see the following interface.
-
-[![Click to enlarge: Reaction List](Documentation/Assets/Reactions_Thumb.png)](Documentation/Assets/Reactions.png)
-
-Now also *copy the reaction URL* (like `https://my-domain.com/typo3/reaction/afce5efb-861e-4e0e-8a8b-d159f194670d`).
-You will need it in step 4.
-
-### 4. Setup the Content Element
-
-Last but not least you need to setup a *content element for the chatbot*.
-* Be sure to have your *Reaction URL and secret* available.
+Now place the *chatbot content element* on a page.
 
 * Open a TYPO3 page
 * Add/create a new content element "Chatbot".
-* Connect the content Element to the reaction.
-
-> Hint: Use /typo3/reaction/XXXXXXXX-XXXXX instead of https://mydomain.dev/XXXXXXXX-XXXXX in order to be domain independent (on Local, Staging, Live)
+* In its *Plugin* tab, choose one of the previously created *EasyChat configuration records*.
+  * This choice decides **everything the chatbot uses**: the LLM, the system prompt, the limits, and — if the
+    configuration has a vector database — which vector database/collection it searches and therefore which
+    *Index configurations* (EXT:index) it knows about. See
+    [How content elements, configurations and index configurations connect](#how-content-elements-configurations-and-index-configurations-connect).
+* Pick the consent mode and texts, save.
 
 [![Click to enlarge: Content Element EasyChat](Documentation/Assets/Content-Element_Thumb.png)](Documentation/Assets/Content-Element.png)
+
+The widget talks to a **chat endpoint built into the extension**, `<language base>/_easychat/chat` (for example
+`/_easychat/chat` or `/en/_easychat/chat`). No URL, API key or secret has to be configured or ends up in the page: the
+server identifies the chatbot by the content element and issues the session cookie itself. If a proxy or firewall in
+front of TYPO3 filters requests, allow `POST` to that path. The leading underscore cannot occur in a page slug, so the
+endpoint never collides with a page; do not create redirects or static routes at that path.
+
+You can place **as many chatbots as you like** — on different pages or on the same page — each selecting its own
+configuration.
+
+### 4. Limits (optional)
+
+Every chat message costs tokens, so EasyChat caps what one visitor can spend. The defaults are fine for most sites.
+
+| Where | Setting | Default | Meaning |
+|:------|:--------|:--------|:--------|
+| Configuration record, *Limits* | *Maximum message length* | 2000 characters | Longer visitor messages are rejected before anything is sent to the model. |
+| Configuration record, *Limits* | *Maximum answer length* | 1024 tokens | Sent as `max_tokens`; caps the cost of one answer. |
+| Configuration record, *Limits* | *History window* | 20 messages | How many of the latest messages of the conversation are sent along with a new question. The full conversation is still stored. |
+| Extension configuration | `rateLimitPerIpPerMinute` | 20 | Chat requests per minute per IP address. |
+| Extension configuration | `rateLimitPerSessionPerHour` | 60 | Messages per hour per conversation cookie. |
+| Extension configuration | `rateLimitNewSessionsPerIpPerHour` | 10 | How often one address may start over without its cookie. |
+| Extension configuration | `rateLimitIpExcludeList` | *(empty)* | Addresses never rate limited (`cmpIP` syntax, like `[SYS][devIPmask]`). |
+
+`0` disables a rate limit. Visitors over a limit get a friendly "Too many requests" answer with a `Retry-After`
+header. See [Extension Configuration](#extension-configuration) for the operational details.
 
 ### ✨ YOU ARE DONE!!! 👊 CONGRATULATIONS 🎉
 
@@ -122,8 +134,25 @@ Last but not least you need to setup a *content element for the chatbot*.
 
 ### How are chat sessions stored?
 
-Each browser session (the `easychat_session_id` cookie) maps to **exactly one row** in `tx_easychat_domain_model_session`. The whole conversation — the system prompt plus every
-question and answer — is stored in that row.
+Two cookies are involved:
+
+* `easychat_session_id` — the **consent marker**. The widget's JavaScript sets it once the visitor agreed (or right
+  away in the *without consent* mode; in the *external consent* mode your cookie manager sets it). Its value is only
+  a marker; the server stores a hash of it with every conversation.
+* `easychat_session` — the **conversation cookie**. The chat endpoint issues it on the first message: a random
+  64-character id, `HttpOnly`, `Secure` on https, `SameSite=Strict`, with the *Cookie expiration* lifetime chosen in
+  the content element. JavaScript cannot read it, so a script injected into the page cannot steal a conversation.
+
+One conversation is one row in `tx_easychat_domain_model_session`, identified by the session id **and the chatbot
+configuration**: a visitor who talks to two chatbots on your site gets two rows under one cookie, and returning to a
+chatbot continues its conversation. The whole conversation — the system prompt plus every question and answer — is
+stored in that row. Only the latest *History window* messages are sent to the model with a new question.
+
+Revoking consent and accepting again gives the visitor a new marker, and with it a **new conversation**; the same
+happens when the marker cookie expires.
+
+**What is not stored:** IP addresses. They are only used in memory to apply the rate limits, keyed by a hash that
+needs the site's encryption key and changes daily.
 
 [![Click to enlarge: EasyChat backend Module](Documentation/Assets/Backend-Module_Thumb.png)](Documentation/Assets/Backend-Module.png)
 
@@ -158,6 +187,10 @@ EasyChat has a small set of global options in the **Extension Configuration**
 |:----|:--------|:--------|
 | `storagePid` | `1` | Page/folder UID where chat sessions (`tx_easychat_domain_model_session`) are **stored and read**. This applies both to the chat endpoint that saves conversations and to the backend module that lists them — they always use the same value. |
 | `itemsPerPage` | `50` | Number of sessions per page in the backend module list. |
+| `rateLimitPerIpPerMinute` | `20` | Chat requests per minute per IP address (sliding window). `0` disables the limit. |
+| `rateLimitPerSessionPerHour` | `60` | Chat messages per hour per conversation cookie. `0` disables the limit. |
+| `rateLimitNewSessionsPerIpPerHour` | `10` | New conversation cookies per hour per IP address, so dropping the cookie does not evade the session limit. `0` disables the limit. |
+| `rateLimitIpExcludeList` | *(empty)* | Comma separated IP addresses or ranges that are never rate limited, same syntax as `[SYS][devIPmask]`. |
 
 ```php
 // config/system/settings.php
@@ -165,11 +198,28 @@ EasyChat has a small set of global options in the **Extension Configuration**
     'easychat' => [
         'storagePid' => '1',
         'itemsPerPage' => '50',
+        'rateLimitPerIpPerMinute' => '20',
+        'rateLimitPerSessionPerHour' => '60',
+        'rateLimitNewSessionsPerIpPerHour' => '10',
+        'rateLimitIpExcludeList' => '',
     ],
 ],
 ```
 
 We recommend pointing `storagePid` at a dedicated **SysFolder** rather than the root page.
+
+**Rate limits in production:**
+
+* The limiter state lives in TYPO3's `ratelimiter` cache, which is a file cache per server by default. Behind a load
+  balancer each node counts on its own, so the effective limit is *nodes × limit*. Configure a shared backend (for
+  example Redis) for `SYS.caching.cacheConfigurations.ratelimiter` if that matters to you.
+* Behind a reverse proxy TYPO3 must know the proxy (`[SYS][reverseProxyIP]`, `[SYS][reverseProxyHeaderMultiValue]`),
+  otherwise all visitors share the proxy's address and one limit.
+* IP addresses are never written anywhere: the limiter key is an HMAC of the address with the site's encryption key
+  and the current date.
+* Provider and vector store errors are no longer returned to the browser; visitors see a generic message. The details
+  are logged under the `Undkonsorten.Easychat` logger — see `TYPO3_MINIMUM_LOGLEVEL` in `ext_localconf.php` for the
+  optional file writer.
 
 ----
 
@@ -191,23 +241,21 @@ _Index_ can be configured to read
 1. `composer require symfony/ai-qdrant-store`
 2. Create an *EXT:index* configuration on your root page and the two scheduler tasks `index:queue` and `messenger:consume`.
 3. On your *EasyChat configuration* set *Vector db* to `Qdrant`, fill in the connection fields and select the index configuration(s).
-4. Make sure the *reaction* uses exactly this EasyChat configuration.
+4. Make sure the *Chatbot content element* selects exactly this EasyChat configuration.
 
 [More indexer setup hints here →](Documentation/Indexer.md)
 
-### How reactions, configurations and index configurations connect
+### How content elements, configurations and index configurations connect
 
-Everything hangs off the **EasyChat configuration** record that a reaction points to:
+Everything hangs off the **EasyChat configuration** record that a Chatbot content element selects:
 
 ```
   Content element (chatbot / User)
   │
   ▼
-  Reaction
-  │
-  ▼
   EasyChat configuration
   ├─ LLM (model, API url/key, system message)
+  ├─ Limits (message length, max_tokens, history window)
   ├─ Vector DB (Qdrant host/port, collection, API key, embeddings model)
   └─ Index configurations (EXT:index)
      │
@@ -215,19 +263,21 @@ Everything hangs off the **EasyChat configuration** record that a reaction point
      content written into that collection
 ```
 
-* **At chat time** the reaction loads its EasyChat configuration, and the similarity search queries
-  exactly the vector database/collection configured there.
+* **At chat time** the endpoint resolves the content element the widget names, loads the EasyChat configuration it
+  selects, and the similarity search queries exactly the vector database/collection configured there.
 * **At index time** EasyChat looks up, for every crawled page or file, all EasyChat configurations whose
   *Index configurations* field contains the index configuration that is running, and writes the content
   into each of their collections. Configurations with *Vector db* `none` are ignored.
 
 So the *Index configurations* field on the EasyChat configuration is **the one place that decides what a
-chatbot knows**, and the reaction decides **which** configuration (and thus which knowledge base) a
+chatbot knows**, and the content element decides **which** configuration (and thus which knowledge base) a
 chatbot uses.
 
 ## Multiple Chatbots
 
-You can run **multiple chatbots** with different system prompts, LLMs or knowledge bases simultaneously in one TYPO3 installation.
+You can run **multiple chatbots** with different system prompts, LLMs or knowledge bases simultaneously in one TYPO3
+installation: create one EasyChat configuration per chatbot and let each Chatbot content element select its own. A
+visitor keeps a separate conversation with every chatbot under one session cookie.
 
 This is especially useful for testing.
 
@@ -248,6 +298,12 @@ EasyChat is able to communicate with popular AI providers, but can also connect 
 DeepChat is an example implementation. Feel free to use another chatbot frontend.
 The default dummy template is located at
 * `/Resources/Private/Templates/ChatFrontend.html`.
+
+Whatever frontend you use, it posts `{"messages": [{"role": "user", "text": "..."}], "contentElement": <uid>}` as
+JSON to `{endpointUrl}` (same origin, with credentials so the session cookie is stored and sent) and gets `{"text": "...", "role": "ai"}` back (`ai` is deep-chat's role for answers). The
+template receives `endpointUrl` and `contentElementUid` as view variables. Errors come as `{"error": "..."}` with a
+matching status code (400, 403, 404, 413, 415, 429 with `Retry-After`, 502, 503); with deep-chat set
+`errorMessages='{"displayServiceErrorMessages": true}'` to show them.
 
 ### Styled version
 
@@ -316,6 +372,40 @@ Tests and code checks run in containers via `Build/Scripts/runTests.sh` (docker 
 
 ## Upgrading
 
+### From 0.2.x to 0.3.0
+
+This release closes a security audit: the TYPO3 reaction secret used to be rendered into every page, and the chat
+endpoint had no limits.
+
+- **Reactions removed**: the chat endpoint is now a frontend route of the extension (`<language base>/_easychat/chat`),
+  and Chatbot content elements select the *EasyChat configuration* directly instead of a reaction URL and secret.
+  **Run the upgrade wizard** *Migrate EasyChat chatbots from reactions to configurations* (Admin Tools → Upgrade →
+  Upgrade Wizard, or `vendor/bin/typo3 upgrade:run undkonsortenEasychatReactionToConfigurationMigration`) **before
+  anyone re-saves a Chatbot content element** — saving drops the old reaction URL the wizard needs. Elements it
+  cannot map are listed; select their configuration by hand. Afterwards delete the reactions of type *Reaction for
+  easychat*. `typo3/cms-reactions` is no longer required by EasyChat.
+- **Database compare required**: new columns on `tx_easychat_configuration` (limits) and
+  `tx_easychat_domain_model_session` (`configuration`, `client_marker`), a new index on the session table, and the
+  `sys_reaction.easychat_configuration` column goes away.
+- **New endpoint**: if a proxy, WAF or static file cache in front of TYPO3 filters requests, allow `POST` to
+  `/_easychat/chat` under every language base. The underscore keeps the route out of the page-slug namespace.
+- **Template overrides**: `settings.url` and `settings.apiKey` no longer exist. Build the deep-chat `connect`
+  attribute from the new view variables `endpointUrl` and `contentElementUid` (with `credentials: 'include'`), and add
+  `requestBodyLimits='{"maxMessages": 1}'` and `errorMessages='{"displayServiceErrorMessages": true}'`
+  (see `Resources/Private/Templates/ChatFrontend.html`).
+- **Sessions**: conversations are now tracked by a server-issued HttpOnly cookie `easychat_session`; the JavaScript
+  cookie `easychat_session_id` only marks consent. Conversations started with 0.2.x are not continued, visitors start
+  fresh. Existing session rows stay readable in the backend module.
+- **Limits**: new per-configuration fields *Maximum message length* (2000), *Maximum answer length* (1024 tokens) and
+  *History window* (20 messages), and new rate limits in the extension configuration (20 requests/minute per IP,
+  60 messages/hour per session, 10 new sessions/hour per IP). Check them against your traffic; behind a load balancer
+  read the notes under [Extension Configuration](#extension-configuration).
+- **Errors**: provider and vector store errors are no longer sent to the browser. Enable the log writer
+  (`TYPO3_MINIMUM_LOGLEVEL`) to see them.
+- **API changes**: `ChatReaction` is gone. The chat turn lives in `Chat\ChatService`, agent wiring in
+  `Factories\AgentFactory`; `SessionRepository::setup()` takes `configuration` and `clientMarker` and one conversation
+  is keyed by session id *and* configuration.
+
 ### From 0.1.x to 0.2.0
 
 - **Database compare required**: new columns on `tx_easychat_configuration` and the new table `tx_easychat_index_point`.
@@ -331,13 +421,14 @@ Tests and code checks run in containers via `Build/Scripts/runTests.sh` (docker 
 ### To Do
 
 * Add Redis as a vector store
-* Connect EasyChat configuration and reaction URL directly
 * More LLM settings (like temperature)
 * Voting for good/bad answers
 * Pre suggested questions
 
 ### Implemented
 
+* ✅ Version 0.3.0 ~~Connect EasyChat configuration and content element directly, without a reaction~~ — done, see
+  [Setup the Content Element](#3-setup-the-content-element)
 * ✅ Version 0.2.0 ~~Website scraping/indexing via TYPO3 for the knowledge base (via vector database)~~ — done, see
   [Knowledge base (RAG)](#knowledge-base-rag)
 

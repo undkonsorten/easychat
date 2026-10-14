@@ -3,6 +3,9 @@
 <f:variable name="introMessage">{settings.introMessage ?: introMessageLLL}</f:variable>
 <f:variable name="cookieExpirationMinutes">{settings.cookieExpirationMinutes ?: 30}</f:variable>
 
+// easychat_session_id is the consent marker: set here (or by an external cookie manager) once the
+// visitor agreed, removed when consent is revoked. The conversation itself is tracked by the
+// HttpOnly cookie "easychat_session" that the chat endpoint issues; a new marker starts a new conversation.
 const easychat = document.getElementById('easychat');
 const EASYCHAT_COOKIE_SESSION = 'easychat_session_id';
 const EASYCHAT_COOKIE_NAGSCREEN = 'easychat_nagscreen';
@@ -126,7 +129,7 @@ if (EASYCHAT_CONSENT_SETTING === 'consent') {
 			addIntroMessage(deepchat);
 		});
 	} else {
-		document.getElementById('chatbot-stage').innerHTML = `<p style="background-color: yellow; padding: 0.5em 1em;">To run the chat assistant, your cookie management needs to set a cookie named <b>easychat_session_id</b>.</p>`;
+		document.getElementById('chatbot-stage').innerHTML = `<p style="background-color: yellow; padding: 0.5em 1em;">To run the chat assistant, your cookie management needs to set a consent cookie named <b>easychat_session_id</b> (any value).</p>`;
 	}
 }
 

@@ -5,18 +5,25 @@
                 <sheetTitle>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.caption</sheetTitle>
                 <type>array</type>
                 <el>
-                    <settings.url>
-                        <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.url</label>
+                    <settings.configuration>
+                        <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.configuration</label>
+                        <description>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.configuration.description</description>
                         <config>
-                            <type>input</type>
+                            <type>select</type>
+                            <renderType>selectSingle</renderType>
+                            <foreign_table>tx_easychat_configuration</foreign_table>
+                            <foreign_table_where>ORDER BY tx_easychat_configuration.name</foreign_table_where>
+                            <items type="array">
+                                <numIndex index="0" type="array">
+                                    <label>---</label>
+                                    <value>0</value>
+                                </numIndex>
+                            </items>
+                            <minitems>1</minitems>
+                            <maxitems>1</maxitems>
+                            <required>true</required>
                         </config>
-                    </settings.url>
-                    <settings.apiKey>
-                        <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.apiKey</label>
-                        <config>
-                            <type>input</type>
-                        </config>
-                    </settings.apiKey>
+                    </settings.configuration>
                     <settings.introMessage>
                         <label>LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:flexform.tab.general.introMessage</label>
                         <config>

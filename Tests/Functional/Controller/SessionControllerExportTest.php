@@ -22,7 +22,7 @@ use Undkonsorten\Easychat\Service\SessionCsvExportService;
  */
 final class SessionControllerExportTest extends FunctionalTestCase
 {
-    protected array $coreExtensionsToLoad = ['reactions'];
+    protected array $coreExtensionsToLoad = ['install'];
 
     protected array $testExtensionsToLoad = ['undkonsorten/easychat'];
 

@@ -25,6 +25,10 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
 {
     protected string $sessionId;
 
+    protected int $configuration = 0;
+
+    protected string $clientMarker = '';
+
     protected int $pid = 1;
 
     public function __construct(
@@ -46,20 +50,25 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
         $this->setDefaultQuerySettings($querySettings);
     }
 
+    /**
+     * One conversation is one row, identified by the session id and the chatbot configuration
+     * it belongs to. A visitor therefore has one conversation per chatbot under one session id.
+     *
+     * @param array{sessionId?: string, configuration?: int, clientMarker?: string} $options
+     */
     public function setup(array $options = []): void
     {
-        if (is_null($options['sessionId'])) {
-            throw new \InvalidArgumentException('sessionId is null', 1768240551);
+        if (!isset($options['sessionId']) || $options['sessionId'] === '') {
+            throw new \InvalidArgumentException('sessionId is missing', 1768240551);
         }
-        $this->sessionId = $options['sessionId'];
-        //@todo do we want this?
-        //$this->sessionId = $options['pid'] ?? $this->extensionConfiguration
-        //    ->get('storagePid') ?? 1;
+        $this->sessionId = (string)$options['sessionId'];
+        $this->configuration = (int)($options['configuration'] ?? 0);
+        $this->clientMarker = (string)($options['clientMarker'] ?? '');
     }
 
     public function drop(): void
     {
-        $session = $this->findBy(['session_id' => $this->sessionId])->getFirst();
+        $session = $this->findCurrent();
         if (!is_null($session)) {
             $this->remove($session);
             $this->persistenceManager->persistAll();
@@ -68,11 +77,13 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
 
     public function save(MessageBag $messages): void
     {
-        $session = $this->findBy(['session_id' => $this->sessionId])->getFirst();
+        $session = $this->findCurrent();
         if (is_null($session)) {
             $session = GeneralUtility::makeInstance(Session::class);
             $session->setPid($this->pid);
             $session->setSessionId($this->sessionId);
+            $session->setConfiguration($this->configuration);
+            $session->setClientMarker($this->clientMarker);
             $session->setMessages($this->serializer->serialize($messages->getMessages(), 'json'));
             $this->add($session);
         } else {
@@ -84,12 +95,26 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
 
     public function load(): MessageBag
     {
-        $session = $this->findBy(['session_id' => $this->sessionId])->getFirst();
+        $session = $this->findCurrent();
         if (is_null($session)) {
             return new MessageBag();
         }
         $messages = $this->serializer->deserialize($session->getMessages(), MessageInterface::class . '[]', 'json');
         return new MessageBag(...$messages);
+    }
+
+    /**
+     * Whether the session id was issued to the visitor who holds this consent marker. Used to
+     * decide if a presented session cookie may be continued, no matter which chatbot is asked.
+     */
+    public function hasSessionWithMarker(string $sessionId, string $clientMarkerHash): bool
+    {
+        return count($this->findBy(['sessionId' => $sessionId, 'clientMarker' => $clientMarkerHash])) > 0;
+    }
+
+    protected function findCurrent(): ?Session
+    {
+        return $this->findBy(['sessionId' => $this->sessionId, 'configuration' => $this->configuration])->getFirst();
     }
 
     /**

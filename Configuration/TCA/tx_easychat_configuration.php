@@ -26,13 +26,18 @@ return [
     ],
     'types' => [
         '1' => ['showitem' => 'sys_language_uid,l10n_parent,l10n_diffsource,hidden,--palette--;;1,name,-div--;palette,
-                    --palette--;;llm,-div--;palette,--palette--;;vector,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
+                    --palette--;;llm,-div--;palette,--palette--;;limits,-div--;palette,--palette--;;vector,--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access,starttime,endtime'],
     ],
     'palettes' => [
         'llm' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.llm.label',
             'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.llm.description',
             'showitem' => 'url,api_key,--linebreak--,model,--linebreak--,system_message',
+        ],
+        'limits' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.limits.label',
+            'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.limits.description',
+            'showitem' => 'max_input_length,max_tokens,history_window',
         ],
         'vector' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.label',
@@ -127,6 +132,51 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
+            ],
+        ],
+        'max_input_length' => [
+            'exclude' => 1,
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.max_input_length',
+            'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.max_input_length.description',
+            'config' => [
+                'type' => 'number',
+                'size' => 8,
+                'default' => 2000,
+                'required' => true,
+                'range' => [
+                    'lower' => 1,
+                    'upper' => 100000,
+                ],
+            ],
+        ],
+        'max_tokens' => [
+            'exclude' => 1,
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.max_tokens',
+            'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.max_tokens.description',
+            'config' => [
+                'type' => 'number',
+                'size' => 8,
+                'default' => 1024,
+                'required' => true,
+                'range' => [
+                    'lower' => 1,
+                    'upper' => 128000,
+                ],
+            ],
+        ],
+        'history_window' => [
+            'exclude' => 1,
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.history_window',
+            'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.history_window.description',
+            'config' => [
+                'type' => 'number',
+                'size' => 8,
+                'default' => 20,
+                'required' => true,
+                'range' => [
+                    'lower' => 0,
+                    'upper' => 500,
+                ],
             ],
         ],
         'vector_db' => [

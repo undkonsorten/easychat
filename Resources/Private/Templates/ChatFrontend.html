@@ -37,13 +37,18 @@
 				</div>
 			</f:if>
 
+			<f:comment>
+				<!--
+					The chat endpoint is a frontend route of this site. It needs no secret: the server identifies
+					the chatbot by this content element and issues an HttpOnly session cookie itself. credentials: 'include'
+					makes sure that cookie is stored and sent even where the browser doubts the page's origin (self-signed certificates).
+				-->
+			</f:comment>
 			<f:variable name="connect" value="{
-				url: settings.url,
+				url: endpointUrl,
 				method: 'POST',
-				headers: {
-					accept: 'application/json',
-					x-api-key: settings.apiKey
-				}
+				credentials: 'include',
+				additionalBodyProps: {contentElement: contentElementUid}
 			}"/>
 
 			<f:variable name="placeholderLLL" value="{f:translate(key: 'easychat_placeholder')}"/>
@@ -63,6 +68,8 @@
 			</style>
 			<deep-chat id="chat-assistant"
 					   connect="{connect->f:format.json()}"
+					   requestBodyLimits='{"maxMessages": 1}'
+					   errorMessages='{"displayServiceErrorMessages": true}'
 					   textInput="{textInput->f:format.json()}"
 					   inputAreaStyle='{"backgroundColor": "#DDF5C6"}'
 					   style="

@@ -11,6 +11,10 @@ use Lochmueller\Index\Event\FinishIndexProcessEvent;
 use Lochmueller\Index\Event\IndexFileEvent;
 use Lochmueller\Index\Event\IndexPageEvent;
 use PHPUnit\Framework\Attributes\RequiresMethod;
+use Symfony\AI\Platform\Exception\RateLimitExceededException;
+use Symfony\AI\Platform\Vector\Vector;
+use Symfony\AI\Store\Document\EmbeddableDocumentInterface;
+use Symfony\AI\Store\Document\VectorDocumentInterface;
 use Symfony\AI\Store\Document\VectorizerInterface;
 use TYPO3\CMS\Core\Configuration\SiteConfiguration;
 use TYPO3\CMS\Core\Configuration\SiteWriter;
@@ -21,6 +25,7 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Undkonsorten\Easychat\Indexing\AnonymousPageVisibility;
 use Undkonsorten\Easychat\Indexing\IndexEventListener;
 use Undkonsorten\Easychat\Indexing\IndexPointRegistry;
+use Undkonsorten\Easychat\Indexing\RateLimitBackoff;
 use Undkonsorten\Easychat\Indexing\RouteArgumentsResolver;
 use Undkonsorten\Easychat\Indexing\VectorTarget;
 use Undkonsorten\Easychat\Indexing\VectorTargetFactory;
@@ -40,7 +45,8 @@ require_once __DIR__ . '/../../Fixtures/Indexing/InMemoryPointStore.php';
  *
  * Configurations (ReindexConfigurations.csv), by the index configuration they are linked to:
  * 7 → uid 1, removal sync off · 8 → uid 2, sync on, no threshold · 9 and 10 → uid 3, sync on,
- * no threshold (one store fed by two index configurations) · 11 → uid 4, sync on, threshold 25%.
+ * no threshold (one store fed by two index configurations) · 11 → uid 4, sync on, threshold 25% ·
+ * 12 → uid 5, removal sync off, vector_db_force_reindex on.
  */
 #[RequiresMethod(IndexPageEvent::class, '__construct')]
 final class IndexEventListenerReindexTest extends FunctionalTestCase
@@ -50,6 +56,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
     private const SHARED_A = 9;
     private const SHARED_B = 10;
     private const WITH_THRESHOLD = 11;
+    private const FORCED = 12;
 
     protected array $coreExtensionsToLoad = ['install'];
 
@@ -76,6 +83,133 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
         self::assertSame($idBefore, array_keys($this->store->points()));
         self::assertSame(['The mascot is called Axel.'], $this->store->textsOf('#c10'));
         self::assertSame(1, $this->countRegisteredPoints());
+    }
+
+    public function testUnchangedContentIsNotEmbeddedAgain(): void
+    {
+        $vectorizer = new CountingVectorizer();
+        $listener = $this->createListener($vectorizer);
+
+        $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-1', 10, 'The mascot is called Pixelotl.'));
+        $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-2', 10, 'The mascot is called Pixelotl.'));
+
+        self::assertSame(1, $vectorizer->documentsVectorized);
+        self::assertSame(['The mascot is called Pixelotl.'], $this->store->textsOf('#c10'));
+        self::assertSame(1, $this->countRegisteredPoints());
+    }
+
+    public function testChangedContentIsEmbeddedAgain(): void
+    {
+        $vectorizer = new CountingVectorizer();
+        $listener = $this->createListener($vectorizer);
+
+        $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-1', 10, 'The mascot is called Pixelotl.'));
+        $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-2', 10, 'The mascot is called Axel.'));
+
+        self::assertSame(2, $vectorizer->documentsVectorized);
+        self::assertSame(['The mascot is called Axel.'], $this->store->textsOf('#c10'));
+    }
+
+    public function testAChangedTitleIsEmbeddedAgain(): void
+    {
+        $vectorizer = new CountingVectorizer();
+        $listener = $this->createListener($vectorizer);
+
+        $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-1', 10, 'Same text.', title: 'Old title'));
+        $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-2', 10, 'Same text.', title: 'New title'));
+
+        self::assertSame(2, $vectorizer->documentsVectorized);
+        self::assertSame('New title', array_values($this->store->points())[0]->getMetadata()['title']);
+    }
+
+    public function testVectorsWrittenBeforeHashesWereStoredAreEmbeddedOnceAndThenKept(): void
+    {
+        $vectorizer = new CountingVectorizer();
+        $listener = $this->createListener($vectorizer);
+        $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-1', 10, 'Old point.'));
+        $this->get(ConnectionPool::class)->getConnectionForTable('tx_easychat_index_point')->update('tx_easychat_index_point', ['content_hash' => ''], ['configuration' => 1]);
+
+        $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-2', 10, 'Old point.'));
+        $listener->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-3', 10, 'Old point.'));
+
+        self::assertSame(2, $vectorizer->documentsVectorized);
+    }
+
+    public function testForceReindexEmbedsUnchangedContentAgain(): void
+    {
+        $vectorizer = new CountingVectorizer();
+        $listener = $this->createListener($vectorizer);
+
+        $listener->onIndexPage($this->pageEvent(self::FORCED, 'run-1', 10, 'Unchanged text.'));
+        $listener->onIndexPage($this->pageEvent(self::FORCED, 'run-2', 10, 'Unchanged text.'));
+
+        self::assertSame(2, $vectorizer->documentsVectorized);
+        self::assertSame(1, $this->countRegisteredPoints());
+    }
+
+    /**
+     * A skipped document must still count as written by the run, or a full run with removal
+     * sync would delete everything that did not change.
+     */
+    public function testSkippedDocumentsSurviveTheSweepOfAFullRun(): void
+    {
+        $vectorizer = new CountingVectorizer();
+        $listener = $this->createListener($vectorizer);
+        $this->indexTwoElements($listener, self::WITH_SYNC, 'run-1');
+
+        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'run-2', 10, 'Kept element.'));
+        $listener->onFinishIndexProcess($this->finishEvent(self::WITH_SYNC, 'run-2', IndexType::Full));
+
+        self::assertSame(2, $vectorizer->documentsVectorized, 'only the two documents of the first run were embedded');
+        self::assertSame(['Kept element.'], $this->store->textsOf('#c10'));
+        self::assertSame([], $this->store->textsOf('#c11'), 'the element that was not emitted any more is removed');
+    }
+
+    public function testAFailedWriteIsNotTakenForUpToDateContent(): void
+    {
+        $failingVectorizer = self::createStub(VectorizerInterface::class);
+        $failingVectorizer->method('vectorize')->willThrowException(new \RuntimeException('Embeddings API is down'));
+        $this->createListener($failingVectorizer)->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-1', 10, 'Text.'));
+
+        $vectorizer = new CountingVectorizer();
+        $this->createListener($vectorizer)->onIndexPage($this->pageEvent(self::WITHOUT_SYNC, 'run-2', 10, 'Text.'));
+
+        self::assertSame(1, $vectorizer->documentsVectorized);
+        self::assertSame(['Text.'], $this->store->textsOf('#c10'));
+    }
+
+    public function testARateLimitOfTheEmbeddingsApiIsWaitedOut(): void
+    {
+        $vectorizer = new CountingVectorizer(rateLimitedCalls: 2);
+        $backoff = new class extends RateLimitBackoff {
+            public int $waits = 0;
+
+            protected function sleep(int $seconds): void
+            {
+                ++$this->waits;
+            }
+        };
+        $listener = $this->createListener($vectorizer, backoff: $backoff);
+
+        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'run-1', 10, 'Text that is rate limited twice.'));
+
+        self::assertSame(2, $backoff->waits);
+        self::assertSame(['Text that is rate limited twice.'], $this->store->textsOf('#c10'));
+    }
+
+    public function testAPersistentRateLimitLeavesTheStoreAndTheSweepAlone(): void
+    {
+        $this->indexTwoElements($this->createListener(), self::WITH_SYNC, 'run-1');
+        $backoff = new class extends RateLimitBackoff {
+            protected function sleep(int $seconds): void {}
+        };
+
+        $listener = $this->createListener(new CountingVectorizer(rateLimitedCalls: PHP_INT_MAX), backoff: $backoff);
+        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'run-2', 10, 'Kept element, edited.'));
+        $listener->onFinishIndexProcess($this->finishEvent(self::WITH_SYNC, 'run-2', IndexType::Full));
+
+        self::assertSame(['Kept element.'], $this->store->textsOf('#c10'));
+        self::assertSame(['Removed element.'], $this->store->textsOf('#c11'));
     }
 
     public function testShrinkingAContentElementRemovesItsLeftoverChunks(): void
@@ -325,7 +459,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
         $this->indexTwoElements($this->createListener(), self::WITH_SYNC, 'run-1');
 
         $listener = $this->createListener($failingVectorizer);
-        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'run-2', 10, 'Kept element.'));
+        $listener->onIndexPage($this->pageEvent(self::WITH_SYNC, 'run-2', 10, 'Kept element, edited.'));
         $listener->onFinishIndexProcess($this->finishEvent(self::WITH_SYNC, 'run-2', IndexType::Full));
 
         self::assertCount(2, $this->store->points());
@@ -373,7 +507,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
         ]);
     }
 
-    private function createListener(?VectorizerInterface $vectorizer = null, ?AnonymousPageVisibility $pageVisibility = null): IndexEventListener
+    private function createListener(?VectorizerInterface $vectorizer = null, ?AnonymousPageVisibility $pageVisibility = null, ?RateLimitBackoff $backoff = null): IndexEventListener
     {
         $factory = self::createStub(VectorTargetFactory::class);
         $factory->method('create')->willReturn(new VectorTarget($this->store, $vectorizer ?? new FakeVectorizer()));
@@ -386,10 +520,11 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
             new IndexPointRegistry($connectionPool),
             new RouteArgumentsResolver($this->get(SiteMatcher::class)),
             $pageVisibility ?? self::createConfiguredStub(AnonymousPageVisibility::class, ['isVisible' => true]),
+            $backoff,
         );
     }
 
-    private function pageEvent(int $indexConfiguration, string $processId, int $contentUid, string $content, int $pageUid = 1, ?string $uri = null, IndexType $type = IndexType::Full): IndexPageEvent
+    private function pageEvent(int $indexConfiguration, string $processId, int $contentUid, string $content, int $pageUid = 1, ?string $uri = null, IndexType $type = IndexType::Full, ?string $title = null): IndexPageEvent
     {
         return new IndexPageEvent(
             site: $this->createSiteStub(),
@@ -398,7 +533,7 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
             indexConfigurationRecordId: $indexConfiguration,
             indexProcessId: $processId,
             language: 0,
-            title: 'Page ' . $pageUid,
+            title: $title ?? 'Page ' . $pageUid,
             content: $content,
             pageUid: $pageUid,
             accessGroups: [],
@@ -456,5 +591,33 @@ final class IndexEventListenerReindexTest extends FunctionalTestCase
         $site->method('getIdentifier')->willReturn('main');
 
         return $site;
+    }
+}
+
+/**
+ * FakeVectorizer that counts what reaches the embeddings API, and answers the first
+ * $rateLimitedCalls calls with a rate limit.
+ */
+final class CountingVectorizer implements VectorizerInterface
+{
+    public int $documentsVectorized = 0;
+
+    private int $calls = 0;
+
+    private readonly FakeVectorizer $inner;
+
+    public function __construct(private readonly int $rateLimitedCalls = 0)
+    {
+        $this->inner = new FakeVectorizer();
+    }
+
+    public function vectorize(string|\Stringable|EmbeddableDocumentInterface|array $values, array $options = []): Vector|VectorDocumentInterface|array
+    {
+        if (++$this->calls <= $this->rateLimitedCalls) {
+            throw new RateLimitExceededException(retryAfter: 1, errorMessage: 'Too many requests');
+        }
+        $this->documentsVectorized += is_array($values) ? count($values) : 1;
+
+        return $this->inner->vectorize($values, $options);
     }
 }

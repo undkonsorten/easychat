@@ -166,6 +166,12 @@
 			<trans-unit id="tx_easychat_configuration.index_configurations.description">
 				<source>EXT:index configurations whose indexed pages/files should be embedded into this chatbot's vector store.</source>
 			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_force_reindex">
+				<source>Always embed again (ignore unchanged content)</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.vector_db_force_reindex.description">
+				<source>By default, a document whose content did not change since the last run is not sent to the embeddings API again. Enable this for the next index run to embed everything anyway, e.g. after the vector store was modified by hand, and disable it afterwards.</source>
+			</trans-unit>
 			<trans-unit id="tx_easychat_configuration.vector_db_sync_removals">
 				<source>Remove unpublished content from the vector store</source>
 			</trans-unit>

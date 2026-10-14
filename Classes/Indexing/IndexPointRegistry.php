@@ -37,7 +37,7 @@ class IndexPointRegistry
     /**
      * @param string[] $pointIds
      */
-    public function record(int $configuration, int $indexConfiguration, string $documentId, array $pointIds, string $indexProcess, string $kind, int $pageUid, int $language): void
+    public function record(int $configuration, int $indexConfiguration, string $documentId, array $pointIds, string $indexProcess, string $kind, int $pageUid, int $language, string $contentHash = ''): void
     {
         if ($pointIds === []) {
             return;
@@ -47,14 +47,51 @@ class IndexPointRegistry
 
         $rows = [];
         foreach ($pointIds as $pointId) {
-            $rows[] = [$configuration, $indexConfiguration, $pointId, $documentId, $indexProcess, $kind, $pageUid, $language, time()];
+            $rows[] = [$configuration, $indexConfiguration, $pointId, $documentId, $contentHash, $indexProcess, $kind, $pageUid, $language, time()];
         }
         $this->connectionPool->getConnectionForTable(self::TABLE)->bulkInsert(
             self::TABLE,
             $rows,
-            ['configuration', 'index_configuration', 'point_id', 'document_id', 'index_process', 'kind', 'page_uid', 'language', 'tstamp'],
-            [Connection::PARAM_INT, Connection::PARAM_INT, Connection::PARAM_STR, Connection::PARAM_STR, Connection::PARAM_STR, Connection::PARAM_STR, Connection::PARAM_INT, Connection::PARAM_INT, Connection::PARAM_INT],
+            ['configuration', 'index_configuration', 'point_id', 'document_id', 'content_hash', 'index_process', 'kind', 'page_uid', 'language', 'tstamp'],
+            [Connection::PARAM_INT, Connection::PARAM_INT, Connection::PARAM_STR, Connection::PARAM_STR, Connection::PARAM_STR, Connection::PARAM_STR, Connection::PARAM_STR, Connection::PARAM_INT, Connection::PARAM_INT, Connection::PARAM_INT],
         );
+    }
+
+    /**
+     * @return string|null the hash of the content the document's points were written from, null if
+     *                     the document is not tracked or was tracked before hashes were stored
+     */
+    public function findContentHash(int $configuration, int $indexConfiguration, string $documentId): ?string
+    {
+        $queryBuilder = $this->getQueryBuilder();
+        $hash = $queryBuilder
+            ->select('content_hash')
+            ->from(self::TABLE)
+            ->where(...$this->ownerConstraints($queryBuilder, $configuration, $indexConfiguration))
+            ->andWhere($queryBuilder->expr()->eq('document_id', $queryBuilder->createNamedParameter($documentId)))
+            ->setMaxResults(1)
+            ->executeQuery()
+            ->fetchOne();
+
+        return is_string($hash) && $hash !== '' ? $hash : null;
+    }
+
+    /**
+     * Marks a document that did not change as written by the given index process, so that
+     * sweeping what a process did not write leaves it alone.
+     */
+    public function touch(int $configuration, int $indexConfiguration, string $documentId, string $indexProcess, int $pageUid, int $language): void
+    {
+        $queryBuilder = $this->getQueryBuilder();
+        $queryBuilder
+            ->update(self::TABLE)
+            ->set('index_process', $indexProcess)
+            ->set('page_uid', $pageUid, true, Connection::PARAM_INT)
+            ->set('language', $language, true, Connection::PARAM_INT)
+            ->set('tstamp', time(), true, Connection::PARAM_INT)
+            ->where(...$this->ownerConstraints($queryBuilder, $configuration, $indexConfiguration))
+            ->andWhere($queryBuilder->expr()->eq('document_id', $queryBuilder->createNamedParameter($documentId)))
+            ->executeStatement();
     }
 
     /**

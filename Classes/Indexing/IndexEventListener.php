@@ -25,6 +25,12 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
  * overwrites existing chunks in place; chunks left over from a larger previous
  * version of the same document are deleted right after.
  *
+ * A document whose content, metadata and embedding settings are unchanged since it was last
+ * written is not embedded again: its hash is kept in IndexPointRegistry, and the document is only
+ * marked as part of the current index process. Enabling vector_db_force_reindex on the
+ * configuration embeds everything regardless. A rate limit of the embeddings API is waited out
+ * (RateLimitBackoff) instead of failing the document.
+ *
  * Content that is no longer emitted at all (deleted, hidden, access restricted,
  * no_search, ...) is only removed when the configuration enables
  * vector_db_sync_removals: at the end of an index process, the points of that
@@ -46,6 +52,9 @@ class IndexEventListener implements LoggerAwareInterface
 
     private const TABLE = 'tx_easychat_configuration';
 
+    /** Bump when chunking or the stored payload changes, so that existing documents are embedded again. */
+    private const HASH_VERSION = 1;
+
     /** @var array<int, array<int, array<string, mixed>>> indexConfigurationRecordId => matching tx_easychat_configuration rows */
     private array $targetsByIndexConfiguration = [];
 
@@ -55,13 +64,18 @@ class IndexEventListener implements LoggerAwareInterface
     /** @var array<string, true> index process ids in which writing to a store failed */
     private array $failedProcesses = [];
 
+    private readonly RateLimitBackoff $rateLimitBackoff;
+
     public function __construct(
         private readonly ConnectionPool $connectionPool,
         private readonly VectorTargetFactory $vectorTargetFactory,
         private readonly IndexPointRegistry $registry,
         private readonly RouteArgumentsResolver $routeArgumentsResolver,
         private readonly AnonymousPageVisibility $pageVisibility,
-    ) {}
+        ?RateLimitBackoff $rateLimitBackoff = null,
+    ) {
+        $this->rateLimitBackoff = $rateLimitBackoff ?? new RateLimitBackoff();
+    }
 
     #[AsEventListener(identifier: 'easychat/index-page')]
     public function onIndexPage(IndexPageEvent $event): void
@@ -301,13 +315,23 @@ class IndexEventListener implements LoggerAwareInterface
 
         foreach ($this->getTargetConfigurations($indexConfigurationRecordId) as $configuration) {
             try {
+                $uid = (int)$configuration['uid'];
+                $documentId = DeterministicUuid::generate($idSeed)->toRfc4122();
+                $contentHash = $this->contentHash($configuration, $title, $content, $uri, $extraMetadata);
+
+                if (!(bool)($configuration['vector_db_force_reindex'] ?? false)
+                    && $this->registry->findContentHash($uid, $indexConfigurationRecordId, $documentId) === $contentHash
+                ) {
+                    // Already in the store as it is. Still part of this process, or a sweep would take it for removed.
+                    $this->registry->touch($uid, $indexConfigurationRecordId, $documentId, $indexProcessId, $pageUid, $language);
+                    continue;
+                }
+
                 $chunkIds = $this->indexInto($configuration, $title, $content, $uri, $idSeed, $extraMetadata);
 
                 // Upserting only overwrites chunks that still exist; chunks a larger, previous
                 // version of the same document left behind would otherwise stay retrievable.
-                $uid = (int)$configuration['uid'];
-                $documentId = DeterministicUuid::generate($idSeed)->toRfc4122();
-                $this->registry->record($uid, $indexConfigurationRecordId, $documentId, $chunkIds, $indexProcessId, $kind, $pageUid, $language);
+                $this->registry->record($uid, $indexConfigurationRecordId, $documentId, $chunkIds, $indexProcessId, $kind, $pageUid, $language, $contentHash);
                 $this->removePoints(
                     $configuration,
                     $indexConfigurationRecordId,
@@ -355,9 +379,32 @@ class IndexEventListener implements LoggerAwareInterface
             );
         }
 
-        $target->store->add($target->vectorizer->vectorize($chunks));
+        $vectors = $this->rateLimitBackoff->run(static fn(): mixed => $target->vectorizer->vectorize($chunks));
+        $target->store->add($vectors);
 
         return array_map(static fn(TextDocument $chunk): string => (string)$chunk->getId(), $chunks);
+    }
+
+    /**
+     * Identifies what a document's points were written from. The embedding settings are part of
+     * it: vectors from another model or size must not be taken for current ones.
+     *
+     * @param array<string, mixed> $configuration
+     * @param array<string, mixed> $extraMetadata
+     */
+    private function contentHash(array $configuration, string $title, string $content, string $uri, array $extraMetadata): string
+    {
+        return hash('sha256', json_encode([
+            self::HASH_VERSION,
+            $configuration['vector_db'] ?? '',
+            $configuration['vector_db_name'] ?? '',
+            $configuration['vector_db_embeddings_model'] ?? '',
+            (int)($configuration['vector_db_dimensions'] ?? 0),
+            $title,
+            $uri,
+            $content,
+            $extraMetadata,
+        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     /**

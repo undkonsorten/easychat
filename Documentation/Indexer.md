@@ -82,6 +82,23 @@ site, language, page, the route arguments of a record (e.g. which news article) 
 than adding new ones, and that still holds after its page's slug changed. If the element got shorter and
 now splits into fewer chunks, the chunks left over from the longer version are deleted right away.
 
+**Unchanged content is not embedded again.** For every document EasyChat stores a hash of its title, uri,
+text and metadata, together with the embedding settings (store, collection, embeddings model, dimensions),
+in `tx_easychat_index_point`. A document whose hash matches the last successful write is not sent to the
+embeddings API again; it is only marked as part of the current run, so *Sync removals* does not take it for
+removed. A full re-index of an unchanged site therefore costs no embeddings. Changing the embeddings model or
+the dimensions embeds everything once more. Documents indexed before this version have no hash yet and are
+embedded once on the next run. To embed everything regardless — e.g. after the collection was changed by hand —
+enable *Always embed again (ignore unchanged content)* (`vector_db_force_reindex`) on the EasyChat
+configuration for one run and disable it afterwards.
+
+**Rate limits of the embeddings API are waited out.** If the API answers with a rate limit, EasyChat retries
+the document up to five times, waiting for the API's `Retry-After` (otherwise 2, 4, 8, 16 seconds), but never
+longer than 30 seconds at a time, since with the *Cache* technology indexing can run inside a visitor's
+request. If the limit persists, the failure is logged, the run counts as failed (so nothing is swept) and the
+document is picked up again by the next run — which, thanks to the hash, only has to embed what is still
+missing.
+
 **Removed content is only deleted with *Sync removals*.** A content element or page that is deleted,
 hidden, expired, put behind an `fe_group`, or flagged *no_search* is simply no longer emitted by EXT:index,
 so by default its vectors stay answerable. Enable *Remove unpublished content from the vector store*

@@ -44,7 +44,7 @@ $tca = [
         'vector' => [
             'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.label',
             'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.palette.vector.description',
-            'showitem' => 'vector_db_host,vector_db,vector_db_port,vector_db_name,--linebreak--,vector_db_api_key,vector_db_dimensions,--linebreak--,vector_db_embeddings_model,--linebreak--,vector_db_embeddings_url,vector_db_embeddings_api_key,--linebreak--,index_configurations,--linebreak--,vector_db_sync_removals,vector_db_sync_removals_threshold',
+            'showitem' => 'vector_db_host,vector_db,vector_db_port,vector_db_name,--linebreak--,vector_db_api_key,vector_db_dimensions,--linebreak--,vector_db_embeddings_model,--linebreak--,vector_db_embeddings_url,vector_db_embeddings_api_key,--linebreak--,index_configurations,--linebreak--,vector_db_force_reindex,--linebreak--,vector_db_sync_removals,vector_db_sync_removals_threshold',
         ],
     ],
     'columns' => [
@@ -374,6 +374,16 @@ $tca = [
                 'allowed' => 'tx_index_domain_model_configuration',
                 'size' => 5,
                 'maxitems' => 99,
+            ],
+        ],
+        'vector_db_force_reindex' => [
+            'label' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_force_reindex',
+            'description' => 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration.vector_db_force_reindex.description',
+            'displayCond' => 'FIELD:vector_db:!=:none',
+            'config' => [
+                'type' => 'check',
+                'renderType' => 'checkboxToggle',
+                'default' => 0,
             ],
         ],
         'vector_db_sync_removals' => [

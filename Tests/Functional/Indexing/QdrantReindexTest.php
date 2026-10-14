@@ -43,7 +43,7 @@ final class QdrantReindexTest extends FunctionalTestCase
     /** Linked to configuration uid 2 (removal sync on) */
     private const INDEX_CONFIGURATION_WITH_SYNC = 8;
 
-    protected array $coreExtensionsToLoad = ['install', 'reactions'];
+    protected array $coreExtensionsToLoad = ['install'];
 
     protected array $testExtensionsToLoad = ['undkonsorten/easychat'];
 

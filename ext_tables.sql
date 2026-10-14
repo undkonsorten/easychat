@@ -1,10 +1,3 @@
-#
-# Table structure for table 'sys_reaction'
-#
-CREATE TABLE sys_reaction (
-	easychat_configuration int(11) unsigned DEFAULT '0' NOT NULL,
-);
-
 create table tx_easychat_domain_model_session
 (
 	uid int(11) NOT NULL auto_increment,
@@ -12,6 +5,8 @@ create table tx_easychat_domain_model_session
 
 	messages longtext DEFAULT '' NOT NULL,
 	session_id varchar(255) NOT NULL,
+	configuration int(11) unsigned DEFAULT '0' NOT NULL,
+	client_marker varchar(40) DEFAULT '' NOT NULL,
 
 	tstamp int(11) unsigned DEFAULT '0' NOT NULL,
 	crdate int(11) unsigned DEFAULT '0' NOT NULL,
@@ -22,6 +17,7 @@ create table tx_easychat_domain_model_session
 	endtime int(11) unsigned DEFAULT '0' NOT NULL,
 	PRIMARY KEY (uid),
 	KEY parent (pid),
+	KEY session (session_id, configuration),
 );
 
 CREATE TABLE tx_easychat_configuration (
@@ -44,7 +40,9 @@ CREATE TABLE tx_easychat_configuration (
 		index_configurations varchar(255) DEFAULT '' NOT NULL,
 		vector_db_sync_removals smallint(1) unsigned DEFAULT '0' NOT NULL,
 		vector_db_sync_removals_threshold int(11) unsigned DEFAULT '25' NOT NULL,
-
+		max_input_length int(11) unsigned DEFAULT '2000' NOT NULL,
+		max_tokens int(11) unsigned DEFAULT '1024' NOT NULL,
+		history_window int(11) unsigned DEFAULT '20' NOT NULL,
 
 		tstamp int(11) unsigned DEFAULT '0' NOT NULL,
 		crdate int(11) unsigned DEFAULT '0' NOT NULL,

@@ -2,3 +2,12 @@
 storagePid = 1
 # cat=module.tx_easychat//b; type=integer; label=Default items per page
 itemsPerPage = 50
+
+# cat=limits//a; type=integer; label=Chat requests per minute per IP address: Sliding window. 0 disables this limit. IP addresses are stored only as a keyed, daily rotating hash.
+rateLimitPerIpPerMinute = 20
+# cat=limits//b; type=integer; label=Chat messages per hour per session: Sliding window per server session cookie. 0 disables this limit.
+rateLimitPerSessionPerHour = 60
+# cat=limits//c; type=integer; label=New chat sessions per hour per IP address: Limits how often one address can start over with a fresh session cookie. 0 disables this limit.
+rateLimitNewSessionsPerIpPerHour = 10
+# cat=limits//d; type=string; label=IP addresses excluded from rate limiting: Comma separated, wildcards allowed like [SYS][devIPmask].
+rateLimitIpExcludeList =

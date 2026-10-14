@@ -10,6 +10,10 @@ class Session extends AbstractEntity
 
     protected ?string $messages = null;
 
+    protected int $configuration = 0;
+
+    protected string $clientMarker = '';
+
     /**
      * @var int
      */
@@ -33,6 +37,26 @@ class Session extends AbstractEntity
     public function setMessages(?string $messages): void
     {
         $this->messages = $messages;
+    }
+
+    public function getConfiguration(): int
+    {
+        return $this->configuration;
+    }
+
+    public function setConfiguration(int $configuration): void
+    {
+        $this->configuration = $configuration;
+    }
+
+    public function getClientMarker(): string
+    {
+        return $this->clientMarker;
+    }
+
+    public function setClientMarker(string $clientMarker): void
+    {
+        $this->clientMarker = $clientMarker;
     }
 
     public function getCreatedAt(): \DateTime

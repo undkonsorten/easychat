@@ -17,7 +17,7 @@ use Undkonsorten\Easychat\Indexing\RouteArgumentsResolver;
  */
 final class RouteArgumentsResolverTest extends FunctionalTestCase
 {
-    protected array $coreExtensionsToLoad = ['install', 'reactions'];
+    protected array $coreExtensionsToLoad = ['install'];
 
     protected array $testExtensionsToLoad = ['undkonsorten/easychat'];
 

@@ -26,8 +26,8 @@
 		"typo3/cms-backend": "^13.4 || ^14.3",
 		"typo3/cms-core": "^13.4 || ^14.3",
 		"typo3/cms-extbase": "^13.4 || ^14.3",
-		"typo3/cms-install": "^13.4 || ^14.3",
-		"typo3/cms-reactions": "^13.4 || ^14.3"
+		"typo3/cms-frontend": "^13.4 || ^14.3",
+		"typo3/cms-install": "^13.4 || ^14.3"
 	},
 	"require-dev": {
 		"ergebnis/composer-normalize": "^2.45",
@@ -72,14 +72,14 @@
 	},
 	"extra": {
 		"branch-alias": {
-			"dev-main": "0.3.x-dev"
+			"dev-main": "0.4.x-dev"
 		},
 		"typo3/cms": {
 			"Package": {
 				"providesPackages": {}
 			},
 			"extension-key": "easychat",
-			"version": "0.3.0",
+			"version": "0.4.0",
 			"web-dir": ".Build/public"
 		}
 	},

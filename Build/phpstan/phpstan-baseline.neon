@@ -1,18 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Property Undkonsorten\\Easychat\\Reaction\\ChatReaction\:\:\$persistenceManager is never read, only written\.$#'
-			identifier: property.onlyWritten
-			count: 1
-			path: ../../Classes/Reaction/ChatReaction.php
-
-		-
-			message: '#^Property Undkonsorten\\Easychat\\Reaction\\ChatReaction\:\:\$serializer is never read, only written\.$#'
-			identifier: property.onlyWritten
-			count: 1
-			path: ../../Classes/Reaction/ChatReaction.php
-
-		-
 			message: '#^Method Undkonsorten\\Easychat\\Tests\\Fixtures\\Indexing\\FakeVectorizer\:\:vectorize\(\) never returns Symfony\\AI\\Platform\\Vector\\Vector so it can be removed from the return type\.$#'
 			identifier: return.unusedType
 			count: 1

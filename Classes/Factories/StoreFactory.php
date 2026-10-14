@@ -9,6 +9,8 @@ use Symfony\Component\HttpClient\HttpClient;
 
 class StoreFactory
 {
+    public const HTTP_CLIENT_OPTIONS = ['timeout' => 5, 'max_duration' => 15];
+
     /**
      * @throws \Exception
      */
@@ -29,7 +31,7 @@ class StoreFactory
             $collection,
             $url,
             $apiKey !== '' ? $apiKey : null,
-            HttpClient::create(),
+            HttpClient::create(self::HTTP_CLIENT_OPTIONS),
             $dimensions,
             $distance,
         );

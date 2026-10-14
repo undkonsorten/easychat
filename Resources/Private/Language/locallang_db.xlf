@@ -7,11 +7,11 @@
 			<trans-unit id="flexform.tab.general.caption">
 				<source>Easychat</source>
 			</trans-unit>
-			<trans-unit id="flexform.tab.general.url">
-				<source>Reaction url</source>
+			<trans-unit id="flexform.tab.general.configuration">
+				<source>Configuration</source>
 			</trans-unit>
-			<trans-unit id="flexform.tab.general.apiKey">
-				<source>Reaction secret</source>
+			<trans-unit id="flexform.tab.general.configuration.description">
+				<source>The EasyChat configuration record this chatbot uses: LLM, system prompt, knowledge base and limits.</source>
 			</trans-unit>
 			<trans-unit id="flexform.tab.general.introMessage">
 				<source>Introduction message</source>
@@ -49,6 +49,30 @@
 			<trans-unit id="tx_easychat_configuration.palette.llm.description">
 				<source>Configure your preferred llm service, model and system prompt.</source>
 			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.palette.limits.label">
+				<source>Limits</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.palette.limits.description">
+				<source>Caps what one chat message may cost. Rate limits per visitor are set in the extension configuration.</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.max_input_length">
+				<source>Maximum message length (characters)</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.max_input_length.description">
+				<source>Longer visitor messages are rejected before anything is sent to the model.</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.max_tokens">
+				<source>Maximum answer length (tokens)</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.max_tokens.description">
+				<source>Sent to the model as max_tokens. Caps the output cost of one answer.</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.history_window">
+				<source>History window (messages)</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_configuration.history_window.description">
+				<source>How many of the most recent messages of a conversation are sent to the model with each new question. The full conversation is still stored. 0 sends only the new question.</source>
+			</trans-unit>
 			<trans-unit id="tx_easychat_configuration.palette.vector.label">
 				<source>Vector DB</source>
 			</trans-unit>
@@ -63,6 +87,9 @@
 			</trans-unit>
 			<trans-unit id="tx_easychat_session.session_id">
 				<source>Session id</source>
+			</trans-unit>
+			<trans-unit id="tx_easychat_session.configuration">
+				<source>Chatbot configuration</source>
 			</trans-unit>
 			<trans-unit id="tx_easychat_session.messages">
 				<source>Messages</source>

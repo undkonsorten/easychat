@@ -21,3 +21,11 @@ services:
   # service is public in the DI container.
   Undkonsorten\Easychat\FormDataProvider\ModelValuePickerDataProvider:
     public: true
+
+  # Fetched from the container by ChatEndpointMiddleware only for chat requests, so ordinary page
+  # requests never build the chat services.
+  Undkonsorten\Easychat\Chat\ChatRequestHandler:
+    public: true
+
+  Undkonsorten\Easychat\Middleware\ChatEndpointMiddleware:
+    public: true

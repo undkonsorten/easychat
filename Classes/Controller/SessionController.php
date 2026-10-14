@@ -20,6 +20,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Pagination\QueryResultPaginator;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use Undkonsorten\Easychat\Backend\ConversationFormatter;
 use Undkonsorten\Easychat\Domain\Model\Session;
 use Undkonsorten\Easychat\Domain\Repository\SessionRepository;
 use Undkonsorten\Easychat\Service\SessionCsvExportService;
@@ -34,6 +35,7 @@ class SessionController extends ActionController
         private readonly IconFactory $iconFactory,
         private readonly ExtensionConfiguration $extensionConfiguration,
         private readonly SessionCsvExportService $sessionCsvExportService,
+        private readonly ConversationFormatter $conversationFormatter,
     ) {}
 
     public function initializeAction(): void
@@ -110,9 +112,11 @@ class SessionController extends ActionController
 
     public function showAction(Session $session): ResponseInterface
     {
+        $messages = json_decode((string)$session->getMessages(), true);
         $this->moduleTemplate->assignMultiple([
             'session' => $session,
-            'messages' => json_decode((string)$session->getMessages(), true),
+            'messages' => $messages,
+            'conversation' => $this->conversationFormatter->format(is_array($messages) ? $messages : []),
             'exportFields' => $this->sessionCsvExportService->getAvailableFields(),
         ]);
         return $this->moduleTemplate->renderResponse('Session/Show');

@@ -1,31 +1,55 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
-			xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
-			xmlns:be="http://typo3.org/ns/Undkonsorten/Easychat/ViewHelpers"
+      xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
       data-namespace-typo3-fluid="true" lang="en">
 
-<f:for each="{messages}" as="message">
+<f:for each="{conversation}" as="message">
 	<tr>
-		<td>
-			<f:if condition="{message.type} == 'Symfony\AI\Platform\Message\SystemMessage'">
-				System:
-			</f:if>
-			<f:if condition="{message.type} == 'Symfony\AI\Platform\Message\AssistantMessage'">
-				Assistant:
-			</f:if>
-			<f:if condition="{message.type} == 'Symfony\AI\Platform\Message\UserMessage'">
-				User:
-			</f:if>
+		<td class="col-nowrap align-top">
+			<f:switch expression="{message.role}">
+				<f:case value="system"><span class="badge badge-secondary"><f:translate key="session.role.system" extensionName="Easychat" /></span></f:case>
+				<f:case value="user"><span class="badge badge-primary"><f:translate key="session.role.user" extensionName="Easychat" /></span></f:case>
+				<f:case value="assistant"><span class="badge badge-success"><f:translate key="session.role.assistant" extensionName="Easychat" /></span></f:case>
+				<f:case value="tool"><span class="badge badge-warning"><f:translate key="session.role.tool" extensionName="Easychat" /></span></f:case>
+				<f:defaultCase><span class="badge badge-default">{message.role}</span></f:defaultCase>
+			</f:switch>
 		</td>
 		<td>
-			<f:if condition="{message.content}">
-				<f:then>
-					{message.content}
-				</f:then>
-				<f:else>
-					<f:for each="{message.contentAsBase64}" as="content">
-							{content.content}
-					</f:for>
-				</f:else>
+			<f:for each="{message.toolCalls}" as="toolCall">
+				<div class="text-body-secondary">
+					<f:if condition="{message.role} == 'tool'">
+						<f:then>
+							<f:translate key="session.toolResultOf" extensionName="Easychat" />
+							<strong>{toolCall.name}</strong>
+						</f:then>
+						<f:else>
+							<core:icon identifier="actions-search" size="small" />
+							<f:translate key="session.toolCall" extensionName="Easychat" />
+							<strong>{toolCall.name}</strong>
+							<f:if condition="{toolCall.arguments}"><code>{toolCall.arguments}</code></f:if>
+						</f:else>
+					</f:if>
+				</div>
+			</f:for>
+			<f:if condition="{message.text}">
+				<div style="white-space: pre-wrap">{message.text}</div>
+			</f:if>
+			<f:if condition="{message.documents}">
+				<details>
+					<summary><f:translate key="session.documents" extensionName="Easychat" arguments="{0: '{message.documents -> f:count()}'}" /></summary>
+					<ol class="mt-2">
+						<f:for each="{message.documents}" as="document">
+							<li>
+								<f:if condition="{document.uri}">
+									<f:then><a href="{document.uri}" target="_blank" rel="noopener">{f:if(condition: document.title, then: document.title, else: document.uri)}</a></f:then>
+									<f:else><strong>{document.title}</strong></f:else>
+								</f:if>
+								<f:if condition="{document.text}">
+									<div class="text-body-secondary" style="white-space: pre-wrap">{document.text}</div>
+								</f:if>
+							</li>
+						</f:for>
+					</ol>
+				</details>
 			</f:if>
 		</td>
 	</tr>

@@ -26,6 +26,27 @@
             <trans-unit id="actions.deleteTask">
                 <source>Delete Task</source>
             </trans-unit>
+            <trans-unit id="session.role.system">
+                <source>System</source>
+            </trans-unit>
+            <trans-unit id="session.role.user">
+                <source>User</source>
+            </trans-unit>
+            <trans-unit id="session.role.assistant">
+                <source>Assistant</source>
+            </trans-unit>
+            <trans-unit id="session.role.tool">
+                <source>Tool result</source>
+            </trans-unit>
+            <trans-unit id="session.toolCall">
+                <source>Tool call</source>
+            </trans-unit>
+            <trans-unit id="session.toolResultOf">
+                <source>Result of</source>
+            </trans-unit>
+            <trans-unit id="session.documents">
+                <source>%s documents found</source>
+            </trans-unit>
             <trans-unit id="tableHeader">
                 <source>Sessions</source>
             </trans-unit>

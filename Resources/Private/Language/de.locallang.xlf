@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2026-10-14T16:00:00Z"
+          product-name="easychat">
+        <header/>
+        <body>
+            <trans-unit id="session.role.system" approved="yes">
+                <source>System</source>
+                <target>System</target>
+            </trans-unit>
+            <trans-unit id="session.role.user" approved="yes">
+                <source>User</source>
+                <target>Nutzer</target>
+            </trans-unit>
+            <trans-unit id="session.role.assistant" approved="yes">
+                <source>Assistant</source>
+                <target>Assistent</target>
+            </trans-unit>
+            <trans-unit id="session.role.tool" approved="yes">
+                <source>Tool result</source>
+                <target>Tool-Ergebnis</target>
+            </trans-unit>
+            <trans-unit id="session.toolCall" approved="yes">
+                <source>Tool call</source>
+                <target>Tool-Aufruf</target>
+            </trans-unit>
+            <trans-unit id="session.toolResultOf" approved="yes">
+                <source>Result of</source>
+                <target>Ergebnis von</target>
+            </trans-unit>
+            <trans-unit id="session.documents" approved="yes">
+                <source>%s documents found</source>
+                <target>%s Dokumente gefunden</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

@@ -22,18 +22,33 @@ call_user_func(static function () {
         $flexForm,
     );
 
+    // The core only derives a default form for a CType plugin by copying the "header" type.
+    // Site packages that remove the fluid_styled_content types (and load before this extension)
+    // leave the plugin without a type definition, and FormEngine as well as the page module
+    // then report it as an invalid value. So define the form explicitly, on TYPO3 v13 and v14.
+    $GLOBALS['TCA']['tt_content']['types'][$pluginSignature]['showitem'] = '
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
+            --palette--;;general,
+            --palette--;;headers,
+        --div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.plugin,
+            pi_flexform,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:language,
+            --palette--;;language,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:access,
+            --palette--;;hidden,
+            --palette--;;access,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:categories,
+            categories,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:notes,
+            rowDescription,
+        --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:extended,
+    ';
+
     if ((new Typo3Version())->getMajorVersion() < 14) {
         ExtensionManagementUtility::addPiFlexFormValue(
             '*',
             $flexForm,
             $pluginSignature,
-        );
-
-        ExtensionManagementUtility::addToAllTCAtypes(
-            'tt_content',
-            '--div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.plugin, pi_flexform',
-            $pluginSignature,
-            'after:palette:headers'
         );
     }
 });

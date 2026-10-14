@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Undkonsorten\Easychat\Tests\Fixtures\Chat;
 
 use Symfony\AI\Agent\AgentInterface;
+use Symfony\AI\Agent\Execution\Execution;
+use Symfony\AI\Agent\Execution\Update\Result;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
-use Symfony\AI\Platform\Result\ResultInterface;
+use Symfony\AI\Platform\Message\UserMessage;
 use Symfony\AI\Platform\Result\TextResult;
 use Symfony\AI\Platform\Result\ToolCall;
 use Undkonsorten\Easychat\Chat\ChatConfiguration;
@@ -43,21 +45,25 @@ final class RecordingAgentFactory extends AgentFactory
         return new class ($factory) implements AgentInterface {
             public function __construct(private readonly RecordingAgentFactory $factory) {}
 
-            public function call(MessageBag $messages, array $options = []): ResultInterface
+            public function call(string|MessageBag|UserMessage $input, array $options = []): Execution
             {
-                $this->factory->inputs[] = $messages;
+                $this->factory->inputs[] = $input instanceof MessageBag ? $input : new MessageBag();
                 $this->factory->options[] = $options;
-                if ($this->factory->failure !== null) {
-                    throw $this->factory->failure;
-                }
+                $answer = 'answer-' . $this->factory->nextCall();
+                $failure = $this->factory->failure;
                 $toolRound = $this->factory->toolRound;
-                if ($toolRound !== null) {
-                    // AgentProcessor with keepToolMessages appends tool rounds to the caller's bag
-                    $messages->add(Message::ofAssistant(null, [$toolRound]));
-                    $messages->add(Message::ofToolCall($toolRound, 'result of ' . $toolRound->getId()));
-                }
 
-                return new TextResult('answer-' . $this->factory->nextCall());
+                return new Execution(static function () use ($input, $answer, $failure, $toolRound): \Generator {
+                    if ($failure !== null) {
+                        throw $failure;
+                    }
+                    if ($toolRound !== null && $input instanceof MessageBag) {
+                        // Symfony\AI\Agent\Execution\Runner appends tool rounds to the caller's bag
+                        $input->add(Message::ofAssistant($toolRound));
+                        $input->add(Message::ofToolCall($toolRound, 'result of ' . $toolRound->getId()));
+                    }
+                    yield new Result(new TextResult($answer));
+                });
             }
 
             public function getName(): string

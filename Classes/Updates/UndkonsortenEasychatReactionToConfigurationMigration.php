@@ -9,6 +9,9 @@ use TYPO3\CMS\Core\Configuration\FlexForm\FlexFormTools;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+// TYPO3 v14 moved these to TYPO3\CMS\Core\Attribute\UpgradeWizard and TYPO3\CMS\Core\Upgrades\, which do
+// not exist in v13. The EXT:install names still work in v14 (deprecated, removed in v15), so switch
+// together with dropping TYPO3 v13 support.
 use TYPO3\CMS\Install\Attribute\UpgradeWizard;
 use TYPO3\CMS\Install\Updates\ChattyInterface;
 use TYPO3\CMS\Install\Updates\DatabaseUpdatedPrerequisite;

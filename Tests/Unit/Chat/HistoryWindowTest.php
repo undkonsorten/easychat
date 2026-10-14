@@ -59,7 +59,7 @@ final class HistoryWindowTest extends TestCase
         $history = new MessageBag(
             Message::forSystem('be nice'),
             Message::ofUser('q1'),
-            Message::ofAssistant(null, [$toolCall]),
+            Message::ofAssistant($toolCall),
             Message::ofToolCall($toolCall, 'Found: Tabula'),
             Message::ofAssistant('The hedgehog is called Tabula.'),
         );
@@ -100,8 +100,7 @@ final class HistoryWindowTest extends TestCase
         return array_map(
             static fn(MessageInterface $message): string => match (true) {
                 $message instanceof SystemMessage => (string)$message->getContent(),
-                $message instanceof UserMessage => (string)($message->asText() ?? ''),
-                $message instanceof AssistantMessage => (string)($message->getContent() ?? ''),
+                $message instanceof UserMessage, $message instanceof AssistantMessage => (string)($message->asText() ?? ''),
                 default => '',
             },
             $bag->getMessages(),

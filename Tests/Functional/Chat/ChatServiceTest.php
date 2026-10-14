@@ -115,8 +115,9 @@ final class ChatServiceTest extends FunctionalTestCase
     }
 
     /**
-     * A session stored by EasyChat 0.2 must load, and a new turn must be appended without losing
-     * the old ones.
+     * Sessions written by EasyChat 0.2 (symfony/ai 0.1) store assistant messages without the
+     * "parts" field that symfony/ai 0.13+ writes. They must still load, and a new turn must be
+     * appended without losing the old ones.
      */
     public function testSessionStoredWithSymfonyAi01CanBeContinued(): void
     {
@@ -196,8 +197,7 @@ final class ChatServiceTest extends FunctionalTestCase
         return array_map(
             static fn(MessageInterface $message): string => match (true) {
                 $message instanceof SystemMessage => (string)$message->getContent(),
-                $message instanceof UserMessage => (string)($message->asText() ?? ''),
-                $message instanceof AssistantMessage => (string)($message->getContent() ?? ''),
+                $message instanceof UserMessage, $message instanceof AssistantMessage => (string)($message->asText() ?? ''),
                 default => '',
             },
             $bag->getMessages(),

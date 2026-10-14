@@ -1,19 +1,13 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Parameter \#2 \$optionKey of method TYPO3\\CMS\\Extbase\\Property\\PropertyMappingConfiguration\:\:setTypeConverterOption\(\) expects string, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../../Classes/Controller/SessionController.php
-
-		-
 			message: '#^Method Undkonsorten\\Easychat\\Tests\\Fixtures\\Indexing\\FakeVectorizer\:\:vectorize\(\) never returns Symfony\\AI\\Platform\\Vector\\Vector so it can be removed from the return type\.$#'
 			identifier: return.unusedType
 			count: 1
 			path: ../../Tests/Fixtures/Indexing/FakeVectorizer.php
 
 		-
-			message: '#^Method Undkonsorten\\Easychat\\Tests\\Fixtures\\Indexing\\FakeVectorizer\:\:vectorize\(\) never returns Symfony\\AI\\Store\\Document\\VectorDocument so it can be removed from the return type\.$#'
+			message: '#^Method Undkonsorten\\Easychat\\Tests\\Fixtures\\Indexing\\FakeVectorizer\:\:vectorize\(\) never returns Symfony\\AI\\Store\\Document\\VectorDocumentInterface so it can be removed from the return type\.$#'
 			identifier: return.unusedType
 			count: 1
 			path: ../../Tests/Fixtures/Indexing/FakeVectorizer.php

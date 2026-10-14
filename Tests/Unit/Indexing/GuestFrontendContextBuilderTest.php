@@ -27,7 +27,7 @@ final class GuestFrontendContextBuilderTest extends TestCase
         $context->setAspect('workspace', new WorkspaceAspect(0));
 
         $inner = $this->createMock(FrontendContextBuilder::class);
-        $inner->expects(self::once())->method('executeInFrontendContext')
+        $inner->expects($this->once())->method('executeInFrontendContext')
             ->willReturnCallback(static fn(callable $callback): mixed => $callback());
 
         $seen = (new GuestFrontendContextBuilder($inner, $context))->executeInFrontendContext(static fn(): array => [

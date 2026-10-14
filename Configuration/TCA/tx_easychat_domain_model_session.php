@@ -1,11 +1,14 @@
 <?php
 
 declare(strict_types=1);
+
+use TYPO3\CMS\Core\Information\Typo3Version;
+
 if (!defined('TYPO3')) {
     die('Access denied.');
 }
 
-return [
+$tca = [
     'ctrl' => [
         'title'	=> 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_session',
         'label' => 'session_id',
@@ -21,7 +24,6 @@ return [
         'security' => [
             'ignorePageTypeRestriction' => true,
         ],
-        'searchFields' => 'session_id',
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg',
     ],
     'types' => [
@@ -49,6 +51,7 @@ return [
                 'range' => [
                     'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
+                'searchable' => false,
             ],
         ],
         'endtime' => [
@@ -62,6 +65,7 @@ return [
                 'range' => [
                     'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
+                'searchable' => false,
             ],
         ],
         'session_id' => [
@@ -98,6 +102,7 @@ return [
                 'type' => 'json',
                 'required' => true,
                 'readOnly' => true,
+                'searchable' => false,
             ],
         ],
         'crdate' => [
@@ -107,7 +112,16 @@ return [
                 'type' => 'datetime',
                 'format' => 'datetime',
                 'readOnly' => true,
+                'searchable' => false,
             ],
         ],
     ],
 ];
+
+// TYPO3 v14 searches all suitable fields unless a column sets 'searchable' => false, and removed
+// ctrl.searchFields. TYPO3 v13 still needs the explicit list.
+if ((new Typo3Version())->getMajorVersion() < 14) {
+    $tca['ctrl']['searchFields'] = 'session_id';
+}
+
+return $tca;

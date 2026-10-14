@@ -13,6 +13,5 @@ final readonly class VectorTarget
     public function __construct(
         public StoreInterface $store,
         public VectorizerInterface $vectorizer,
-        public PointRemoverInterface $remover,
     ) {}
 }

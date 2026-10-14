@@ -2,7 +2,9 @@
 
 namespace Undkonsorten\Easychat\Factories;
 
-use Symfony\AI\Store\Bridge\Qdrant\Store;
+use Symfony\AI\Store\Bridge\Qdrant\StoreFactory as QdrantStoreFactory;
+use Symfony\AI\Store\ManagedStoreInterface;
+use Symfony\AI\Store\StoreInterface;
 use Symfony\Component\HttpClient\HttpClient;
 
 class StoreFactory
@@ -12,28 +14,26 @@ class StoreFactory
     /**
      * @throws \Exception
      */
-    public static function create(string $store, string $url, string $apiKey, string $dbName, int $dimensions): Store
+    public static function create(string $store, string $url, string $apiKey, string $dbName, int $dimensions): StoreInterface&ManagedStoreInterface
     {
-        switch ($store) {
-            case 'qdrant':
-                return self::createQdrant($url, $apiKey, $dbName, $dimensions);
-            default:
-                throw new \Exception(sprintf('Vector store "%s" is not supported.', $store));
-        }
+        return match ($store) {
+            'qdrant' => self::createQdrant($url, $apiKey, $dbName, $dimensions),
+            default => throw new \Exception(sprintf('Vector store "%s" is not supported.', $store), 3976784254),
+        };
     }
 
-    protected static function createQdrant(string $url, string $apiKey, string $collection, int $dimensions, string $distance = 'Dot'): Store
+    protected static function createQdrant(string $url, string $apiKey, string $collection, int $dimensions, string $distance = 'Dot'): StoreInterface&ManagedStoreInterface
     {
-        if (!class_exists('Symfony\AI\Store\Bridge\Qdrant\Store')) {
-            throw new \Exception('symfony/ai-qdrant-store is not installed');
+        if (!class_exists(QdrantStoreFactory::class)) {
+            throw new \Exception('symfony/ai-qdrant-store is not installed', 2326330016);
         }
-        return new Store(
-            HttpClient::create(self::HTTP_CLIENT_OPTIONS),
-            $url,
-            $apiKey,
+        return QdrantStoreFactory::create(
             $collection,
+            $url,
+            $apiKey !== '' ? $apiKey : null,
+            HttpClient::create(self::HTTP_CLIENT_OPTIONS),
             $dimensions,
-            $distance
+            $distance,
         );
     }
 }

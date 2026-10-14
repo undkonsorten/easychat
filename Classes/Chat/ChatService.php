@@ -45,21 +45,22 @@ class ChatService
         $sentMessages = count($input);
         $result = $this->agentFactory
             ->create($configuration)
-            ->call($input, ['max_tokens' => $configuration->maxTokens]);
+            ->call($input, ['max_tokens' => $configuration->maxTokens])
+            ->getResult();
 
-        $assistantMessage = Message::ofAssistant((string)$result->getContent());
+        $assistantMessage = Message::ofAssistant($result);
+        $assistantMessage->getMetadata()->merge($result->getMetadata());
 
         $history->add($userMessage);
         // The agent appends its tool rounds (the assistant's tool calls and the tool results) to the
-        // bag it was given (AgentProcessor with keepToolMessages). They belong to the stored
-        // transcript, which the backend module shows; HistoryWindow leaves them out of the next
-        // request anyway.
+        // bag it was given. They belong to the stored transcript, which the backend module shows;
+        // HistoryWindow leaves them out of the next request anyway.
         foreach (array_slice($input->getMessages(), $sentMessages) as $toolRoundMessage) {
             $history->add($toolRoundMessage);
         }
         $history->add($assistantMessage);
         $this->sessionRepository->save($history);
 
-        return $assistantMessage->getContent() ?? '';
+        return $assistantMessage->asText() ?? '';
     }
 }

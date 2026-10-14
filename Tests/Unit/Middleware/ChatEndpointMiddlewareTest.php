@@ -39,7 +39,7 @@ final class ChatEndpointMiddlewareTest extends TestCase
     #[DataProvider('requestsThatAreNotChatRequests')]
     public function testNonChatRequestsArePassedOnWithoutUsingTheContainer(string $method, string $path, ?string $tail): void
     {
-        $container = new class () implements ContainerInterface {
+        $container = new class implements ContainerInterface {
             public function get(string $id): mixed
             {
                 throw new \LogicException('The container must not be used for requests that are not chat requests.', 4227182226);

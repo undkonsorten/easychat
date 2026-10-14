@@ -7,9 +7,9 @@ namespace Undkonsorten\Easychat\Factories;
 use Symfony\AI\Agent\Agent;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Agent\Bridge\SimilaritySearch\SimilaritySearch;
-use Symfony\AI\Agent\Toolbox\AgentProcessor;
 use Symfony\AI\Agent\Toolbox\FaultTolerantToolbox;
 use Symfony\AI\Agent\Toolbox\Toolbox;
+use Symfony\AI\Store\Retriever;
 use Undkonsorten\Easychat\Chat\ChatConfiguration;
 
 /**
@@ -40,16 +40,13 @@ class AgentFactory
         );
         $vectorizer = VectorizerFactory::create($row);
 
-        $similaritySearch = new SimilaritySearch($vectorizer, $store);
+        $similaritySearch = new SimilaritySearch(new Retriever($store, $vectorizer));
         // Some models (e.g. gpt-oss) call tools beyond what we register (like a
         // trained-in "open_file" follow-up to a search call). FaultTolerantToolbox
         // turns that into a normal tool-result message the model can recover from,
         // instead of the whole request failing with ToolNotFoundException.
         $toolbox = new FaultTolerantToolbox(new Toolbox([$similaritySearch]));
-        // keepToolMessages: the tool rounds stay in the caller's message bag, so ChatService can
-        // store them with the conversation.
-        $processor = new AgentProcessor($toolbox, keepToolMessages: true);
 
-        return new Agent($platform, $configuration->model, [$processor], [$processor]);
+        return new Agent($platform, $configuration->model, toolbox: $toolbox);
     }
 }

@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+
+use TYPO3\CMS\Core\Information\Typo3Version;
+
 if (!defined('TYPO3')) {
     die('Access denied.');
 }
@@ -12,7 +15,7 @@ $lll = 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat
  * module (root page) which vector store points exist and where they came from. Written only
  * by IndexEventListener.
  */
-return [
+$tca = [
     'ctrl' => [
         'title' => $lll,
         'label' => 'point_id',
@@ -22,7 +25,6 @@ return [
         'default_sortby' => 'tstamp DESC',
         'rootLevel' => 1,
         'adminOnly' => true,
-        'searchFields' => 'point_id,document_id,index_process',
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg',
     ],
     'types' => [
@@ -39,7 +41,7 @@ return [
         ],
         'kind' => [
             'label' => $lll . '.kind',
-            'config' => ['type' => 'input', 'readOnly' => true],
+            'config' => ['type' => 'input', 'readOnly' => true, 'searchable' => false],
         ],
         'page_uid' => [
             'label' => $lll . '.page_uid',
@@ -63,7 +65,15 @@ return [
         ],
         'tstamp' => [
             'label' => $lll . '.tstamp',
-            'config' => ['type' => 'datetime', 'readOnly' => true],
+            'config' => ['type' => 'datetime', 'readOnly' => true, 'searchable' => false],
         ],
     ],
 ];
+
+// TYPO3 v14 searches all suitable fields unless a column sets 'searchable' => false, and removed
+// ctrl.searchFields. TYPO3 v13 still needs the explicit list.
+if ((new Typo3Version())->getMajorVersion() < 14) {
+    $tca['ctrl']['searchFields'] = 'point_id,document_id,index_process';
+}
+
+return $tca;

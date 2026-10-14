@@ -1,11 +1,14 @@
 <?php
 
 declare(strict_types=1);
+
+use TYPO3\CMS\Core\Information\Typo3Version;
+
 if (!defined('TYPO3')) {
     die('Access denied.');
 }
 
-return [
+$tca = [
     'ctrl' => [
         'title'	=> 'LLL:EXT:easychat/Resources/Private/Language/locallang_db.xlf:tx_easychat_configuration',
         'label' => 'name',
@@ -21,7 +24,6 @@ return [
         'security' => [
             'ignorePageTypeRestriction' => true,
         ],
-        'searchFields' => 'name,model,url,',
         'iconfile' => 'EXT:easychat/Resources/Public/Icons/Extension.svg',
     ],
     'types' => [
@@ -64,6 +66,7 @@ return [
                 'range' => [
                     'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
+                'searchable' => false,
             ],
         ],
         'endtime' => [
@@ -77,6 +80,7 @@ return [
                 'range' => [
                     'lower' => mktime(0, 0, 0, (int)date('m'), (int)date('d'), (int)date('Y')),
                 ],
+                'searchable' => false,
             ],
         ],
         'name' => [
@@ -110,6 +114,7 @@ return [
                 'type' => 'text',
                 'cols' => 40,
                 'rows' => 6,
+                'searchable' => false,
             ],
         ],
         'url' => [
@@ -132,6 +137,7 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
+                'searchable' => false,
             ],
         ],
         'max_input_length' => [
@@ -147,6 +153,7 @@ return [
                     'lower' => 1,
                     'upper' => 100000,
                 ],
+                'searchable' => false,
             ],
         ],
         'max_tokens' => [
@@ -162,6 +169,7 @@ return [
                     'lower' => 1,
                     'upper' => 128000,
                 ],
+                'searchable' => false,
             ],
         ],
         'history_window' => [
@@ -177,6 +185,7 @@ return [
                     'lower' => 0,
                     'upper' => 500,
                 ],
+                'searchable' => false,
             ],
         ],
         'vector_db' => [
@@ -214,6 +223,7 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
+                'searchable' => false,
             ],
         ],
         'vector_db_port' => [
@@ -229,6 +239,7 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
+                'searchable' => false,
             ],
         ],
         'vector_db_name' => [
@@ -244,6 +255,7 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
+                'searchable' => false,
             ],
         ],
         'vector_db_api_key' => [
@@ -262,6 +274,7 @@ return [
                 'size' => 30,
                 'eval' => 'trim',
                 'required' => true,
+                'searchable' => false,
             ],
         ],
         'vector_db_embeddings_model' => [
@@ -284,6 +297,7 @@ return [
                 'valuePicker' => [
                     'items' => [],
                 ],
+                'searchable' => false,
             ],
         ],
         'vector_db_embeddings_url' => [
@@ -303,6 +317,7 @@ return [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
+                'searchable' => false,
             ],
         ],
         'vector_db_embeddings_api_key' => [
@@ -322,6 +337,7 @@ return [
                 'type' => 'input',
                 'size' => 30,
                 'eval' => 'trim',
+                'searchable' => false,
             ],
         ],
         'vector_db_dimensions' => [
@@ -395,3 +411,11 @@ return [
         ],
     ],
 ];
+
+// TYPO3 v14 searches all suitable fields unless a column sets 'searchable' => false, and removed
+// ctrl.searchFields. TYPO3 v13 still needs the explicit list.
+if ((new Typo3Version())->getMajorVersion() < 14) {
+    $tca['ctrl']['searchFields'] = 'name,model,url';
+}
+
+return $tca;

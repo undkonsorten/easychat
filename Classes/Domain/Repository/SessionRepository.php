@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
+use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 use TYPO3\CMS\Extbase\Persistence\Repository;
 use Undkonsorten\Easychat\Domain\Model\Session;
@@ -31,6 +32,10 @@ class SessionRepository extends Repository implements ManagedStoreInterface, Mes
     protected string $clientMarker = '';
 
     protected int $pid = 1;
+
+    protected $defaultOrderings = [
+        'crdate' => QueryInterface::ORDER_DESCENDING
+    ];
 
     public function __construct(
         private readonly ExtensionConfiguration $extensionConfiguration,
